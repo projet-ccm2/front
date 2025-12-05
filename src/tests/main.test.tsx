@@ -45,7 +45,7 @@ describe("main.tsx - Point d'entrée", () => {
       const root = createRoot(rootElement!)
       expect(mockCreateRoot).toHaveBeenCalled()
       expect(mockCreateRoot).toHaveBeenCalledWith(rootElement)
-      expect(root._element).toBe(rootElement)
+      expect((root as unknown as { _element: HTMLElement })._element).toBe(rootElement)
     })
 
     it("devrait appeler render sur l'instance root", () => {
