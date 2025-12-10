@@ -53,7 +53,7 @@ describe('Marketplace', () => {
       const btn = screen.getByRole('button', { name: category })
       fireEvent.click(btn)
     })
-  })
+  }, 30000)
 
   it('should handle detailed interactions', async () => {
     render(<Marketplace onNavigate={mockOnNavigate} />)

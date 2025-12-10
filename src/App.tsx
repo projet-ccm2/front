@@ -27,8 +27,8 @@ export default function App() {
     setCurrentScreen('dashboard')
   }
 
-  const navigateTo = (screen: Screen) => {
-    setCurrentScreen(screen)
+  const navigateTo = (screen: string) => {
+    setCurrentScreen(screen as Screen)
   }
 
   if (!isAuthenticated && currentScreen === 'landing') {
