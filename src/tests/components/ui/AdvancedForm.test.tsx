@@ -10,6 +10,11 @@ import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormLabel, FormControl } from '../../../components/ui/form'
 import { Input } from '../../../components/ui/input'
 
+// Mock scrollIntoView
+window.HTMLElement.prototype.scrollIntoView = vi.fn()
+window.HTMLElement.prototype.releasePointerCapture = vi.fn()
+window.HTMLElement.prototype.hasPointerCapture = vi.fn()
+
 describe('Advanced Form Components', () => {
     describe('Calendar', () => {
         it('should render calendar', () => {
