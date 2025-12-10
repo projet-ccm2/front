@@ -26,10 +26,10 @@ vi.mock('embla-carousel-react', () => ({
 
 beforeEach(() => {
   // Mock IntersectionObserver
-  global.IntersectionObserver = class IntersectionObserver {
-    observe() { }
-    unobserve() { }
-    disconnect() { }
+  globalThis.IntersectionObserver = class IntersectionObserver {
+    observe = vi.fn()
+    unobserve = vi.fn()
+    disconnect = vi.fn()
   } as any // eslint-disable-line @typescript-eslint/no-explicit-any
 })
 
@@ -196,7 +196,7 @@ describe('Carousel Components - Extended Coverage', () => {
         <Carousel>
           <CarouselContent>
             {Array.from({ length: 5 }).map((_, index) => (
-              <CarouselItem key={index}>Item {index + 1}</CarouselItem>
+              <CarouselItem key={`carousel-item-${index}`}>Item {index + 1}</CarouselItem>
             ))}
           </CarouselContent>
         </Carousel>

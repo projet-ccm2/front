@@ -44,10 +44,7 @@ describe('Data Display Components', () => {
           <AvatarFallback>JD</AvatarFallback>
         </Avatar>
       )
-      // Image might not load in jsdom without extra work, but the element should be there
-      // Radix Avatar renders `span` if image not loaded or loading.
-      // We can check if Fallback is present initially or if structure exists.
-      // Simple fallback check is usually enough for basic coverage.
+      expect(screen.getByText('JD')).toBeInTheDocument()
     })
   })
 

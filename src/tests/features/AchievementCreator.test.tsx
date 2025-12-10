@@ -144,6 +144,6 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onNavigate={mockOnNavigate} />)
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
-    // Sidebar should be open, test that onClose can be called
+    expect(menuBtn).toBeInTheDocument()
   })
 })

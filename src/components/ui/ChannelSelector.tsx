@@ -25,7 +25,14 @@ export function ChannelSelector() {
       </button>
 
       {/* Backdrop */}
-      {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
+      {isOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 w-full h-full cursor-default"
+          onClick={() => setIsOpen(false)}
+          aria-label="Close menu"
+        />
+      )}
 
       {/* Dropdown Menu */}
       {isOpen && (
@@ -42,9 +49,8 @@ export function ChannelSelector() {
                   setSelectedChannel(channel)
                   setIsOpen(false)
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#2d2d31] dark:hover:bg-gray-50 transition-colors ${
-                  selectedChannel.id === channel.id ? 'bg-[#9146FF]/20' : ''
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#2d2d31] dark:hover:bg-gray-50 transition-colors ${selectedChannel.id === channel.id ? 'bg-[#9146FF]/20' : ''
+                  }`}
               >
                 <div className="w-12 h-12 bg-[#9146FF] rounded-full flex items-center justify-center text-lg flex-shrink-0">
                   {channel.avatar}
