@@ -57,13 +57,15 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Chevron: ({ className, ...props }) => {
-          return <ChevronLeft className={cn('size-4', className)} {...props} />
-        },
+        Chevron: CalendarChevron,
       }}
       {...props}
     />
   )
+}
+
+function CalendarChevron({ className, ...props }: React.ComponentProps<typeof ChevronLeft>) {
+  return <ChevronLeft className={cn('size-4', className)} {...props} />
 }
 
 export { Calendar }

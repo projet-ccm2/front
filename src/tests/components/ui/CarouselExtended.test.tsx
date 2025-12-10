@@ -195,8 +195,8 @@ describe('Carousel Components - Extended Coverage', () => {
       render(
         <Carousel>
           <CarouselContent>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <CarouselItem key={`carousel-item-${index}`}>Item {index + 1}</CarouselItem>
+            {Array.from({ length: 5 }, (_, i) => ({ id: `id-${i}` })).map((item, index) => (
+              <CarouselItem key={item.id}>Item {index + 1}</CarouselItem>
             ))}
           </CarouselContent>
         </Carousel>

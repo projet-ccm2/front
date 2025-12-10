@@ -65,7 +65,7 @@ describe('Feedback Components', () => {
       render(<ImageWithFallback src="/broken.jpg" alt="Broken Name" />)
       const img = screen.getByAltText('Broken Name')
       fireEvent.error(img)
-      expect(screen.getByAltText('Error loading image')).toBeInTheDocument()
+      expect(screen.getByAltText('Fallback content')).toBeInTheDocument()
     })
   })
 })

@@ -48,7 +48,7 @@ function Carousel({
   className,
   children,
   ...props
-}: React.ComponentProps<'div'> & CarouselProps) {
+}: React.ComponentProps<'section'> & CarouselProps) {
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
@@ -102,39 +102,41 @@ function Carousel({
     }
   }, [api, onSelect])
 
+  const contextValue = React.useMemo(() => ({
+    carouselRef,
+    api: api,
+    opts,
+    orientation: orientation || (opts?.axis === 'y' ? 'vertical' : 'horizontal'),
+    scrollPrev,
+    scrollNext,
+    canScrollPrev,
+    canScrollNext,
+  }), [carouselRef, api, opts, orientation, scrollPrev, scrollNext, canScrollPrev, canScrollNext])
+
   return (
     <CarouselContext.Provider
-      value={{
-        carouselRef,
-        api: api,
-        opts,
-        orientation: orientation || (opts?.axis === 'y' ? 'vertical' : 'horizontal'),
-        scrollPrev,
-        scrollNext,
-        canScrollPrev,
-        canScrollNext,
-      }}
+      value={contextValue}
     >
-      <div
+      <section
         onKeyDownCapture={handleKeyDown}
         className={cn('relative', className)}
-        role="region"
         aria-roledescription="carousel"
+        aria-label="Carousel"
         data-slot="carousel"
         {...props}
       >
         {children}
-      </div>
+      </section>
     </CarouselContext.Provider>
   )
 }
 
-function CarouselContent({ className, ...props }: React.ComponentProps<'div'>) {
+function CarouselContent({ className, ...props }: React.ComponentProps<'ul'>) {
   const { carouselRef, orientation } = useCarousel()
 
   return (
     <div ref={carouselRef} className="overflow-hidden" data-slot="carousel-content">
-      <div
+      <ul
         className={cn('flex', orientation === 'horizontal' ? '-ml-4' : '-mt-4 flex-col', className)}
         {...props}
       />
@@ -142,12 +144,11 @@ function CarouselContent({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function CarouselItem({ className, ...props }: React.ComponentProps<'div'>) {
+function CarouselItem({ className, ...props }: React.ComponentProps<'li'>) {
   const { orientation } = useCarousel()
 
   return (
-    <div
-      role="group"
+    <li
       aria-roledescription="slide"
       data-slot="carousel-item"
       className={cn(

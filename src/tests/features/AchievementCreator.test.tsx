@@ -64,6 +64,7 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onNavigate={mockOnNavigate} />)
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
+    expect(menuBtn).toBeInTheDocument()
   })
 
   it('should add and remove conditions in advanced mode', () => {
