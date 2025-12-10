@@ -1,12 +1,12 @@
-import { Trophy, Users, Smartphone, TrendingUp, Zap, Award, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { Trophy, Users, Smartphone, TrendingUp, Zap, Award, Sun, Moon } from 'lucide-react'
+import { useTheme } from '../../context/ThemeContext'
 
 interface LandingPageProps {
-  onConnect: () => void;
+  onConnect: () => void
 }
 
 export function LandingPage({ onConnect }: LandingPageProps) {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="min-h-screen bg-[#0e0e10] dark:bg-gray-50 text-white dark:text-gray-900">
@@ -54,7 +54,8 @@ export function LandingPage({ onConnect }: LandingPageProps) {
               Gamify Your Stream
             </h1>
             <p className="text-lg sm:text-xl text-gray-400 dark:text-gray-600 max-w-2xl mx-auto mb-8 px-4">
-              Transform viewer engagement with achievements, quests, and rewards. Keep your community active and invested with Stream Quest.
+              Transform viewer engagement with achievements, quests, and rewards. Keep your
+              community active and invested with Stream Quest.
             </p>
             <button
               onClick={onConnect}
@@ -71,7 +72,10 @@ export function LandingPage({ onConnect }: LandingPageProps) {
                 <Trophy className="w-6 h-6 text-[#9146FF]" />
               </div>
               <h3 className="text-lg sm:text-xl mb-3">Achievement System</h3>
-              <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Create custom achievements for your viewers. Reward chat participation, watch time, and more.</p>
+              <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+                Create custom achievements for your viewers. Reward chat participation, watch time,
+                and more.
+              </p>
             </div>
 
             <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-6 sm:p-8 hover:border-[#00f593] transition-colors">
@@ -79,7 +83,10 @@ export function LandingPage({ onConnect }: LandingPageProps) {
                 <Users className="w-6 h-6 text-[#00f593]" />
               </div>
               <h3 className="text-lg sm:text-xl mb-3">Boost Retention</h3>
-              <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Keep viewers engaged longer with progression systems and exclusive rewards for loyal fans.</p>
+              <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+                Keep viewers engaged longer with progression systems and exclusive rewards for loyal
+                fans.
+              </p>
             </div>
 
             <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-6 sm:p-8 hover:border-[#ff4444] transition-colors sm:col-span-2 lg:col-span-1">
@@ -87,7 +94,9 @@ export function LandingPage({ onConnect }: LandingPageProps) {
                 <TrendingUp className="w-6 h-6 text-[#ff4444]" />
               </div>
               <h3 className="text-lg sm:text-xl mb-3">Analytics Dashboard</h3>
-              <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Track engagement metrics and see how gamification impacts your community growth.</p>
+              <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+                Track engagement metrics and see how gamification impacts your community growth.
+              </p>
             </div>
           </div>
         </div>
@@ -97,7 +106,9 @@ export function LandingPage({ onConnect }: LandingPageProps) {
       <div className="bg-[#18181b] dark:bg-white py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl sm:text-4xl text-center mb-4">Complete Ecosystem</h2>
-          <p className="text-center text-gray-400 dark:text-gray-600 mb-8 sm:mb-12">Everything you need to gamify your stream</p>
+          <p className="text-center text-gray-400 dark:text-gray-600 mb-8 sm:mb-12">
+            Everything you need to gamify your stream
+          </p>
 
           <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Extension */}
@@ -109,7 +120,8 @@ export function LandingPage({ onConnect }: LandingPageProps) {
                 <h3 className="text-xl sm:text-2xl">Twitch Extension</h3>
               </div>
               <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base mb-4">
-                Real-time overlay that displays active quests and achievements directly on your stream. Viewers can track their progress without leaving the video.
+                Real-time overlay that displays active quests and achievements directly on your
+                stream. Viewers can track their progress without leaving the video.
               </p>
               <ul className="space-y-2 text-sm sm:text-base text-gray-300 dark:text-gray-700">
                 <li className="flex items-center gap-2">
@@ -136,7 +148,8 @@ export function LandingPage({ onConnect }: LandingPageProps) {
                 <h3 className="text-xl sm:text-2xl">Web Dashboard</h3>
               </div>
               <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base mb-4">
-                Powerful creator dashboard to design achievements, manage your community, and analyze engagement metrics from anywhere.
+                Powerful creator dashboard to design achievements, manage your community, and
+                analyze engagement metrics from anywhere.
               </p>
               <ul className="space-y-2 text-sm sm:text-base text-gray-300 dark:text-gray-700">
                 <li className="flex items-center gap-2">
@@ -174,5 +187,5 @@ export function LandingPage({ onConnect }: LandingPageProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

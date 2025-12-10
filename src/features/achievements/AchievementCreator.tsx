@@ -1,36 +1,36 @@
-import { useState } from 'react';
-import { Sidebar } from '../../components/layout/Sidebar';
-import { ChannelSelector } from '../../components/ui/ChannelSelector';
-import { Sparkles, Upload, Plus, X, Save, Send, Menu } from 'lucide-react';
+import { useState } from 'react'
+import { Sidebar } from '../../components/layout/Sidebar'
+import { ChannelSelector } from '../../components/ui/ChannelSelector'
+import { Sparkles, Upload, Plus, Save, Send, Menu, Trash2 } from 'lucide-react'
 
 interface AchievementCreatorProps {
-  onNavigate: (page: any) => void;
+  onNavigate: (page: string) => void
 }
 
 export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
-  const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
-  const [isHidden, setIsHidden] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [xpValue, setXpValue] = useState('100');
-  const [conditions, setConditions] = useState<string[]>(['Watch time > 1 hour']);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
+  const [isHidden, setIsHidden] = useState(false)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [xpValue, setXpValue] = useState('100')
+  const [conditions, setConditions] = useState<string[]>(['Watch time > 1 hour'])
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleAIGenerate = () => {
     // Mock AI generation
-    setTitle('Chat Warrior');
-    setDescription('Send 100 messages in chat to prove your dedication to the community');
-    setXpValue('250');
-    setConditions(['Chat messages sent >= 100']);
-  };
+    setTitle('Chat Warrior')
+    setDescription('Send 100 messages in chat to prove your dedication to the community')
+    setXpValue('250')
+    setConditions(['Chat messages sent >= 100'])
+  }
 
   const addCondition = () => {
-    setConditions([...conditions, 'New condition']);
-  };
+    setConditions([...conditions, 'New condition'])
+  }
 
   const removeCondition = (index: number) => {
-    setConditions(conditions.filter((_, i) => i !== index));
-  };
+    setConditions(conditions.filter((_, i) => i !== index))
+  }
 
   return (
     <div className="flex h-screen">
@@ -48,13 +48,18 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
                 onClick={() => setSidebarOpen(true)}
+                data-testid="mobile-menu-btn"
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">Create Achievement</h1>
-                <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Design a new quest for your community</p>
+                <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
+                  Create Achievement
+                </h1>
+                <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+                  Design a new quest for your community
+                </p>
               </div>
             </div>
 
@@ -77,7 +82,9 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                   </div>
                   <div>
                     <div className="text-white dark:text-gray-900">AI-Powered Generation</div>
-                    <div className="text-sm text-gray-400 dark:text-gray-600">Let AI create an achievement based on your channel context</div>
+                    <div className="text-sm text-gray-400 dark:text-gray-600">
+                      Let AI create an achievement based on your channel context
+                    </div>
                   </div>
                 </div>
                 <button
@@ -103,18 +110,22 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                     <button className="px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors">
                       Upload Image
                     </button>
-                    <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">Recommended: 512x512px PNG or JPG</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">
+                      Recommended: 512x512px PNG or JPG
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Title */}
               <div className="mb-6">
-                <label className="block text-white dark:text-gray-900 mb-3">Achievement Title</label>
+                <label className="block text-white dark:text-gray-900 mb-3">
+                  Achievement Title
+                </label>
                 <input
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={e => setTitle(e.target.value)}
                   placeholder="Enter achievement name..."
                   className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
                 />
@@ -125,7 +136,7 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                 <label className="block text-white dark:text-gray-900 mb-3">Description</label>
                 <textarea
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={e => setDescription(e.target.value)}
                   placeholder="Describe how to unlock this achievement..."
                   rows={4}
                   className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors resize-none placeholder:text-gray-500"
@@ -134,12 +145,14 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
 
               {/* XP Value */}
               <div className="mb-6">
-                <label className="block text-white dark:text-gray-900 mb-3">XP / Points Value</label>
+                <label className="block text-white dark:text-gray-900 mb-3">
+                  XP / Points Value
+                </label>
                 <div className="flex items-center gap-4">
                   <input
                     type="number"
                     value={xpValue}
-                    onChange={(e) => setXpValue(e.target.value)}
+                    onChange={e => setXpValue(e.target.value)}
                     className="w-32 px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
                   />
                   <span className="text-gray-400 dark:text-gray-600">XP awarded on completion</span>
@@ -151,16 +164,20 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                 <div className="flex items-center justify-between p-4 bg-[#2d2d31] dark:bg-gray-100 rounded-lg">
                   <div>
                     <div className="text-white dark:text-gray-900">Hidden Achievement</div>
-                    <div className="text-sm text-gray-400 dark:text-gray-600">Hide this achievement until unlocked</div>
+                    <div className="text-sm text-gray-400 dark:text-gray-600">
+                      Hide this achievement until unlocked
+                    </div>
                   </div>
                   <button
                     onClick={() => setIsHidden(!isHidden)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
-                      }`}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${
+                      isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
+                    }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${isHidden ? 'translate-x-6' : 'translate-x-0.5'
-                        }`}
+                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
+                        isHidden ? 'translate-x-6' : 'translate-x-0.5'
+                      }`}
                     />
                   </button>
                 </div>
@@ -168,19 +185,21 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setMode('simple')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'simple'
-                      ? 'bg-[#9146FF] text-white'
-                      : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                      }`}
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
+                      mode === 'simple'
+                        ? 'bg-[#9146FF] text-white'
+                        : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
+                    }`}
                   >
                     Simple Mode
                   </button>
                   <button
                     onClick={() => setMode('advanced')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'advanced'
-                      ? 'bg-[#9146FF] text-white'
-                      : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                      }`}
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
+                      mode === 'advanced'
+                        ? 'bg-[#9146FF] text-white'
+                        : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
+                    }`}
                   >
                     Advanced Mode
                   </button>
@@ -191,7 +210,9 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
               {mode === 'advanced' && (
                 <div className="mb-8">
                   <div className="flex items-center justify-between mb-3">
-                    <label className="block text-white dark:text-gray-900">Trigger Conditions</label>
+                    <label className="block text-white dark:text-gray-900">
+                      Trigger Conditions
+                    </label>
                     <button
                       onClick={addCondition}
                       className="flex items-center gap-2 px-3 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors text-sm"
@@ -202,7 +223,10 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                   </div>
                   <div className="space-y-3">
                     {conditions.map((_, index) => (
-                      <div key={index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <div
+                        key={index}
+                        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+                      >
                         <select className="flex-1 px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none">
                           <option>Watch time</option>
                           <option>Chat messages</option>
@@ -222,9 +246,10 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                         />
                         <button
                           onClick={() => removeCondition(index)}
-                          className="p-3 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors"
+                          data-testid={`remove-condition-${index}`}
+                          className="p-2 hover:bg-[#2d2d31] rounded-lg text-gray-400 hover:text-[#ff4444]"
                         >
-                          <X className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     ))}
@@ -238,7 +263,9 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                   <div className="w-2 h-2 bg-[#00f593] rounded-full" />
                   <span>Version 1.0</span>
                 </div>
-                <div className="text-sm text-gray-400 dark:text-gray-600">This is a new achievement</div>
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  This is a new achievement
+                </div>
               </div>
 
               {/* Actions */}
@@ -257,5 +284,5 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

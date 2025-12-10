@@ -1,10 +1,21 @@
-import { useState } from 'react';
-import { Sidebar } from '../../components/layout/Sidebar';
-import { ChannelSelector } from '../../components/ui/ChannelSelector';
-import { Search, Download, Star, Filter, Menu, X, Plus } from 'lucide-react';
+import { useState } from 'react'
+import { Sidebar } from '../../components/layout/Sidebar'
+import { ChannelSelector } from '../../components/ui/ChannelSelector'
+import { Search, Download, Star, Filter, Menu, X, Plus } from 'lucide-react'
 
 interface MarketplaceProps {
-  onNavigate: (page: any) => void;
+  readonly onNavigate: (page: string) => void
+}
+
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case 'Easy':
+      return 'bg-[#00f593]/20 text-[#00f593]'
+    case 'Medium':
+      return 'bg-[#ffd700]/20 text-[#ffd700]'
+    default:
+      return 'bg-[#ff4444]/20 text-[#ff4444]'
+  }
 }
 
 const communityAchievements = [
@@ -96,13 +107,13 @@ const communityAchievements = [
     downloads: 1567,
     rating: 4.9,
   },
-];
+]
 
-const categories = ['All', 'Chat interaction', 'Watch time', 'Donations', 'Points'];
+const categories = ['All', 'Chat interaction', 'Watch time', 'Donations', 'Points']
 
 export function Marketplace({ onNavigate }: MarketplaceProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   return (
     <div className="flex h-screen">
@@ -120,13 +131,18 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
                 onClick={() => setSidebarOpen(true)}
+                data-testid="mobile-menu-btn"
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">Community Marketplace</h1>
-                <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Discover and add achievements created by the community</p>
+                <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
+                  Community Marketplace
+                </h1>
+                <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+                  Discover and add achievements created by the community
+                </p>
               </div>
             </div>
 
@@ -150,6 +166,7 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
             </div>
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
+              data-testid="mobile-filter-btn"
               className="lg:hidden px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors"
             >
               <Filter className="w-5 h-5" />
@@ -159,24 +176,32 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
 
         <div className="flex">
           {/* Sidebar Filters */}
-          <div className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-            }`}>
+          <div
+            className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${
+              filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            }`}
+          >
             {/* Mobile close button */}
             <div className="lg:hidden flex justify-end mb-4">
-              <button onClick={() => setFiltersOpen(false)} className="text-gray-400 dark:text-gray-600">
+              <button
+                onClick={() => setFiltersOpen(false)}
+                data-testid="close-filters-btn"
+                className="text-gray-400 dark:text-gray-600"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <h3 className="text-white dark:text-gray-900 mb-4">Categories</h3>
             <div className="space-y-2">
-              {categories.map((category) => (
+              {categories.map(category => (
                 <button
                   key={category}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${category === 'All'
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${
+                    category === 'All'
                       ? 'bg-[#9146FF] text-white'
                       : 'text-gray-400 dark:text-gray-600 hover:bg-[#2d2d31] dark:hover:bg-gray-100 hover:text-white dark:hover:text-gray-900'
-                    }`}
+                  }`}
                 >
                   {category}
                 </button>
@@ -186,7 +211,7 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
             <div className="mt-8">
               <h3 className="text-white dark:text-gray-900 mb-4">Difficulty</h3>
               <div className="space-y-2">
-                {['All Levels', 'Easy', 'Medium', 'Hard'].map((level) => (
+                {['All Levels', 'Easy', 'Medium', 'Hard'].map(level => (
                   <label key={level} className="flex items-center gap-3 cursor-pointer text-sm">
                     <input
                       type="checkbox"
@@ -212,16 +237,18 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
 
           {/* Overlay for mobile filters */}
           {filtersOpen && (
-            <div
-              className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+            <button
+              type="button"
+              className="fixed inset-0 bg-black/50 z-20 lg:hidden w-full h-full cursor-default"
               onClick={() => setFiltersOpen(false)}
+              aria-label="Close filters"
             />
           )}
 
           {/* Achievement Grid */}
           <div className="flex-1 p-4 sm:p-8">
             <div className="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {communityAchievements.map((achievement) => (
+              {communityAchievements.map(achievement => (
                 <div
                   key={achievement.id}
                   className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl overflow-hidden hover:border-[#9146FF] transition-colors"
@@ -233,18 +260,19 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
                         {achievement.icon}
                       </div>
                       <div
-                        className={`px-3 py-1 rounded-full text-xs ${achievement.difficulty === 'Easy'
-                            ? 'bg-[#00f593]/20 text-[#00f593]'
-                            : achievement.difficulty === 'Medium'
-                              ? 'bg-[#ffd700]/20 text-[#ffd700]'
-                              : 'bg-[#ff4444]/20 text-[#ff4444]'
-                          }`}
+                        className={`px-3 py-1 rounded-full text-xs ${getDifficultyColor(
+                          achievement.difficulty
+                        )}`}
                       >
                         {achievement.difficulty}
                       </div>
                     </div>
-                    <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-2">{achievement.title}</h3>
-                    <p className="text-gray-400 dark:text-gray-600 text-sm mb-4">{achievement.description}</p>
+                    <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-2">
+                      {achievement.title}
+                    </h3>
+                    <p className="text-gray-400 dark:text-gray-600 text-sm mb-4">
+                      {achievement.description}
+                    </p>
 
                     {/* Stats */}
                     <div className="flex items-center gap-4 text-sm">
@@ -263,7 +291,9 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
                   {/* Card Footer */}
                   <div className="p-4 bg-[#1a1a1d] dark:bg-gray-50">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs text-gray-400 dark:text-gray-600">{achievement.category}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-600">
+                        {achievement.category}
+                      </span>
                     </div>
                     <button className="w-full px-4 py-2 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors flex items-center justify-center gap-2">
                       <Plus className="w-4 h-4" />
@@ -277,5 +307,5 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

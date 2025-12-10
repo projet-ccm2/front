@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Sidebar } from '../../components/layout/Sidebar';
-import { ChannelSelector } from '../../components/ui/ChannelSelector';
-import { Trophy, Eye, Menu } from 'lucide-react';
+import { useState } from 'react'
+import { Sidebar } from '../../components/layout/Sidebar'
+import { ChannelSelector } from '../../components/ui/ChannelSelector'
+import { Trophy, Eye, Menu } from 'lucide-react'
 
 interface TwitchOverlayProps {
-  onNavigate: (page: any) => void;
+  onNavigate: (page: string) => void
 }
 
 const activeQuests = [
@@ -53,10 +53,10 @@ const activeQuests = [
     completed: false,
     icon: '😎',
   },
-];
+]
 
 export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-screen">
@@ -74,13 +74,18 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
                 onClick={() => setSidebarOpen(true)}
+                data-testid="mobile-menu-btn"
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">Twitch Extension Overlay</h1>
-                <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Preview of the viewer-facing overlay panel</p>
+                <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
+                  Twitch Extension Overlay
+                </h1>
+                <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+                  Preview of the viewer-facing overlay panel
+                </p>
               </div>
             </div>
 
@@ -95,7 +100,9 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
         <div className="p-4 sm:p-8">
           <div className="max-w-6xl mx-auto">
             <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6">
-              <h2 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">Extension Preview</h2>
+              <h2 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">
+                Extension Preview
+              </h2>
               <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base mb-6">
                 This is how the achievement overlay will appear to viewers on your Twitch stream.
                 The panel is designed to be compact and non-intrusive.
@@ -124,16 +131,19 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
                     {/* Scrollable Quest List */}
                     <div className="max-h-[400px] sm:max-h-[500px] overflow-y-auto">
                       <div className="p-3 space-y-2">
-                        {activeQuests.map((quest) => (
+                        {activeQuests.map(quest => (
                           <div
                             key={quest.id}
-                            className={`p-3 rounded-lg transition-all cursor-pointer ${quest.completed
+                            className={`p-3 rounded-lg transition-all cursor-pointer ${
+                              quest.completed
                                 ? 'bg-gradient-to-r from-[#ffd700]/20 to-[#ffa500]/20 border border-[#ffd700]/50 shadow-lg shadow-[#ffd700]/20'
                                 : 'bg-[#18181b]/80 border border-[#2d2d31] hover:border-[#9146FF]/50'
-                              }`}
+                            }`}
                           >
                             <div className="flex items-start gap-3 mb-2">
-                              <div className={`text-2xl flex-shrink-0 ${quest.completed && 'animate-pulse'}`}>
+                              <div
+                                className={`text-2xl flex-shrink-0 ${quest.completed && 'animate-pulse'}`}
+                              >
                                 {quest.icon}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -145,7 +155,9 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
                                     </div>
                                   )}
                                 </div>
-                                <div className="text-xs text-gray-400 truncate">{quest.description}</div>
+                                <div className="text-xs text-gray-400 truncate">
+                                  {quest.description}
+                                </div>
                               </div>
                               <Eye className="w-4 h-4 text-gray-500 flex-shrink-0" />
                             </div>
@@ -154,16 +166,19 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
                             <div className="space-y-1">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-gray-400">Progress</span>
-                                <span className={quest.completed ? 'text-[#ffd700]' : 'text-gray-400'}>
+                                <span
+                                  className={quest.completed ? 'text-[#ffd700]' : 'text-gray-400'}
+                                >
                                   {quest.progress}/{quest.max}
                                 </span>
                               </div>
                               <div className="h-1.5 bg-[#2d2d31] rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full transition-all ${quest.completed
+                                  className={`h-full transition-all ${
+                                    quest.completed
                                       ? 'bg-gradient-to-r from-[#ffd700] to-[#ffa500]'
                                       : 'bg-gradient-to-r from-[#9146FF] to-[#772ce8]'
-                                    }`}
+                                  }`}
                                   style={{ width: `${(quest.progress / quest.max) * 100}%` }}
                                 />
                               </div>
@@ -194,7 +209,9 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
             {/* Technical Specs */}
             <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
-                <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">Technical Specifications</h3>
+                <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">
+                  Technical Specifications
+                </h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 dark:text-gray-600">Width:</span>
@@ -241,5 +258,5 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }
