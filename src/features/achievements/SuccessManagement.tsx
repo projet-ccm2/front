@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { ChannelSelector } from './ChannelSelector';
+import { Sidebar } from '../../components/layout/Sidebar';
+import { ChannelSelector } from '../../components/ui/ChannelSelector';
 import { Search, Edit, Trash2, TrendingUp, Menu } from 'lucide-react';
 
 interface SuccessManagementProps {
@@ -87,19 +87,19 @@ export function SuccessManagement({ onNavigate }: SuccessManagementProps) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar 
-        currentPage="management" 
+      <Sidebar
+        currentPage="management"
         onNavigate={onNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      
+
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <button 
+              <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
@@ -110,7 +110,7 @@ export function SuccessManagement({ onNavigate }: SuccessManagementProps) {
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Enable, disable, and edit your quests</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3 flex-shrink-0">
               <div className="hidden sm:block">
                 <ChannelSelector />
@@ -204,23 +204,20 @@ export function SuccessManagement({ onNavigate }: SuccessManagementProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div
-                          className={`w-2 h-2 rounded-full ${
-                            achievement.enabled ? 'bg-[#00f593]' : 'bg-gray-500'
-                          }`}
+                          className={`w-2 h-2 rounded-full ${achievement.enabled ? 'bg-[#00f593]' : 'bg-gray-500'
+                            }`}
                         />
                         <span className="text-sm text-gray-400">
                           {achievement.enabled ? 'Active' : 'Disabled'}
                         </span>
                       </div>
                       <button
-                        className={`w-12 h-6 rounded-full transition-colors relative ${
-                          achievement.enabled ? 'bg-[#9146FF]' : 'bg-[#4d4d51]'
-                        }`}
+                        className={`w-12 h-6 rounded-full transition-colors relative ${achievement.enabled ? 'bg-[#9146FF]' : 'bg-[#4d4d51]'
+                          }`}
                       >
                         <div
-                          className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-                            achievement.enabled ? 'translate-x-6' : 'translate-x-0.5'
-                          }`}
+                          className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${achievement.enabled ? 'translate-x-6' : 'translate-x-0.5'
+                            }`}
                         />
                       </button>
                     </div>

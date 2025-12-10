@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { ChannelProvider } from './context/ChannelContext';
-import { LandingPage } from './components/LandingPage';
-import { Dashboard } from './components/Dashboard';
-import { AchievementCreator } from './components/AchievementCreator';
-import { SuccessManagement } from './components/SuccessManagement';
-import { Marketplace } from './components/Marketplace';
-import { UserProfile } from './components/UserProfile';
-import { TwitchOverlay } from './components/TwitchOverlay';
+import { LandingPage } from './features/landing/LandingPage';
+import { Dashboard } from './features/dashboard/Dashboard';
+import { AchievementCreator } from './features/achievements/AchievementCreator';
+import { SuccessManagement } from './features/achievements/SuccessManagement';
+import { Marketplace } from './features/marketplace/Marketplace';
+import { UserProfile } from './features/profile/UserProfile';
+import { TwitchOverlay } from './features/overlay/TwitchOverlay';
 
 type Screen = 'landing' | 'dashboard' | 'creator' | 'management' | 'marketplace' | 'profile' | 'overlay';
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { ChannelSelector } from './ChannelSelector';
+import { Sidebar } from '../../components/layout/Sidebar';
+import { ChannelSelector } from '../../components/ui/ChannelSelector';
 import { Search, Download, Star, Filter, Menu, X, Plus } from 'lucide-react';
 
 interface MarketplaceProps {
@@ -106,19 +106,19 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar 
-        currentPage="marketplace" 
+      <Sidebar
+        currentPage="marketplace"
         onNavigate={onNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      
+
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <button 
+              <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
@@ -129,7 +129,7 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Discover and add achievements created by the community</p>
               </div>
             </div>
-            
+
             {/* Channel Selector */}
             <div className="relative hidden sm:block flex-shrink-0">
               <ChannelSelector />
@@ -148,7 +148,7 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
                 className="w-full pl-10 pr-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
               />
             </div>
-            <button 
+            <button
               onClick={() => setFiltersOpen(!filtersOpen)}
               className="lg:hidden px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors"
             >
@@ -159,26 +159,24 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
 
         <div className="flex">
           {/* Sidebar Filters */}
-          <div className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${
-            filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          }`}>
+          <div className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            }`}>
             {/* Mobile close button */}
             <div className="lg:hidden flex justify-end mb-4">
               <button onClick={() => setFiltersOpen(false)} className="text-gray-400 dark:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <h3 className="text-white dark:text-gray-900 mb-4">Categories</h3>
             <div className="space-y-2">
               {categories.map((category) => (
                 <button
                   key={category}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${
-                    category === 'All'
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${category === 'All'
                       ? 'bg-[#9146FF] text-white'
                       : 'text-gray-400 dark:text-gray-600 hover:bg-[#2d2d31] dark:hover:bg-gray-100 hover:text-white dark:hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -214,7 +212,7 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
 
           {/* Overlay for mobile filters */}
           {filtersOpen && (
-            <div 
+            <div
               className="fixed inset-0 bg-black/50 z-20 lg:hidden"
               onClick={() => setFiltersOpen(false)}
             />
@@ -235,20 +233,19 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
                         {achievement.icon}
                       </div>
                       <div
-                        className={`px-3 py-1 rounded-full text-xs ${
-                          achievement.difficulty === 'Easy'
+                        className={`px-3 py-1 rounded-full text-xs ${achievement.difficulty === 'Easy'
                             ? 'bg-[#00f593]/20 text-[#00f593]'
                             : achievement.difficulty === 'Medium'
-                            ? 'bg-[#ffd700]/20 text-[#ffd700]'
-                            : 'bg-[#ff4444]/20 text-[#ff4444]'
-                        }`}
+                              ? 'bg-[#ffd700]/20 text-[#ffd700]'
+                              : 'bg-[#ff4444]/20 text-[#ff4444]'
+                          }`}
                       >
                         {achievement.difficulty}
                       </div>
                     </div>
                     <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-2">{achievement.title}</h3>
                     <p className="text-gray-400 dark:text-gray-600 text-sm mb-4">{achievement.description}</p>
-                    
+
                     {/* Stats */}
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1">

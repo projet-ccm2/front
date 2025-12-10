@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, Check, Plus } from 'lucide-react';
-import { useChannel } from '../context/ChannelContext';
+import { useChannel } from '../../context/ChannelContext';
 
 export function ChannelSelector() {
   const { selectedChannel, setSelectedChannel, availableChannels } = useChannel();
@@ -24,8 +24,8 @@ export function ChannelSelector() {
 
       {/* Backdrop */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -38,7 +38,7 @@ export function ChannelSelector() {
               MANAGE CHANNELS
             </div>
           </div>
-          
+
           <div className="max-h-96 overflow-y-auto">
             {availableChannels.map((channel) => (
               <button
@@ -47,9 +47,8 @@ export function ChannelSelector() {
                   setSelectedChannel(channel);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#2d2d31] dark:hover:bg-gray-50 transition-colors ${
-                  selectedChannel.id === channel.id ? 'bg-[#9146FF]/20' : ''
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#2d2d31] dark:hover:bg-gray-50 transition-colors ${selectedChannel.id === channel.id ? 'bg-[#9146FF]/20' : ''
+                  }`}
               >
                 <div className="w-12 h-12 bg-[#9146FF] rounded-full flex items-center justify-center text-lg flex-shrink-0">
                   {channel.avatar}

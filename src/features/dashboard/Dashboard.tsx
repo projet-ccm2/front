@@ -1,49 +1,37 @@
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { ChannelSelector } from './ChannelSelector';
+import { Sidebar } from '../../components/layout/Sidebar';
+import { ChannelSelector } from '../../components/ui/ChannelSelector';
 import { TrendingUp, Users, Award, Activity, Menu } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useDashboardData } from './hooks/useDashboardData';
 
 interface DashboardProps {
   onNavigate: (page: any) => void;
 }
 
-const engagementData = [
-  { day: 'Mon', users: 145 },
-  { day: 'Tue', users: 189 },
-  { day: 'Wed', users: 234 },
-  { day: 'Thu', users: 298 },
-  { day: 'Fri', users: 356 },
-  { day: 'Sat', users: 421 },
-  { day: 'Sun', users: 389 },
-];
-
-const recentActivity = [
-  { user: 'xXGamerXx', achievement: 'First Steps', time: '2 minutes ago' },
-  { user: 'StreamFan42', achievement: 'Chat Master', time: '5 minutes ago' },
-  { user: 'NightOwl', achievement: 'Loyal Viewer', time: '12 minutes ago' },
-  { user: 'ProGamer99', achievement: 'Week Warrior', time: '18 minutes ago' },
-  { user: 'CasualVibes', achievement: 'First Steps', time: '23 minutes ago' },
-];
-
 export function Dashboard({ onNavigate }: DashboardProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { engagementData, recentActivity, loading } = useDashboardData();
+
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center bg-[#0e0e10] text-white">Loading...</div>;
+  }
 
   return (
     <div className="flex h-screen">
-      <Sidebar 
-        currentPage="dashboard" 
+      <Sidebar
+        currentPage="dashboard"
         onNavigate={onNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      
+
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <button 
+              <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
@@ -54,7 +42,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Welcome back, manage your gamification system</p>
               </div>
             </div>
-            
+
             {/* Channel Selector */}
             <div className="relative hidden sm:block flex-shrink-0">
               <ChannelSelector />

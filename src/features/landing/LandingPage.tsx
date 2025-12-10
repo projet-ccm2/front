@@ -1,5 +1,5 @@
 import { Trophy, Users, Smartphone, TrendingUp, Zap, Award, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface LandingPageProps {
   onConnect: () => void;
@@ -16,7 +16,7 @@ export function LandingPage({ onConnect }: LandingPageProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-[#9146FF]/20 via-transparent to-transparent" />
         <div className="absolute top-20 right-20 w-96 h-96 bg-[#9146FF]/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-[#00f593]/10 rounded-full blur-3xl" />
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-center justify-between mb-12 sm:mb-20 gap-4">
@@ -98,7 +98,7 @@ export function LandingPage({ onConnect }: LandingPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl sm:text-4xl text-center mb-4">Complete Ecosystem</h2>
           <p className="text-center text-gray-400 dark:text-gray-600 mb-8 sm:mb-12">Everything you need to gamify your stream</p>
-          
+
           <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Extension */}
             <div className="bg-[#0e0e10] dark:bg-gray-50 border border-[#2d2d31] dark:border-gray-200 rounded-xl p-6 sm:p-8">

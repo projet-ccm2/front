@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { ChannelSelector } from './ChannelSelector';
+import { Sidebar } from '../../components/layout/Sidebar';
+import { ChannelSelector } from '../../components/ui/ChannelSelector';
 import { Trophy, Eye, Menu } from 'lucide-react';
 
 interface TwitchOverlayProps {
@@ -60,19 +60,19 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar 
-        currentPage="overlay" 
+      <Sidebar
+        currentPage="overlay"
         onNavigate={onNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      
+
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <button 
+              <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
@@ -83,7 +83,7 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Preview of the viewer-facing overlay panel</p>
               </div>
             </div>
-            
+
             {/* Channel Selector */}
             <div className="relative hidden sm:block flex-shrink-0">
               <ChannelSelector />
@@ -97,10 +97,10 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
             <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6">
               <h2 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">Extension Preview</h2>
               <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base mb-6">
-                This is how the achievement overlay will appear to viewers on your Twitch stream. 
+                This is how the achievement overlay will appear to viewers on your Twitch stream.
                 The panel is designed to be compact and non-intrusive.
               </p>
-              
+
               <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
                 {/* Mock Stream Preview */}
                 <div className="w-full lg:flex-1 bg-[#2d2d31] dark:bg-gray-200 rounded-xl aspect-video flex items-center justify-center">
@@ -127,11 +127,10 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
                         {activeQuests.map((quest) => (
                           <div
                             key={quest.id}
-                            className={`p-3 rounded-lg transition-all cursor-pointer ${
-                              quest.completed
+                            className={`p-3 rounded-lg transition-all cursor-pointer ${quest.completed
                                 ? 'bg-gradient-to-r from-[#ffd700]/20 to-[#ffa500]/20 border border-[#ffd700]/50 shadow-lg shadow-[#ffd700]/20'
                                 : 'bg-[#18181b]/80 border border-[#2d2d31] hover:border-[#9146FF]/50'
-                            }`}
+                              }`}
                           >
                             <div className="flex items-start gap-3 mb-2">
                               <div className={`text-2xl flex-shrink-0 ${quest.completed && 'animate-pulse'}`}>
@@ -161,11 +160,10 @@ export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
                               </div>
                               <div className="h-1.5 bg-[#2d2d31] rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full transition-all ${
-                                    quest.completed
+                                  className={`h-full transition-all ${quest.completed
                                       ? 'bg-gradient-to-r from-[#ffd700] to-[#ffa500]'
                                       : 'bg-gradient-to-r from-[#9146FF] to-[#772ce8]'
-                                  }`}
+                                    }`}
                                   style={{ width: `${(quest.progress / quest.max) * 100}%` }}
                                 />
                               </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { ChannelSelector } from './ChannelSelector';
-import { Sparkles, Upload, ChevronDown, Plus, X, Save, Send, Menu } from 'lucide-react';
+import { Sidebar } from '../../components/layout/Sidebar';
+import { ChannelSelector } from '../../components/ui/ChannelSelector';
+import { Sparkles, Upload, Plus, X, Save, Send, Menu } from 'lucide-react';
 
 interface AchievementCreatorProps {
   onNavigate: (page: any) => void;
@@ -34,19 +34,19 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar 
-        currentPage="creator" 
+      <Sidebar
+        currentPage="creator"
         onNavigate={onNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      
+
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <button 
+              <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
@@ -57,7 +57,7 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">Design a new quest for your community</p>
               </div>
             </div>
-            
+
             {/* Channel Selector */}
             <div className="relative hidden sm:block flex-shrink-0">
               <ChannelSelector />
@@ -155,14 +155,12 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                   </div>
                   <button
                     onClick={() => setIsHidden(!isHidden)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${
-                      isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
-                    }`}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
+                      }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-                        isHidden ? 'translate-x-6' : 'translate-x-0.5'
-                      }`}
+                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${isHidden ? 'translate-x-6' : 'translate-x-0.5'
+                        }`}
                     />
                   </button>
                 </div>
@@ -170,21 +168,19 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setMode('simple')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
-                      mode === 'simple'
-                        ? 'bg-[#9146FF] text-white'
-                        : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                    }`}
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'simple'
+                      ? 'bg-[#9146FF] text-white'
+                      : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
+                      }`}
                   >
                     Simple Mode
                   </button>
                   <button
                     onClick={() => setMode('advanced')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
-                      mode === 'advanced'
-                        ? 'bg-[#9146FF] text-white'
-                        : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                    }`}
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'advanced'
+                      ? 'bg-[#9146FF] text-white'
+                      : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
+                      }`}
                   >
                     Advanced Mode
                   </button>
@@ -205,7 +201,7 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {conditions.map((condition, index) => (
+                    {conditions.map((_, index) => (
                       <div key={index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         <select className="flex-1 px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none">
                           <option>Watch time</option>
