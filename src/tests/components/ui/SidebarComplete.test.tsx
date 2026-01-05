@@ -26,7 +26,7 @@ import {
 import React from 'react'
 
 beforeEach(() => {
-  Object.defineProperty(window, 'matchMedia', {
+  Object.defineProperty(globalThis, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation(query => ({
       matches: query === '(min-width: 768px)',
@@ -40,6 +40,20 @@ beforeEach(() => {
     })),
   })
 })
+const SidebarTestComponent = () => {
+  const { state, open, setOpen, openMobile, setOpenMobile, isMobile, toggleSidebar } = useSidebar()
+
+  return (
+    <div>
+      <div>State: {state}</div>
+      <div>Open: {open ? 'true' : 'false'}</div>
+      <div>Mobile: {isMobile ? 'true' : 'false'}</div>
+      <button onClick={() => setOpen(!open)}>Toggle</button>
+      <button onClick={() => setOpenMobile(!openMobile)}>Toggle Mobile</button>
+      <button onClick={toggleSidebar}>Toggle Sidebar</button>
+    </div>
+  )
+}
 
 describe('Sidebar - Complete Coverage', () => {
   describe('SidebarProvider with all options', () => {
@@ -359,27 +373,11 @@ describe('Sidebar - Complete Coverage', () => {
 
   describe('useSidebar hook', () => {
     it('should provide all sidebar state', () => {
-      const TestComponent = () => {
-        const { state, open, setOpen, openMobile, setOpenMobile, isMobile, toggleSidebar } =
-          useSidebar()
-
-        return (
-          <div>
-            <div>State: {state}</div>
-            <div>Open: {open ? 'true' : 'false'}</div>
-            <div>Mobile: {isMobile ? 'true' : 'false'}</div>
-            <button onClick={() => setOpen(!open)}>Toggle</button>
-            <button onClick={() => setOpenMobile(!openMobile)}>Toggle Mobile</button>
-            <button onClick={toggleSidebar}>Toggle Sidebar</button>
-          </div>
-        )
-      }
-
       render(
         <SidebarProvider>
           <Sidebar>
             <SidebarContent>
-              <TestComponent />
+              <SidebarTestComponent />
             </SidebarContent>
           </Sidebar>
         </SidebarProvider>

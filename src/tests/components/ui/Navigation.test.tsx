@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '../../utils/test-utils'
 import {
   Breadcrumb,
@@ -43,7 +43,7 @@ import {
 import React from 'react'
 
 // Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
     matches: false,
@@ -58,15 +58,21 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock scrollIntoView
-window.HTMLElement.prototype.scrollIntoView = vi.fn()
-window.HTMLElement.prototype.releasePointerCapture = vi.fn()
-window.HTMLElement.prototype.hasPointerCapture = vi.fn()
+globalThis.HTMLElement.prototype.scrollIntoView = vi.fn()
+globalThis.HTMLElement.prototype.releasePointerCapture = vi.fn()
+globalThis.HTMLElement.prototype.hasPointerCapture = vi.fn()
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() {
+    // Mock
+  }
+  unobserve() {
+    // Mock
+  }
+  disconnect() {
+    // Mock
+  }
 }
 
 // const mockedUseIsMobile = vi.mocked(useIsMobile)

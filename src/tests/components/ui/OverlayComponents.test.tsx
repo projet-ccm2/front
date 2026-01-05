@@ -27,11 +27,17 @@ import {
 import React from 'react'
 
 // Mock ResizeObserver for Radix UI
-if (typeof window !== 'undefined') {
-  global.ResizeObserver = class ResizeObserver {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+if (typeof globalThis !== 'undefined') {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {
+      // Mock
+    }
+    unobserve() {
+      // Mock
+    }
+    disconnect() {
+      // Mock
+    }
   }
 }
 

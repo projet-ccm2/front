@@ -39,7 +39,7 @@ describe('Marketplace', () => {
     // Or better, use the class if known, or just skip if too complex without adding testid.
     // Let's rely on the category clicking test for function coverage mainly.
     // But let's try to clear the broken code:
-    const filterBtn = container.querySelector('.lg\\:hidden')
+    const filterBtn = container.querySelector(String.raw`.lg:hidden`)
     if (filterBtn) {
       fireEvent.click(filterBtn)
     }

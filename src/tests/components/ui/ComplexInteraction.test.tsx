@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../../utils/test-utils'
 import {
   ContextMenu,
@@ -29,21 +29,27 @@ import {
 import React from 'react'
 
 // Mock scrollIntoView and Pointer Events
-window.HTMLElement.prototype.scrollIntoView = vi.fn()
-window.HTMLElement.prototype.releasePointerCapture = vi.fn()
-window.HTMLElement.prototype.hasPointerCapture = vi.fn()
+globalThis.HTMLElement.prototype.scrollIntoView = vi.fn()
+globalThis.HTMLElement.prototype.releasePointerCapture = vi.fn()
+globalThis.HTMLElement.prototype.hasPointerCapture = vi.fn()
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+globalThis.ResizeObserver = class ResizeObserver {
+  observe() {
+    // Mock
+  }
+  unobserve() {
+    // Mock
+  }
+  disconnect() {
+    // Mock
+  }
 }
 
-window.scrollTo = vi.fn()
+globalThis.scrollTo = vi.fn()
 
 // Mock matchMedia for Carousel/Drawer
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
     matches: false,
