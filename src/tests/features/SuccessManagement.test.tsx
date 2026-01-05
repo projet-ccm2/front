@@ -46,7 +46,7 @@ describe('SuccessManagement', () => {
 
   it('should toggle sidebar on mobile', () => {
     const { container } = render(<SuccessManagement onNavigate={mockOnNavigate} />)
-    const menuBtn = container.querySelector('button.lg\\:hidden')
+    const menuBtn = container.querySelector(String.raw`button.lg\:hidden`)
     if (menuBtn) {
       fireEvent.click(menuBtn)
     }

@@ -63,7 +63,7 @@ globalThis.HTMLElement.prototype.releasePointerCapture = vi.fn()
 globalThis.HTMLElement.prototype.hasPointerCapture = vi.fn()
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+globalThis.ResizeObserver = class ResizeObserver {
   observe() {
     // Mock
   }

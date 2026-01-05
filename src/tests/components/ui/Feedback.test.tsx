@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '../../utils/test-utils'
 import { Alert, AlertTitle, AlertDescription } from '../../../components/ui/alert'
 // sonner is usually just a Toaster component
@@ -6,7 +6,7 @@ import { Toaster } from '../../../components/ui/sonner'
 import { ChartContainer } from '../../../components/ui/chart'
 import { ImageWithFallback } from '../../../components/figma/ImageWithFallback'
 import React from 'react'
-import { vi } from 'vitest'
+
 
 // Mock recharts
 vi.mock('recharts', () => ({

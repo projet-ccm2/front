@@ -23,9 +23,31 @@ import { Form, FormField, FormItem, FormLabel, FormControl } from '../../../comp
 import { Input } from '../../../components/ui/input'
 
 // Mock scrollIntoView
-window.HTMLElement.prototype.scrollIntoView = vi.fn()
-window.HTMLElement.prototype.releasePointerCapture = vi.fn()
-window.HTMLElement.prototype.hasPointerCapture = vi.fn()
+globalThis.HTMLElement.prototype.scrollIntoView = vi.fn()
+globalThis.HTMLElement.prototype.releasePointerCapture = vi.fn()
+globalThis.HTMLElement.prototype.hasPointerCapture = vi.fn()
+
+const TestForm = () => {
+  const form = useForm()
+  return (
+    <Form {...form}>
+      <form>
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
+  )
+}
 
 describe('Advanced Form Components', () => {
   describe('Calendar', () => {
@@ -117,27 +139,6 @@ describe('Advanced Form Components', () => {
 
   describe('Form Wrapper', () => {
     it('should render form fields', () => {
-      const TestForm = () => {
-        const form = useForm()
-        return (
-          <Form {...form}>
-            <form>
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
-        )
-      }
       render(<TestForm />)
       expect(screen.getByLabelText('Username')).toBeInTheDocument()
     })

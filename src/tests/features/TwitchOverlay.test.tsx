@@ -34,7 +34,7 @@ describe('TwitchOverlay', () => {
 
   it('should toggle sidebar on mobile', () => {
     const { container } = render(<TwitchOverlay onNavigate={mockOnNavigate} />)
-    const menuBtn = container.querySelector('button.lg\\:hidden')
+    const menuBtn = container.querySelector(String.raw`button.lg\:hidden`)
     expect(menuBtn).toBeInTheDocument()
     fireEvent.click(menuBtn!)
     // Just triggering the click covers the state setter function
