@@ -12,7 +12,7 @@ import * as Popover from '../../../components/ui/popover'
 import * as NavigationMenu from '../../../components/ui/navigation-menu'
 
 // Mock scrollIntoView for Command component
-globalThis.HTMLElement.prototype.scrollIntoView = function () { }
+globalThis.HTMLElement.prototype.scrollIntoView = function () {}
 
 // Helper to safe render components just for coverage
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -6,6 +6,7 @@ export interface EngagementData {
 }
 
 export interface RecentActivity {
+  id: string
   user: string
   achievement: string
   time: string
@@ -22,11 +23,11 @@ const MOCK_ENGAGEMENT_DATA: EngagementData[] = [
 ]
 
 const MOCK_RECENT_ACTIVITY: RecentActivity[] = [
-  { user: 'xXGamerXx', achievement: 'First Steps', time: '2 minutes ago' },
-  { user: 'StreamFan42', achievement: 'Chat Master', time: '5 minutes ago' },
-  { user: 'NightOwl', achievement: 'Loyal Viewer', time: '12 minutes ago' },
-  { user: 'ProGamer99', achievement: 'Week Warrior', time: '18 minutes ago' },
-  { user: 'CasualVibes', achievement: 'First Steps', time: '23 minutes ago' },
+  { id: '1', user: 'xXGamerXx', achievement: 'First Steps', time: '2 minutes ago' },
+  { id: '2', user: 'StreamFan42', achievement: 'Chat Master', time: '5 minutes ago' },
+  { id: '3', user: 'NightOwl', achievement: 'Loyal Viewer', time: '12 minutes ago' },
+  { id: '4', user: 'ProGamer99', achievement: 'Week Warrior', time: '18 minutes ago' },
+  { id: '5', user: 'CasualVibes', achievement: 'First Steps', time: '23 minutes ago' },
 ]
 
 export function useDashboardData() {

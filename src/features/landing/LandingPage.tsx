@@ -5,7 +5,7 @@ interface LandingPageProps {
   onConnect: () => void
 }
 
-export function LandingPage({ onConnect }: LandingPageProps) {
+export function LandingPage({ onConnect }: Readonly<LandingPageProps>) {
   const { theme, toggleTheme } = useTheme()
 
   return (

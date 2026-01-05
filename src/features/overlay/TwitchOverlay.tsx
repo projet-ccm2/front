@@ -55,7 +55,7 @@ const activeQuests = [
   },
 ]
 
-export function TwitchOverlay({ onNavigate }: TwitchOverlayProps) {
+export function TwitchOverlay({ onNavigate }: Readonly<TwitchOverlayProps>) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (

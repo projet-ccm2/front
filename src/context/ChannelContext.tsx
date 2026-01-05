@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useMemo } from 'react'
 import type { ReactNode } from 'react'
 
 export interface Channel {
@@ -42,15 +42,16 @@ const defaultChannels: Channel[] = [
   },
 ]
 
-export function ChannelProvider({ children }: { children: ReactNode }) {
+export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [availableChannels] = useState<Channel[]>(defaultChannels)
   const [selectedChannel, setSelectedChannel] = useState<Channel>(defaultChannels[0])
 
-  return (
-    <ChannelContext.Provider value={{ selectedChannel, setSelectedChannel, availableChannels }}>
-      {children}
-    </ChannelContext.Provider>
+  const value = useMemo(
+    () => ({ selectedChannel, setSelectedChannel, availableChannels }),
+    [selectedChannel, availableChannels]
   )
+
+  return <ChannelContext.Provider value={value}>{children}</ChannelContext.Provider>
 }
 
 export function useChannel() {

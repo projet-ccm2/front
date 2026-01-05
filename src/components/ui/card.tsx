@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { cn } from './utils'
 
-const Card = ({ className, ...props }: React.ComponentProps<'div'>) => {
+const Card = ({ className, children, ...props }: React.ComponentProps<'div'>) => {
   return (
     <div
       data-slot="card"
@@ -11,7 +11,9 @@ const Card = ({ className, ...props }: React.ComponentProps<'div'>) => {
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   )
 }
 
@@ -28,8 +30,12 @@ const CardHeader = ({ className, ...props }: React.ComponentProps<'div'>) => {
   )
 }
 
-const CardTitle = ({ className, ...props }: React.ComponentProps<'div'>) => {
-  return <h4 data-slot="card-title" className={cn('leading-none', className)} {...props} />
+const CardTitle = ({ className, children, ...props }: React.ComponentProps<'div'>) => {
+  return (
+    <h4 data-slot="card-title" className={cn('leading-none', className)} {...props}>
+      {children}
+    </h4>
+  )
 }
 
 const CardDescription = ({ className, ...props }: React.ComponentProps<'div'>) => {

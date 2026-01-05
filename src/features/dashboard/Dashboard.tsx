@@ -17,7 +17,7 @@ interface DashboardProps {
   onNavigate: (page: string) => void
 }
 
-export function Dashboard({ onNavigate }: DashboardProps) {
+export function Dashboard({ onNavigate }: Readonly<DashboardProps>) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { engagementData, recentActivity, loading } = useDashboardData()
 
@@ -175,8 +175,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                 </p>
               </div>
               <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                {recentActivity.map(activity => (
+                  <div key={activity.id} className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-full flex items-center justify-center flex-shrink-0">
                       <Award className="w-4 h-4 text-white" />
                     </div>

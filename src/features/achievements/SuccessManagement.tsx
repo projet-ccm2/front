@@ -82,7 +82,7 @@ const achievements = [
   },
 ]
 
-export function SuccessManagement({ onNavigate }: SuccessManagementProps) {
+export function SuccessManagement({ onNavigate }: Readonly<SuccessManagementProps>) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
