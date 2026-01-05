@@ -351,7 +351,25 @@
 <a name='L286'></a><a href='#L286'>286</a>
 <a name='L287'></a><a href='#L287'>287</a>
 <a name='L288'></a><a href='#L288'>288</a>
-<a name='L289'></a><a href='#L289'>289</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -367,6 +385,8 @@
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-yes">62x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">62x</span>
@@ -478,6 +498,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -489,7 +515,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -648,13 +684,15 @@ interface AchievementCreatorProps {
   onNavigate: (page: string) =&gt; void
 }
 &nbsp;
-export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
+export function AchievementCreator({ onNavigate }: Readonly&lt;AchievementCreatorProps&gt;) {
   const [mode, setMode] = useState&lt;'simple' | 'advanced'&gt;('simple')
   const [isHidden, setIsHidden] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [xpValue, setXpValue] = useState('100')
-  const [conditions, setConditions] = useState&lt;string[]&gt;(['Watch time &gt; 1 hour'])
+  const [conditions, setConditions] = useState&lt;{ id: string; value: string }[]&gt;([
+    { id: '1', value: 'Watch time &gt; 1 hour' },
+  ])
   const [sidebarOpen, setSidebarOpen] = useState(false)
 &nbsp;
   const handleAIGenerate = () =&gt; {
@@ -662,11 +700,11 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
     setTitle('Chat Warrior')
     setDescription('Send 100 messages in chat to prove your dedication to the community')
     setXpValue('250')
-    setConditions(['Chat messages sent &gt;= 100'])
+    setConditions([{ id: crypto.randomUUID(), value: 'Chat messages sent &gt;= 100' }])
   }
 &nbsp;
   const addCondition = () =&gt; {
-    setConditions([...conditions, 'New condition'])
+    setConditions([...conditions, { id: crypto.randomUUID(), value: 'New condition' }])
   }
 &nbsp;
   const removeCondition = (index: number) =&gt; {
@@ -742,7 +780,9 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
             &lt;div className="p-4 sm:p-8"&gt;
               {/* Badge Upload */}
               &lt;div className="mb-8"&gt;
-                &lt;label className="block text-white dark:text-gray-900 mb-3"&gt;Achievement Icon&lt;/label&gt;
+                &lt;div className="block text-white dark:text-gray-900 mb-3 font-medium"&gt;
+                  Achievement Icon
+                &lt;/div&gt;
                 &lt;div className="flex flex-col sm:flex-row items-center gap-6"&gt;
                   &lt;div className="w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors cursor-pointer flex-shrink-0"&gt;
                     &lt;Upload className="w-8 h-8 text-gray-500" /&gt;
@@ -760,10 +800,14 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
 &nbsp;
               {/* Title */}
               &lt;div className="mb-6"&gt;
-                &lt;label className="block text-white dark:text-gray-900 mb-3"&gt;
+                &lt;label
+                  htmlFor="achievement-title"
+                  className="block text-white dark:text-gray-900 mb-3"
+                &gt;
                   Achievement Title
                 &lt;/label&gt;
                 &lt;input
+                  id="achievement-title"
                   type="text"
                   value={title}
                   onChange={e =&gt; setTitle(e.target.value)}
@@ -774,8 +818,14 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
 &nbsp;
               {/* Description */}
               &lt;div className="mb-6"&gt;
-                &lt;label className="block text-white dark:text-gray-900 mb-3"&gt;Description&lt;/label&gt;
+                &lt;label
+                  htmlFor="achievement-description"
+                  className="block text-white dark:text-gray-900 mb-3"
+                &gt;
+                  Description
+                &lt;/label&gt;
                 &lt;textarea
+                  id="achievement-description"
                   value={description}
                   onChange={e =&gt; setDescription(e.target.value)}
                   placeholder="Describe how to unlock this achievement..."
@@ -786,11 +836,15 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
 &nbsp;
               {/* XP Value */}
               &lt;div className="mb-6"&gt;
-                &lt;label className="block text-white dark:text-gray-900 mb-3"&gt;
+                &lt;label
+                  htmlFor="achievement-xp"
+                  className="block text-white dark:text-gray-900 mb-3"
+                &gt;
                   XP / Points Value
                 &lt;/label&gt;
                 &lt;div className="flex items-center gap-4"&gt;
                   &lt;input
+                    id="achievement-xp"
                     type="number"
                     value={xpValue}
                     onChange={<span class="fstat-no" title="function not covered" >e =&gt; <span class="cstat-no" title="statement not covered" >s</span>etXpValue(e.target.value)}</span>
@@ -851,9 +905,9 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
               {mode === 'advanced' &amp;&amp; (
                 &lt;div className="mb-8"&gt;
                   &lt;div className="flex items-center justify-between mb-3"&gt;
-                    &lt;label className="block text-white dark:text-gray-900"&gt;
+                    &lt;div className="block text-white dark:text-gray-900 font-medium"&gt;
                       Trigger Conditions
-                    &lt;/label&gt;
+                    &lt;/div&gt;
                     &lt;button
                       onClick={addCondition}
                       className="flex items-center gap-2 px-3 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors text-sm"
@@ -863,9 +917,9 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
                     &lt;/button&gt;
                   &lt;/div&gt;
                   &lt;div className="space-y-3"&gt;
-                    {conditions.map((_, index) =&gt; (
+                    {conditions.map((condition, index) =&gt; (
                       &lt;div
-                        key={index}
+                        key={condition.id}
                         className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
                       &gt;
                         &lt;select className="flex-1 px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"&gt;
@@ -934,7 +988,7 @@ export function AchievementCreator({ onNavigate }: AchievementCreatorProps) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-10T19:16:49.372Z
+                at 2026-01-05T17:37:40.472Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

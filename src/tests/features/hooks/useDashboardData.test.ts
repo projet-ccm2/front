@@ -37,6 +37,7 @@ describe('useDashboardData', () => {
 
     expect(result.current.recentActivity).toHaveLength(5)
     expect(result.current.recentActivity[0]).toEqual({
+      id: '1',
       user: 'xXGamerXx',
       achievement: 'First Steps',
       time: '2 minutes ago',
@@ -72,9 +73,11 @@ describe('useDashboardData', () => {
     )
 
     result.current.recentActivity.forEach(activity => {
+      expect(activity).toHaveProperty('id')
       expect(activity).toHaveProperty('user')
       expect(activity).toHaveProperty('achievement')
       expect(activity).toHaveProperty('time')
+      expect(typeof activity.id).toBe('string')
       expect(typeof activity.user).toBe('string')
       expect(typeof activity.achievement).toBe('string')
       expect(typeof activity.time).toBe('string')
