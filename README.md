@@ -1,73 +1,119 @@
-# React + TypeScript + Vite
+# Twitch Event Listener - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a React application built with TypeScript and Vite, designed to manage and visualize Twitch events through a varied set of features (Dashboard, Achievements, Marketplace, etc.).
 
-Currently, two official plugins are available:
+It utilizes a **Feature-Based Architecture** to ensure scalability, maintainability, and clear separation of concerns.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🏗️ Architecture & Project Structure
 
-## React Compiler
+The codebase is organized by **domain/feature** rather than by technical layer. This means that all code related to a specific feature (components, hooks, types, utils) is co-located.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### Directory Overview
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── assets/           # Static assets (images, global css)
+├── components/       # Shared Components
+│   ├── ui/           # Generic, reusable UI atoms (buttons, inputs, cards)
+│   └── layout/       # Application layout components (Sidebar, Navbar)
+├── config/           # Global configuration files
+├── context/          # Global React (Context Providers)
+├── features/         # 📦 FEATURE DOMAINS
+│   ├── dashboard/    # Dashboard Feature
+│   │   ├── components/ # Private components specific to Dashboard
+│   │   ├── hooks/      # Business logic hooks (e.g., useDashboardData)
+│   │   └── Dashboard.tsx # Main feature entry point
+│   ├── achievements/ # Achievements System
+│   ├── landing/      # Landing Page
+│   ├── marketplace/  # Marketplace Feature
+│   ├── overlay/      # Twitch Overlay
+│   └── profile/      # User Profile
+├── hooks/            # Shared custom hooks (generic logic)
+├── lib/              # Utility libraries and helpers
+├── types/            # Shared TypeScript definitions
+└── App.tsx           # Main application entry point & routing
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Key Concepts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1.  **Features (`src/features/`)**
+    - Each folder represents a distinct domain of the application.
+    - A feature folder should be self-contained as much as possible.
+    - **Entry Point**: Main screen components (e.g., `Dashboard.tsx`) reside at the root of the feature folder.
+    - **Logic**: Business logic is extracted into custom hooks (e.g., `useDashboardData.ts`).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2.  **Shared UI (`src/components/ui/`)**
+    - Contains "Dumb" components that are purely presentational.
+    - These components do not contain business logic or API calls.
+    - Examples: `Button`, `Card`, `ChannelSelector`.
+
+3.  **Layouts (`src/components/layout/`)**
+    - Structural components that define the page frame.
+    - Examples: `Sidebar`, `Header`.
+
+## 🚀 Development Workflow
+
+### Adding a New Feature
+
+1.  Create a new folder in `src/features/` (e.g., `src/features/analytics/`).
+2.  Create the main component `Analytics.tsx` inside that folder.
+3.  If the feature has complex logic, create a `hooks/` subfolder and implement custom hooks (e.g., `useAnalytics.ts`).
+4.  If the feature has localized sub-components, create a `components/` subfolder.
+5.  Export the main component and add it to `App.tsx` navigation.
+
+### Separating Logic & UI
+
+- **UI Components**: Should receive data via props.
+- **Feature Components**: Should act as containers. They fetch data using hooks and pass it down to UI components.
+- **Hooks**: Handle data fetching, state management, and side effects.
+
+**Example Pattern:**
+
+```tsx
+// src/features/dashboard/Dashboard.tsx
+export function Dashboard() {
+  // Logic extracted to hook
+  const { data, loading } = useDashboardData()
+
+  if (loading) return <Spinner />
+
+  // Render UI with data
+  return (
+    <div className="layout">
+      <StatsGrid stats={data} />
+    </div>
+  )
+}
 ```
+
+## 🛠️ Tech Stack
+
+- **Framework**: React 18+
+- **Language**: TypeScript
+- **Build Tool**: Vite
+- **Styling**: TailwindCSS
+- **Icons**: Lucide React
+- **Charts**: Recharts
+- **State Management**: React Context + Hooks
+- **UI Library**: Custom components based on Radix UI primitives (where applicable).
+
+## 📦 Scripts
+
+- `npm install` - Install dependencies.
+- `npm run dev` - Start development server.
+- `npm run build` - Build for production.
+- `npm run preview` - Preview the production build locally.
+- `npm run lint` - Run ESLint.
+- `npm run test` - Run tests (Vitest).
+
+## 📝 Conventions
+
+- **Component Naming**: PascalCase (e.g., `UserProfile.tsx`).
+- **Hook Naming**: camelCase, starting with `use` (e.g., `useTheme.ts`).
+- **Interface Naming**: PascalCase (e.g., `User`, `DashboardProps`).
+- **Imports**: Use absolute paths or clean relative paths where appropriate.
+  - Prefer imports from `../../components/ui/` for shared UI.
+
+---
+
+_Documentation generated by Antigravity AI_

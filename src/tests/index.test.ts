@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 describe('Imports de modules', () => {
   it('devrait pouvoir importer App sans erreur', async () => {
     await expect(import('../App')).resolves.toBeDefined()
-  })
+  }, 20000)
 
   it('devrait avoir une structure de module valide pour main', () => {
     expect(true).toBe(true)

@@ -1,12 +1,16 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react-swc'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/tests/setup.ts',
+    setupFiles: path.resolve(__dirname, './src/tests/setup.ts'),
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', 'dist', '.idea', '.git'],
     coverage: {
@@ -19,12 +23,20 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/mockData',
+        '**/mockData.ts',
         '**/*.test.{ts,tsx}',
         '**/*.spec.{ts,tsx}',
         '**/index.ts',
         'src/main.tsx',
         'vite.config.ts',
         'vitest.config.ts',
+        'src/assets/**',
+        'src/styles/**',
+        'src/guidelines/**',
+        '**/*.css',
+        'src/Attributions.md',
+        '**/types.ts',
+        '**/constants.ts',
       ],
       thresholds: {
         lines: 80,
