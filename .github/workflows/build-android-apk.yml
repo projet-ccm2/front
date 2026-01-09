@@ -7,8 +7,6 @@ on:
       - main
     tags:
       - 'v*'
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       environment:
@@ -24,11 +22,9 @@ on:
 jobs:
   build-android-apk:
     name: Build and Deploy Android APK
-    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -48,9 +44,6 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             ENV="${{ github.event.inputs.environment }}"
-          elif [ "${{ github.event_name }}" == "pull_request" ]; then
-            ENV="pr"
-            echo "pr_number=${{ github.event.number }}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             ENV="production"
           elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
@@ -74,6 +67,19 @@ jobs:
 
       - name: Build web app
         run: npm run build
+
+      - name: Generate app icons
+        run: |
+          if [ -f "resources/icon.png" ]; then
+            echo "Generating app icons from resources/icon.png..."
+            if command -v npx &> /dev/null; then
+              npx @capacitor/assets generate --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000' || echo "Icon generation completed (or skipped if already exists)"
+            else
+              echo "npx not available, skipping icon generation"
+            fi
+          else
+            echo "No icon.png found in resources/, skipping icon generation"
+          fi
 
       - name: Initialize Capacitor (if needed)
         run: |
@@ -158,15 +164,8 @@ jobs:
           SHA_SHORT="${GITHUB_SHA:0:7}"
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           
-          if [ "$ENV" == "pr" ]; then
-            PR_NUMBER="${{ github.event.number }}"
-            APK_NAME="front-pr-${PR_NUMBER}-debug-${SHA_SHORT}-${TIMESTAMP}.apk"
-            GCS_DIR="gs://${BUCKET_NAME}/pr/${PR_NUMBER}"
-          else
-            APK_NAME="front-${ENV}-debug-${SHA_SHORT}-${TIMESTAMP}.apk"
-            GCS_DIR="gs://${BUCKET_NAME}/${ENV}"
-          fi
-          
+          APK_NAME="front-${ENV}-debug-${SHA_SHORT}-${TIMESTAMP}.apk"
+          GCS_DIR="gs://${BUCKET_NAME}/${ENV}"
           GCS_PATH="${GCS_DIR}/${APK_NAME}"
           LATEST_PATH="${GCS_DIR}/latest.apk"
           
@@ -187,12 +186,6 @@ jobs:
           echo "LATEST_APK_URL=${LATEST_PATH}" >> $GITHUB_ENV
           echo "apk_url=${GCS_PATH}" >> $GITHUB_OUTPUT
           echo "latest_apk_url=${LATEST_PATH}" >> $GITHUB_OUTPUT
-          
-          if [ "$ENV" == "pr" ]; then
-            echo "PR APK available at: ${GCS_PATH}"
-            echo "PR Latest APK available at: ${LATEST_PATH}"
-            echo "::notice::APK disponible pour test: ${LATEST_PATH}"
-          fi
 
       - name: Upload Release APK to GCS (if production)
         if: steps.env.outputs.environment == 'production'
@@ -241,104 +234,5 @@ jobs:
             echo "  - Versioned: ${RELEASE_APK_URL}"
             echo "  - Latest: ${LATEST_RELEASE_APK_URL}"
             echo ""
-          fi
-          if [ "${ENV}" == "pr" ]; then
-            echo "PR Number: ${{ github.event.number }}"
-            echo "::notice::APK de test disponible pour la PR #${{ github.event.number }}"
-            echo "::notice::Lien latest: ${LATEST_APK_URL}"
-          fi
-
-      - name: Comment PR with APK link
-        if: steps.env.outputs.environment == 'pr'
-        uses: actions/github-script@v7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APK_URL: ${{ env.APK_URL }}
-          LATEST_APK_URL: ${{ env.LATEST_APK_URL }}
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const apkUrl = process.env.APK_URL;
-            const sha = context.sha.substring(0, 7);
-            
-            const latestApkUrl = process.env.LATEST_APK_URL;
-            
-            const comment = `## 📱 APK de test disponible
-            
-            Un APK de test a été généré pour cette PR :
-            
-            - **APK Debug (versioned)**: \`${apkUrl}\`
-            - **APK Debug (latest)**: \`${latestApkUrl}\` ⭐
-            - **Commit**: \`${sha}\`
-            
-            > ⚠️ Cet APK sera automatiquement supprimé lorsque la PR sera fermée ou mergée.
-            
-            Pour télécharger l'APK latest, utilisez la commande :
-            \`\`\`bash
-            gsutil cp "${latestApkUrl}" ./app-debug.apk
-            \`\`\`
-            `;
-            
-            // Trouver et mettre à jour le commentaire existant ou en créer un nouveau
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
-              comment.body.includes('APK de test disponible')
-            );
-            
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: comment,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: comment,
-              });
-            }
-
-  cleanup-pr-apk:
-    name: Cleanup PR APK
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.DEV_GCP_SA_KEY }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Set GCP Project
-        run: |
-          gcloud config set project "${{ secrets.DEV_GCP_PROJECT_ID }}"
-
-      - name: Delete PR APK folder
-        run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          BUCKET_NAME="front-apk-dev"
-          PR_FOLDER="gs://${BUCKET_NAME}/pr/${PR_NUMBER}/"
-          
-          echo "Deleting APK folder for PR #${PR_NUMBER}: ${PR_FOLDER}"
-          
-          if gsutil ls "${PR_FOLDER}" 2>/dev/null; then
-            gsutil -m rm -r "${PR_FOLDER}"
-            echo "Successfully deleted APK folder for PR #${PR_NUMBER}"
-          else
-            echo "No APK folder found for PR #${PR_NUMBER}, skipping deletion"
           fi
 

@@ -1,6 +1,6 @@
 {
-  "appId": "com.front.app",
-  "appName": "front",
+  "appId": "com.streamquest.app",
+  "appName": "streamquest",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

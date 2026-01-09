@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Script pour construire un APK Android localement
 # Usage: ./scripts/build-apk.sh [debug|release]
 
 set -e
@@ -9,23 +8,19 @@ BUILD_TYPE=${1:-debug}
 
 echo "Building Android APK (${BUILD_TYPE})..."
 
-# Vérifier que Node.js est installé
 if ! command -v node &> /dev/null; then
     echo "Error: Node.js is not installed"
     exit 1
 fi
 
-# Installer les dépendances si nécessaire
 if [ ! -d "node_modules" ]; then
     echo "Installing dependencies..."
     npm install
 fi
 
-# Build l'application web
 echo "Building web application..."
 npm run build
 
-# Initialiser Capacitor si nécessaire
 if [ ! -d "android" ]; then
     if [ ! -f "capacitor.config.json" ]; then
         echo "Initializing Capacitor..."
@@ -35,7 +30,6 @@ if [ ! -d "android" ]; then
     npx cap add android
 fi
 
-# Synchroniser Capacitor
 echo "Syncing Capacitor..."
 if [ ! -d "android" ]; then
     echo "Error: Android platform not found after initialization"
@@ -43,7 +37,6 @@ if [ ! -d "android" ]; then
 fi
 npx cap sync android
 
-# Build l'APK
 echo "Building Android APK..."
 cd android
 
