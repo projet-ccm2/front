@@ -44,6 +44,15 @@ Le workflow `.github/workflows/build-android-apk.yml` génère automatiquement l
 - `develop` → APK debug dans le bucket `front-apk-dev/development/`
 - `main` → APK debug dans le bucket `front-apk-dev/integration/`
 - Tags `v*` → APK debug et release dans le bucket `front-apk-dev/production/`
+- **Pull Requests** → APK debug dans le bucket `front-apk-dev/pr/{pr-number}/` (supprimé automatiquement après merge/fermeture)
 
 Les APK sont nommés avec le format : `front-{environment}-{type}-{sha}-{timestamp}.apk`
+
+### Pull Requests
+
+Lorsqu'une Pull Request est ouverte ou mise à jour :
+1. Un APK de test est automatiquement généré
+2. L'APK est uploadé dans le dossier `pr/{pr-number}/` du bucket GCP
+3. Un commentaire est ajouté sur la PR avec le lien de l'APK
+4. Lorsque la PR est fermée ou mergée, l'APK est automatiquement supprimé du bucket
 
