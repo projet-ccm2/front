@@ -118,41 +118,30 @@ jobs:
           ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS || '' }}
           ANDROID_KEYSTORE_ALIAS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_ALIAS_PASSWORD || '' }}
 
-      - name: Authenticate to Google Cloud (Development)
-        if: steps.env.outputs.environment == 'development' || steps.env.outputs.environment == 'pr'
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.DEV_GCP_SA_KEY }}
 
-      - name: Authenticate to Google Cloud (Integration)
-        if: steps.env.outputs.environment == 'integration'
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.INT_GCP_SA_KEY }}
-
-      - name: Authenticate to Google Cloud (Production)
-        if: steps.env.outputs.environment == 'production'
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.PROD_GCP_SA_KEY }}
-
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Set GCP Project (Development)
-        if: steps.env.outputs.environment == 'development' || steps.env.outputs.environment == 'pr'
+      - name: Set GCP Project
         run: |
           gcloud config set project "${{ secrets.DEV_GCP_PROJECT_ID }}"
 
-      - name: Set GCP Project (Integration)
-        if: steps.env.outputs.environment == 'integration'
+      - name: Check and create GCS bucket if needed
         run: |
-          gcloud config set project "${{ secrets.INT_GCP_PROJECT_ID }}"
-
-      - name: Set GCP Project (Production)
-        if: steps.env.outputs.environment == 'production'
-        run: |
-          gcloud config set project "${{ secrets.PROD_GCP_PROJECT_ID }}"
+          BUCKET_NAME="front-apk-dev"
+          PROJECT_ID="${{ secrets.DEV_GCP_PROJECT_ID }}"
+          
+          if ! gsutil ls -b "gs://${BUCKET_NAME}" 2>/dev/null; then
+            echo "Bucket ${BUCKET_NAME} does not exist, creating it..."
+            gsutil mb -p "${PROJECT_ID}" -l europe-west1 "gs://${BUCKET_NAME}"
+            echo "Bucket ${BUCKET_NAME} created successfully"
+          else
+            echo "Bucket ${BUCKET_NAME} already exists"
+          fi
 
       - name: Upload Debug APK to GCS
         run: |
