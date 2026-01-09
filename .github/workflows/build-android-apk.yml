@@ -8,9 +8,7 @@ on:
     tags:
       - 'v*'
   pull_request:
-    types: [opened, synchronize, reopened]
-  pull_request_target:
-    types: [closed]
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       environment:
@@ -26,6 +24,7 @@ on:
 jobs:
   build-android-apk:
     name: Build and Deploy Android APK
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -79,12 +78,24 @@ jobs:
       - name: Initialize Capacitor (if needed)
         run: |
           if [ ! -d "android" ]; then
-            npx cap init "front" "com.front.app" --web-dir=dist
+            if [ ! -f "capacitor.config.json" ]; then
+              echo "Initializing Capacitor..."
+              npx cap init "front" "com.front.app" --web-dir=dist
+            fi
+            echo "Adding Android platform..."
             npx cap add android
+          else
+            echo "Android platform already exists, skipping initialization"
           fi
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: |
+          if [ -d "android" ]; then
+            npx cap sync android
+          else
+            echo "Error: Android platform not found after initialization"
+            exit 1
+          fi
 
       - name: Build APK Debug
         run: |
@@ -259,7 +270,7 @@ jobs:
 
   cleanup-pr-apk:
     name: Cleanup PR APK
-    if: github.event_name == 'pull_request_target' && github.event.action == 'closed'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     permissions:
       contents: read

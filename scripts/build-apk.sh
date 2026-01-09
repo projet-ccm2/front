@@ -27,13 +27,20 @@ npm run build
 
 # Initialiser Capacitor si nécessaire
 if [ ! -d "android" ]; then
-    echo "Initializing Capacitor..."
-    npx cap init "front" "com.front.app" --web-dir=dist
+    if [ ! -f "capacitor.config.json" ]; then
+        echo "Initializing Capacitor..."
+        npx cap init "front" "com.front.app" --web-dir=dist
+    fi
+    echo "Adding Android platform..."
     npx cap add android
 fi
 
 # Synchroniser Capacitor
 echo "Syncing Capacitor..."
+if [ ! -d "android" ]; then
+    echo "Error: Android platform not found after initialization"
+    exit 1
+fi
 npx cap sync android
 
 # Build l'APK
