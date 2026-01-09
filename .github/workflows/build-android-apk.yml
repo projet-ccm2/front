@@ -1,0 +1,180 @@
+name: Build and Deploy Android APK
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment (development/integration/production)'
+        required: false
+        type: choice
+        options:
+          - development
+          - integration
+          - production
+        default: 'development'
+
+jobs:
+  build-android-apk:
+    name: Build and Deploy Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            ENV="production"
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
+            ENV="integration"
+          elif [[ "${{ github.ref }}" == refs/heads/develop ]]; then
+            ENV="development"
+          else
+            ENV="development"
+          fi
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "Determined environment: $ENV"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Initialize Capacitor (if needed)
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap init "front" "com.front.app" --web-dir=dist
+            npx cap add android
+          fi
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build APK Debug
+        run: |
+          cd android
+          ./gradlew assembleDebug
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Build APK Release (if production)
+        if: steps.env.outputs.environment == 'production'
+        run: |
+          cd android
+          ./gradlew assembleRelease
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+          ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH || '' }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || '' }}
+          ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS || '' }}
+          ANDROID_KEYSTORE_ALIAS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_ALIAS_PASSWORD || '' }}
+
+      - name: Authenticate to Google Cloud (Development)
+        if: steps.env.outputs.environment == 'development'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.DEV_GCP_SA_KEY }}
+
+      - name: Authenticate to Google Cloud (Integration)
+        if: steps.env.outputs.environment == 'integration'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.INT_GCP_SA_KEY }}
+
+      - name: Authenticate to Google Cloud (Production)
+        if: steps.env.outputs.environment == 'production'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.PROD_GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set GCP Project (Development)
+        if: steps.env.outputs.environment == 'development'
+        run: |
+          gcloud config set project "${{ secrets.DEV_GCP_PROJECT_ID }}"
+
+      - name: Set GCP Project (Integration)
+        if: steps.env.outputs.environment == 'integration'
+        run: |
+          gcloud config set project "${{ secrets.INT_GCP_PROJECT_ID }}"
+
+      - name: Set GCP Project (Production)
+        if: steps.env.outputs.environment == 'production'
+        run: |
+          gcloud config set project "${{ secrets.PROD_GCP_PROJECT_ID }}"
+
+      - name: Upload Debug APK to GCS
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          BUCKET_NAME="front-apk-dev"
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          APK_NAME="front-${ENV}-debug-${GITHUB_SHA:0:7}-$(date +%Y%m%d-%H%M%S).apk"
+          GCS_PATH="gs://${BUCKET_NAME}/${ENV}/${APK_NAME}"
+          
+          if [ ! -f "${APK_PATH}" ]; then
+            echo "Error: APK file not found at ${APK_PATH}"
+            exit 1
+          fi
+          
+          gsutil cp "${APK_PATH}" "${GCS_PATH}"
+          echo "APK uploaded to: ${GCS_PATH}"
+          echo "APK_URL=${GCS_PATH}" >> $GITHUB_ENV
+
+      - name: Upload Release APK to GCS (if production)
+        if: steps.env.outputs.environment == 'production'
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          BUCKET_NAME="front-apk-dev"
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          APK_NAME="front-${ENV}-release-${GITHUB_SHA:0:7}-$(date +%Y%m%d-%H%M%S).apk"
+          GCS_PATH="gs://${BUCKET_NAME}/${ENV}/${APK_NAME}"
+          
+          if [ ! -f "${APK_PATH}" ]; then
+            echo "Error: Release APK file not found at ${APK_PATH}"
+            exit 1
+          fi
+          
+          gsutil cp "${APK_PATH}" "${GCS_PATH}"
+          echo "Release APK uploaded to: ${GCS_PATH}"
+          echo "RELEASE_APK_URL=${GCS_PATH}" >> $GITHUB_ENV
+
+      - name: Output APK locations
+        run: |
+          echo "Environment: ${{ steps.env.outputs.environment }}"
+          echo "Debug APK: ${APK_URL}"
+          if [ "${{ steps.env.outputs.environment }}" == "production" ]; then
+            echo "Release APK: ${RELEASE_APK_URL}"
+          fi
+

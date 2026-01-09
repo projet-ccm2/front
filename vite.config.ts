@@ -13,4 +13,7 @@ export default defineConfig({
       '.cloudfunctions.net',
     ],
   },
+  build: {
+    outDir: 'dist',
+  },
 })

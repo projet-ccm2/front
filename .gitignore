@@ -25,3 +25,8 @@ coverage/
 coverage/coverage-final.json
 coverage/index.html
 /coverage/
+
+# Capacitor / Android
+android/
+ios/
+.capacitor/
