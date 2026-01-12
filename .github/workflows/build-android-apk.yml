@@ -1,0 +1,238 @@
+name: Build and Deploy Android APK
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment (development/integration/production)'
+        required: false
+        type: choice
+        options:
+          - development
+          - integration
+          - production
+        default: 'development'
+
+jobs:
+  build-android-apk:
+    name: Build and Deploy Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            ENV="production"
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
+            ENV="integration"
+          elif [[ "${{ github.ref }}" == refs/heads/develop ]]; then
+            ENV="development"
+          else
+            ENV="development"
+          fi
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "Determined environment: $ENV"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Generate app icons
+        run: |
+          if [ -f "resources/icon.png" ]; then
+            echo "Generating app icons from resources/icon.png..."
+            if command -v npx &> /dev/null; then
+              npx @capacitor/assets generate --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000' || echo "Icon generation completed (or skipped if already exists)"
+            else
+              echo "npx not available, skipping icon generation"
+            fi
+          else
+            echo "No icon.png found in resources/, skipping icon generation"
+          fi
+
+      - name: Initialize Capacitor (if needed)
+        run: |
+          if [ ! -d "android" ]; then
+            if [ ! -f "capacitor.config.json" ]; then
+              echo "Initializing Capacitor..."
+              npx cap init "front" "com.front.app" --web-dir=dist
+            fi
+            echo "Adding Android platform..."
+            npx cap add android
+          else
+            echo "Android platform already exists, skipping initialization"
+          fi
+
+      - name: Sync Capacitor
+        run: |
+          if [ -d "android" ]; then
+            npx cap sync android
+          else
+            echo "Error: Android platform not found after initialization"
+            exit 1
+          fi
+
+      - name: Build APK Debug
+        run: |
+          cd android
+          ./gradlew assembleDebug
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Build APK Release (if production)
+        if: steps.env.outputs.environment == 'production'
+        run: |
+          cd android
+          ./gradlew assembleRelease
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+          ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH || '' }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || '' }}
+          ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS || '' }}
+          ANDROID_KEYSTORE_ALIAS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_ALIAS_PASSWORD || '' }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.DEV_GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set GCP Project
+        run: |
+          gcloud config set project "${{ secrets.DEV_GCP_PROJECT_ID }}"
+
+      - name: Setup GCS variables
+        id: gcs
+        run: |
+          echo "BUCKET_NAME=front-apk-dev" >> $GITHUB_OUTPUT
+          echo "PROJECT_ID=${{ secrets.DEV_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
+
+      - name: Check and create GCS bucket if needed
+        run: |
+          BUCKET_NAME="${{ steps.gcs.outputs.BUCKET_NAME }}"
+          PROJECT_ID="${{ steps.gcs.outputs.PROJECT_ID }}"
+          
+          if ! gsutil ls -b "gs://${BUCKET_NAME}" 2>/dev/null; then
+            echo "Bucket ${BUCKET_NAME} does not exist, creating it..."
+            gsutil mb -p "${PROJECT_ID}" -l europe-west1 "gs://${BUCKET_NAME}"
+            echo "Bucket ${BUCKET_NAME} created successfully"
+          else
+            echo "Bucket ${BUCKET_NAME} already exists"
+          fi
+
+      - name: Upload Debug APK to GCS
+        id: upload-debug
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          BUCKET_NAME="${{ steps.gcs.outputs.BUCKET_NAME }}"
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          SHA_SHORT="${GITHUB_SHA:0:7}"
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          
+          APK_NAME="front-${ENV}-debug-${SHA_SHORT}-${TIMESTAMP}.apk"
+          GCS_DIR="gs://${BUCKET_NAME}/${ENV}"
+          GCS_PATH="${GCS_DIR}/${APK_NAME}"
+          LATEST_PATH="${GCS_DIR}/latest.apk"
+          
+          if [ ! -f "${APK_PATH}" ]; then
+            echo "Error: APK file not found at ${APK_PATH}"
+            exit 1
+          fi
+          
+          # Upload APK with timestamp
+          gsutil cp "${APK_PATH}" "${GCS_PATH}"
+          echo "APK uploaded to: ${GCS_PATH}"
+          
+          # Copy to latest.apk (always points to the latest version)
+          gsutil cp "${APK_PATH}" "${LATEST_PATH}"
+          echo "Latest APK available at: ${LATEST_PATH}"
+          
+          echo "APK_URL=${GCS_PATH}" >> $GITHUB_ENV
+          echo "LATEST_APK_URL=${LATEST_PATH}" >> $GITHUB_ENV
+          echo "apk_url=${GCS_PATH}" >> $GITHUB_OUTPUT
+          echo "latest_apk_url=${LATEST_PATH}" >> $GITHUB_OUTPUT
+
+      - name: Upload Release APK to GCS (if production)
+        if: steps.env.outputs.environment == 'production'
+        id: upload-release
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          BUCKET_NAME="${{ steps.gcs.outputs.BUCKET_NAME }}"
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+          SHA_SHORT="${GITHUB_SHA:0:7}"
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          
+          APK_NAME="front-${ENV}-release-${SHA_SHORT}-${TIMESTAMP}.apk"
+          GCS_DIR="gs://${BUCKET_NAME}/${ENV}"
+          GCS_PATH="${GCS_DIR}/${APK_NAME}"
+          LATEST_RELEASE_PATH="${GCS_DIR}/latest-release.apk"
+          
+          if [ ! -f "${APK_PATH}" ]; then
+            echo "Error: Release APK file not found at ${APK_PATH}"
+            exit 1
+          fi
+          
+          # Upload APK with timestamp
+          gsutil cp "${APK_PATH}" "${GCS_PATH}"
+          echo "Release APK uploaded to: ${GCS_PATH}"
+          
+          # Copy to latest-release.apk
+          gsutil cp "${APK_PATH}" "${LATEST_RELEASE_PATH}"
+          echo "Latest Release APK available at: ${LATEST_RELEASE_PATH}"
+          
+          echo "RELEASE_APK_URL=${GCS_PATH}" >> $GITHUB_ENV
+          echo "LATEST_RELEASE_APK_URL=${LATEST_RELEASE_PATH}" >> $GITHUB_ENV
+          echo "release_apk_url=${GCS_PATH}" >> $GITHUB_OUTPUT
+          echo "latest_release_apk_url=${LATEST_RELEASE_PATH}" >> $GITHUB_OUTPUT
+
+      - name: Output APK locations
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          echo "Environment: ${ENV}"
+          echo ""
+          echo "📱 Debug APK:"
+          echo "  - Versioned: ${APK_URL}"
+          echo "  - Latest: ${LATEST_APK_URL}"
+          echo ""
+          if [ "${ENV}" == "production" ]; then
+            echo "🚀 Release APK:"
+            echo "  - Versioned: ${RELEASE_APK_URL}"
+            echo "  - Latest: ${LATEST_RELEASE_APK_URL}"
+            echo ""
+          fi
+
