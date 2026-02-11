@@ -30,3 +30,4 @@ coverage/index.html
 android/
 ios/
 .capacitor/
+.env

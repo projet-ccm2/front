@@ -9,8 +9,10 @@ import {
   X,
   Sun,
   Moon,
+  LogOut,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
 
 interface SidebarProps {
   readonly currentPage: string
@@ -21,6 +23,7 @@ interface SidebarProps {
 
 export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme()
+  const { logout } = useAuth()
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'creator', label: 'Create Achievement', icon: Plus },
@@ -37,6 +40,11 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
     }
   }
 
+  const handleLogout = () => {
+    logout()
+    handleNavigation('landing')
+  }
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -51,9 +59,8 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
 
       {/* Sidebar */}
       <div
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 h-screen flex flex-col transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 h-screen flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
       >
         {/* Logo */}
         <div className="p-6 border-b border-[#2d2d31] dark:border-gray-200 flex items-center justify-between">
@@ -84,11 +91,10 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
                 <button
                   key={item.id}
                   onClick={() => handleNavigation(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-[#9146FF] text-white'
-                      : 'text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                    ? 'bg-[#9146FF] text-white'
+                    : 'text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900'
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="text-left">{item.label}</span>
@@ -110,6 +116,14 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors">
             <Settings className="w-5 h-5" />
             <span>Settings</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{ color: '#ff4b4b' }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#2d2d31] hover:brightness-125 dark:hover:bg-gray-100 transition-all shadow-sm"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Sign Out</span>
           </button>
         </div>
       </div>

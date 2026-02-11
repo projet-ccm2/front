@@ -1,6 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useMemo } from 'react'
+import { createContext, useContext, useState, useMemo, useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { useAuth } from './AuthContext'
 
 export interface Channel {
   id: string
@@ -11,40 +11,44 @@ export interface Channel {
 }
 
 interface ChannelContextType {
-  selectedChannel: Channel
+  selectedChannel: Channel | null
   setSelectedChannel: (channel: Channel) => void
   availableChannels: Channel[]
 }
 
 const ChannelContext = createContext<ChannelContextType | undefined>(undefined)
 
-const defaultChannels: Channel[] = [
-  {
-    id: '1',
-    name: 'MyTwitchChannel',
-    avatar: 'M',
-    role: 'Moderator',
-    followers: 15420,
-  },
-  {
-    id: '2',
-    name: 'ProGamingHub',
-    avatar: 'P',
-    role: 'Owner',
-    followers: 28350,
-  },
-  {
-    id: '3',
-    name: 'CasualStreams',
-    avatar: 'C',
-    role: 'Editor',
-    followers: 8230,
-  },
-]
-
 export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [availableChannels] = useState<Channel[]>(defaultChannels)
-  const [selectedChannel, setSelectedChannel] = useState<Channel>(defaultChannels[0])
+  const { user } = useAuth()
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null)
+
+  const availableChannels = useMemo(() => {
+    if (!user) return []
+
+    const userChannel: Channel = {
+      id: user.channel.id,
+      name: user.channel.name,
+      avatar: user.channel.profileImageUrl || user.channel.name.charAt(0).toUpperCase(),
+      role: 'Owner',
+      followers: 0, // We might not have this info from /auth/callback yet
+    }
+
+    const modChannels: Channel[] = user.channelsWhichIsMod.map((channelName, index) => ({
+      id: `mod-${index}`,
+      name: channelName,
+      avatar: channelName.charAt(0).toUpperCase(),
+      role: 'Moderator',
+      followers: 0,
+    }))
+
+    return [userChannel, ...modChannels]
+  }, [user])
+
+  useEffect(() => {
+    if (availableChannels.length > 0 && !selectedChannel) {
+      setSelectedChannel(availableChannels[0])
+    }
+  }, [availableChannels, selectedChannel])
 
   const value = useMemo(
     () => ({ selectedChannel, setSelectedChannel, availableChannels }),
