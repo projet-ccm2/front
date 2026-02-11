@@ -69,7 +69,7 @@ describe('ChannelContext', () => {
 
   it('should throw error when useChannel is used outside provider', () => {
     const consoleSpy = vi.spyOn(console, 'error')
-    consoleSpy.mockImplementation(() => { })
+    consoleSpy.mockImplementation(() => {})
 
     expect(() => renderHook(() => useChannel())).toThrow(
       'useChannel must be used within a ChannelProvider'

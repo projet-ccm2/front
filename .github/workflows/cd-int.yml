@@ -31,3 +31,6 @@ jobs:
     secrets:
       GCP_SA_KEY: ${{ secrets.INT_GCP_SA_KEY }}
       GCP_PROJECT_ID: ${{ secrets.INT_GCP_PROJECT_ID }}
+      TWITCH_CLIENT_ID: ${{ secrets.INT_TWITCH_CLIENT_ID }}
+      AUTH_SERVICE_URL: ${{ secrets.INT_AUTH_SERVICE_URL }}
+      FRONT_URL: ${{ secrets.INT_FRONT_URL }}
