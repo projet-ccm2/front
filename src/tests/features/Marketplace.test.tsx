@@ -5,26 +5,27 @@ import React from 'react'
 
 describe('Marketplace', () => {
   const mockOnNavigate = vi.fn()
+  const mockOnOpenSidebar = vi.fn()
 
   it('should render the marketplace page', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'Community Marketplace' })).toBeInTheDocument()
   })
 
   it('should display achievement cards', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByText('Speed Runner')).toBeInTheDocument()
     expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
   })
 
   it('should show search input', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const searchInput = screen.getByPlaceholderText('Find new quests for your community...')
     expect(searchInput).toBeInTheDocument()
   })
 
   it('should display category filters', async () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByText('All')).toBeInTheDocument()
     const chatInteractionButtons = screen.getAllByRole('button', { name: 'Chat interaction' })
     expect(chatInteractionButtons.length).toBeGreaterThan(0)
@@ -32,13 +33,9 @@ describe('Marketplace', () => {
   }, 20000)
 
   it('should toggle filters on mobile', () => {
-    const { container } = render(<Marketplace onNavigate={mockOnNavigate} />)
-    // Find the filter button (it has the Filter icon)
-    // Similar to other mobile buttons, it's likely avoiding text content
-    // We can just try to click the first button that isn't a category
-    // Or better, use the class if known, or just skip if too complex without adding testid.
-    // Let's rely on the category clicking test for function coverage mainly.
-    // But let's try to clear the broken code:
+    const { container } = render(
+      <Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />
+    )
     const filterBtn = container.querySelector(String.raw`.lg:hidden`)
     if (filterBtn) {
       fireEvent.click(filterBtn)
@@ -47,7 +44,7 @@ describe('Marketplace', () => {
   })
 
   it('should handle category selection', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     const categories = ['Chat interaction', 'Watch time', 'Donations', 'Points']
     categories.forEach(category => {
@@ -58,7 +55,7 @@ describe('Marketplace', () => {
   }, 30000)
 
   it('should handle detailed interactions', async () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     // Toggle mobile filters
     const filterBtn = screen.getByTestId('mobile-filter-btn')
@@ -79,7 +76,7 @@ describe('Marketplace', () => {
   })
 
   it('should toggle mobile filters sidebar', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     // Open
     const filterBtn = screen.getByTestId('mobile-filter-btn')
     fireEvent.click(filterBtn)
@@ -91,11 +88,11 @@ describe('Marketplace', () => {
     // Open menu
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
-    expect(true).toBeTruthy()
+    expect(mockOnOpenSidebar).toHaveBeenCalled()
   })
 
   it('should display achievement stats', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} />)
+    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const ratings = screen.getAllByText('4.8')
     expect(ratings.length).toBeGreaterThan(0)
     expect(screen.getByText('234')).toBeInTheDocument()

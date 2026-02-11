@@ -1,9 +1,26 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, renderHook, act } from './utils/test-utils'
-import { ChannelProvider, useChannel } from '../context/ChannelContext'
+import { ChannelProvider } from '../context/ChannelProvider'
+import { useChannel } from '../context/ChannelContext'
 import React from 'react'
 
 describe('ChannelContext', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    const mockUser = {
+      userId: '123456',
+      username: 'testuser',
+      channel: {
+        id: '123',
+        name: 'MyTwitchChannel',
+        description: 'Test channel',
+        profileImageUrl: 'http://example.com/image.png',
+      },
+      channelsWhichIsMod: ['ProGamingHub'],
+    }
+    localStorage.setItem('twitch_user', JSON.stringify(mockUser))
+  })
+
   it('should render children', () => {
     render(
       <ChannelProvider>

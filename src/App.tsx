@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { LandingPage } from './features/landing/LandingPage'
+import { Dashboard } from './features/dashboard/Dashboard'
+import { Sidebar } from './components/layout/Sidebar'
 import { ThemeProvider } from './context/ThemeContext'
 import { ChannelProvider } from './context/ChannelContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { LandingPage } from './features/landing/LandingPage'
-import { Dashboard } from './features/dashboard/Dashboard'
 import { AchievementCreator } from './features/achievements/AchievementCreator'
 import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
@@ -19,14 +20,15 @@ type Screen =
   | 'profile'
   | 'overlay'
 
-function AppContent() {
+export function AppContent() {
   const { isAuthenticated, isLoading, login, completeAuth } = useAuth()
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     const handleCallback = async () => {
       const hash = globalThis.location.hash
-      if (hash && hash.includes('access_token')) {
+      if (hash?.includes('access_token')) {
         const params = new URLSearchParams(hash.substring(1))
         const accessToken = params.get('access_token')
         const idToken = params.get('id_token')
@@ -48,6 +50,7 @@ function AppContent() {
             // Clean URL
             globalThis.history.replaceState({}, document.title, globalThis.location.pathname)
             setCurrentScreen('dashboard')
+            setSidebarOpen(false)
           } catch (error) {
             console.error('Auth completion failed', error)
           }
@@ -58,14 +61,20 @@ function AppContent() {
     handleCallback()
   }, [completeAuth])
 
-  const navigateTo = (screen: string) => {
-    setCurrentScreen(screen as Screen)
+  // Redirection is handled during render to avoid cascading renders
+  if (isAuthenticated && currentScreen === 'landing') {
+    setCurrentScreen('dashboard')
+  }
+
+  const handleNavigate = (page: string) => {
+    setCurrentScreen(page as Screen)
+    setSidebarOpen(false)
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0e0e10] flex items-center justify-center text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9146FF]"></div>
+      <div className="min-h-screen bg-[#0e0e10] flex items-center justify-center">
+        <div className="text-[#9146FF] animate-pulse text-xl">Loading...</div>
       </div>
     )
   }
@@ -74,37 +83,53 @@ function AppContent() {
     return <LandingPage onConnect={login} />
   }
 
-  // If authenticated but on landing, go to dashboard
-  if (isAuthenticated && currentScreen === 'landing') {
-    return (
-      <ChannelProvider>
-        <div className="min-h-screen bg-[#0e0e10] dark:bg-gray-50">
-          <Dashboard onNavigate={navigateTo} />
-        </div>
-      </ChannelProvider>
-    )
-  }
-
   return (
-    <ChannelProvider>
-      <div className="min-h-screen bg-[#0e0e10] dark:bg-gray-50">
-        {currentScreen === 'dashboard' && <Dashboard onNavigate={navigateTo} />}
-        {currentScreen === 'creator' && <AchievementCreator onNavigate={navigateTo} />}
-        {currentScreen === 'management' && <SuccessManagement onNavigate={navigateTo} />}
-        {currentScreen === 'marketplace' && <Marketplace onNavigate={navigateTo} />}
-        {currentScreen === 'profile' && <UserProfile onNavigate={navigateTo} />}
-        {currentScreen === 'overlay' && <TwitchOverlay onNavigate={navigateTo} />}
-      </div>
-    </ChannelProvider>
+    <div className="flex h-screen bg-[#0e0e10] text-[#efeff1] dark:bg-gray-50 dark:text-gray-900 overflow-hidden">
+      <Sidebar
+        currentPage={currentScreen}
+        onNavigate={handleNavigate}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+      <main className="flex-1 overflow-y-auto relative bg-[#0e0e10] dark:bg-white">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+          {currentScreen === 'dashboard' && (
+            <Dashboard onNavigate={handleNavigate} onOpenSidebar={() => setSidebarOpen(true)} />
+          )}
+          {currentScreen === 'creator' && (
+            <AchievementCreator onOpenSidebar={() => setSidebarOpen(true)} />
+          )}
+          {currentScreen === 'management' && (
+            <SuccessManagement
+              onNavigate={handleNavigate}
+              onOpenSidebar={() => setSidebarOpen(true)}
+            />
+          )}
+          {currentScreen === 'marketplace' && (
+            <Marketplace onOpenSidebar={() => setSidebarOpen(true)} />
+          )}
+          {currentScreen === 'profile' && (
+            <UserProfile onOpenSidebar={() => setSidebarOpen(true)} />
+          )}
+          {currentScreen === 'overlay' && (
+            <TwitchOverlay onOpenSidebar={() => setSidebarOpen(true)} />
+          )}
+        </div>
+      </main>
+    </div>
   )
 }
 
-export default function App() {
+function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppContent />
+        <ChannelProvider>
+          <AppContent />
+        </ChannelProvider>
       </AuthProvider>
     </ThemeProvider>
   )
 }
+
+export default App

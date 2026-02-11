@@ -1,16 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
+import { ChannelContext } from './ChannelContext'
 import type { Channel } from '../types/twitch'
-
-export interface ChannelContextType {
-  selectedChannel: Channel | null
-  setSelectedChannel: (channel: Channel) => void
-  availableChannels: Channel[]
-}
-
-export const ChannelContext = createContext<ChannelContextType | undefined>(undefined)
 
 export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
   const { user } = useAuth()
@@ -55,13 +47,5 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     [selectedChannel, availableChannels]
   )
 
-  return <ChannelContext.Provider value={value}>{children}</ChannelContext.Provider>
-}
-
-export function useChannel() {
-  const context = useContext(ChannelContext)
-  if (context === undefined) {
-    throw new Error('useChannel must be used within a ChannelProvider')
-  }
-  return context
+  return <ChannelContext value={value}>{children}</ChannelContext>
 }

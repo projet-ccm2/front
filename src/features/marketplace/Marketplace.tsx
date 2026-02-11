@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Sidebar } from '../../components/layout/Sidebar'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Search, Download, Star, Filter, Menu, X, Plus } from 'lucide-react'
 
 interface MarketplaceProps {
-  readonly onNavigate: (page: string) => void
+  readonly onOpenSidebar: () => void
 }
 
 const getDifficultyColor = (difficulty: string) => {
@@ -111,26 +110,18 @@ const communityAchievements = [
 
 const categories = ['All', 'Chat interaction', 'Watch time', 'Donations', 'Points']
 
-export function Marketplace({ onNavigate }: MarketplaceProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+export function Marketplace({ onOpenSidebar }: MarketplaceProps) {
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        currentPage="marketplace"
-        onNavigate={onNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
+    <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
-                onClick={() => setSidebarOpen(true)}
+                onClick={onOpenSidebar}
                 data-testid="mobile-menu-btn"
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
@@ -177,9 +168,8 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
         <div className="flex">
           {/* Sidebar Filters */}
           <div
-            className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${
-              filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-            }`}
+            className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+              }`}
           >
             {/* Mobile close button */}
             <div className="lg:hidden flex justify-end mb-4">
@@ -197,11 +187,10 @@ export function Marketplace({ onNavigate }: MarketplaceProps) {
               {categories.map(category => (
                 <button
                   key={category}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${
-                    category === 'All'
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${category === 'All'
                       ? 'bg-[#9146FF] text-white'
                       : 'text-gray-400 dark:text-gray-600 hover:bg-[#2d2d31] dark:hover:bg-gray-100 hover:text-white dark:hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>

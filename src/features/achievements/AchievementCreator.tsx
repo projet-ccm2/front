@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { Sidebar } from '../../components/layout/Sidebar'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Sparkles, Upload, Plus, Save, Send, Menu, Trash2 } from 'lucide-react'
 
 interface AchievementCreatorProps {
-  onNavigate: (page: string) => void
+  onOpenSidebar: () => void
 }
 
-export function AchievementCreator({ onNavigate }: Readonly<AchievementCreatorProps>) {
+export function AchievementCreator({
+  onOpenSidebar,
+}: Readonly<AchievementCreatorProps>) {
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
   const [isHidden, setIsHidden] = useState(false)
   const [title, setTitle] = useState('')
@@ -16,14 +17,11 @@ export function AchievementCreator({ onNavigate }: Readonly<AchievementCreatorPr
   const [conditions, setConditions] = useState<{ id: string; value: string }[]>([
     { id: '1', value: 'Watch time > 1 hour' },
   ])
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleAIGenerate = () => {
-    // Mock AI generation
     setTitle('Chat Warrior')
-    setDescription('Send 100 messages in chat to prove your dedication to the community')
+    setDescription('Send 250 messages in the stream chat to unlock this badge!')
     setXpValue('250')
-    setConditions([{ id: crypto.randomUUID(), value: 'Chat messages sent >= 100' }])
   }
 
   const addCondition = () => {
@@ -35,21 +33,14 @@ export function AchievementCreator({ onNavigate }: Readonly<AchievementCreatorPr
   }
 
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        currentPage="creator"
-        onNavigate={onNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
+    <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
-                onClick={() => setSidebarOpen(true)}
+                onClick={onOpenSidebar}
                 data-testid="mobile-menu-btn"
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
@@ -188,14 +179,12 @@ export function AchievementCreator({ onNavigate }: Readonly<AchievementCreatorPr
                   </div>
                   <button
                     onClick={() => setIsHidden(!isHidden)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${
-                      isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
-                    }`}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
+                      }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-                        isHidden ? 'translate-x-6' : 'translate-x-0.5'
-                      }`}
+                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${isHidden ? 'translate-x-6' : 'translate-x-0.5'
+                        }`}
                     />
                   </button>
                 </div>
@@ -203,21 +192,19 @@ export function AchievementCreator({ onNavigate }: Readonly<AchievementCreatorPr
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setMode('simple')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
-                      mode === 'simple'
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'simple'
                         ? 'bg-[#9146FF] text-white'
                         : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     Simple Mode
                   </button>
                   <button
                     onClick={() => setMode('advanced')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
-                      mode === 'advanced'
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'advanced'
                         ? 'bg-[#9146FF] text-white'
                         : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     Advanced Mode
                   </button>

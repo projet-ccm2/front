@@ -5,12 +5,15 @@ import { StrictMode } from 'react'
 
 import { ThemeProvider } from '../../context/ThemeContext'
 import { ChannelProvider } from '../../context/ChannelContext'
+import { AuthProvider } from '../../context/AuthContext'
 
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <StrictMode>
       <ThemeProvider>
-        <ChannelProvider>{children}</ChannelProvider>
+        <AuthProvider>
+          <ChannelProvider>{children}</ChannelProvider>
+        </AuthProvider>
       </ThemeProvider>
     </StrictMode>
   )

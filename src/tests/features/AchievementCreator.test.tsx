@@ -5,28 +5,29 @@ import React from 'react'
 
 describe('AchievementCreator', () => {
   const mockOnNavigate = vi.fn()
+  const mockOnOpenSidebar = vi.fn()
 
   it('should render the achievement creator page', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'Create Achievement' })).toBeInTheDocument()
   })
 
   it('should allow entering achievement title', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const titleInput = screen.getByPlaceholderText('Enter achievement name...')
     fireEvent.change(titleInput, { target: { value: 'Test Achievement' } })
     expect(titleInput).toHaveValue('Test Achievement')
   })
 
   it('should allow entering description', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const descInput = screen.getByPlaceholderText('Describe how to unlock this achievement...')
     fireEvent.change(descInput, { target: { value: 'Test description' } })
     expect(descInput).toHaveValue('Test description')
   })
 
   it('should toggle hidden achievement setting', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const label = screen.getByText('Hidden Achievement')
     const container = label.parentElement?.parentElement
     expect(container).toBeInTheDocument()
@@ -42,7 +43,7 @@ describe('AchievementCreator', () => {
   })
 
   it('should switch between simple and advanced modes', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const advancedButton = screen.getByText('Advanced Mode')
     fireEvent.click(advancedButton)
     expect(screen.getByText('Trigger Conditions')).toBeInTheDocument()
@@ -53,7 +54,7 @@ describe('AchievementCreator', () => {
   })
 
   it('should handle AI generation', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const aiButton = screen.getByText('Generate with AI')
     fireEvent.click(aiButton)
     expect(screen.getByDisplayValue('Chat Warrior')).toBeInTheDocument()
@@ -61,14 +62,14 @@ describe('AchievementCreator', () => {
   })
 
   it('should toggle sidebar on mobile', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
-    expect(menuBtn).toBeInTheDocument()
+    expect(mockOnOpenSidebar).toHaveBeenCalled()
   })
 
   it('should add and remove conditions in advanced mode', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const advancedButton = screen.getByText('Advanced Mode')
     fireEvent.click(advancedButton)
 
@@ -82,7 +83,7 @@ describe('AchievementCreator', () => {
   })
 
   it('should remove specific condition', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const advancedButton = screen.getByText('Advanced Mode')
     fireEvent.click(advancedButton)
 
@@ -99,7 +100,7 @@ describe('AchievementCreator', () => {
   })
 
   it('should render all form elements', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByText('Achievement Icon')).toBeInTheDocument()
     expect(screen.getByText('Achievement Title')).toBeInTheDocument()
@@ -110,7 +111,7 @@ describe('AchievementCreator', () => {
   })
 
   it('should render AI generation banner', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByText('AI-Powered Generation')).toBeInTheDocument()
     expect(
@@ -119,21 +120,21 @@ describe('AchievementCreator', () => {
   })
 
   it('should render version info', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByText('Version 1.0')).toBeInTheDocument()
     expect(screen.getByText('This is a new achievement')).toBeInTheDocument()
   })
 
   it('should render upload button', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByText('Upload Image')).toBeInTheDocument()
     expect(screen.getByText('Recommended: 512x512px PNG or JPG')).toBeInTheDocument()
   })
 
   it('should render condition selects in advanced mode', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const advancedButton = screen.getByText('Advanced Mode')
     fireEvent.click(advancedButton)
 
@@ -142,9 +143,9 @@ describe('AchievementCreator', () => {
   })
 
   it('should close sidebar', () => {
-    render(<AchievementCreator onNavigate={mockOnNavigate} />)
+    render(<AchievementCreator onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
-    expect(menuBtn).toBeInTheDocument()
+    expect(mockOnOpenSidebar).toHaveBeenCalled()
   })
 })

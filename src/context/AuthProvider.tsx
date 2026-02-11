@@ -1,13 +1,11 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { ReactNode } from 'react'
-import type { TwitchUser, AuthContextType } from '../types/twitch'
+import type { TwitchUser } from '../types/twitch'
+import { AuthContext } from './AuthContext'
 
 const AUTH_SERVICE_URL = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:3000'
 const TWITCH_CLIENT_ID = import.meta.env.VITE_TWITCH_CLIENT_ID
 const REDIRECT_URI = import.meta.env.VITE_TWITCH_REDIRECT_URI || globalThis.location.origin
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [user, setUser] = useState<TwitchUser | null>(() => {
@@ -70,6 +68,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
       const data = await response.json()
       if (data.success) {
         const fullUser = { ...data.user, userId: data.userId }
+        console.log('Successfully authenticated. Twitch User ID:', data.userId)
         setUser(fullUser)
         localStorage.setItem('twitch_user', JSON.stringify(fullUser))
         localStorage.setItem('twitch_tokens', JSON.stringify(tokens))
@@ -96,13 +95,5 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     [user, isAuthenticated, isLoading]
   )
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
+  return <AuthContext value={value}>{children}</AuthContext>
 }

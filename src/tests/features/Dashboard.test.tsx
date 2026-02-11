@@ -21,8 +21,10 @@ vi.mock('recharts', () => {
 })
 
 describe('Dashboard', () => {
+  const mockOnOpenSidebar = vi.fn()
+
   it('should render dashboard title', async () => {
-    render(<Dashboard onNavigate={() => {}} />)
+    render(<Dashboard onNavigate={() => {}} onOpenSidebar={mockOnOpenSidebar} />)
 
     await waitFor(
       () => {
@@ -33,7 +35,7 @@ describe('Dashboard', () => {
   })
 
   it('should render statistics cards after loading', async () => {
-    render(<Dashboard onNavigate={() => {}} />)
+    render(<Dashboard onNavigate={() => {}} onOpenSidebar={mockOnOpenSidebar} />)
 
     await waitFor(
       () => {
@@ -46,7 +48,7 @@ describe('Dashboard', () => {
 
   it('should navigate to creator page', async () => {
     const mockNavigate = vi.fn()
-    render(<Dashboard onNavigate={mockNavigate} />)
+    render(<Dashboard onNavigate={mockNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     await waitFor(
       () => {
@@ -66,7 +68,7 @@ describe('Dashboard', () => {
 
   it('should toggle sidebar on mobile', async () => {
     const mockOnNavigate = vi.fn()
-    render(<Dashboard onNavigate={mockOnNavigate} />)
+    render(<Dashboard onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     await waitFor(
       () => {
@@ -77,11 +79,12 @@ describe('Dashboard', () => {
 
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
+    expect(mockOnOpenSidebar).toHaveBeenCalled()
   })
 
   it('should handle quick actions', async () => {
     const mockOnNavigate = vi.fn()
-    render(<Dashboard onNavigate={mockOnNavigate} />)
+    render(<Dashboard onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     await waitFor(
       () => {
@@ -101,7 +104,7 @@ describe('Dashboard', () => {
 
   it('should navigate to marketplace', async () => {
     const mockOnNavigate = vi.fn()
-    render(<Dashboard onNavigate={mockOnNavigate} />)
+    render(<Dashboard onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     await waitFor(
       () => {

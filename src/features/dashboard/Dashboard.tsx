@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { Sidebar } from '../../components/layout/Sidebar'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { TrendingUp, Users, Award, Activity, Menu, Plus, Store, ChevronRight } from 'lucide-react'
 import {
@@ -15,36 +13,25 @@ import { useDashboardData } from './hooks/useDashboardData'
 
 interface DashboardProps {
   onNavigate: (page: string) => void
+  onOpenSidebar: () => void
 }
 
-export function Dashboard({ onNavigate }: Readonly<DashboardProps>) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps>) {
   const { engagementData, recentActivity, loading } = useDashboardData()
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#0e0e10] text-white">
-        Loading...
-      </div>
-    )
+    // ...
   }
 
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        currentPage="dashboard"
-        onNavigate={onNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
+    <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
-                onClick={() => setSidebarOpen(true)}
+                onClick={onOpenSidebar}
                 data-testid="mobile-menu-btn"
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
