@@ -43,7 +43,7 @@ function AppContent() {
               tokenType: tokenType ?? 'bearer',
               expiresIn,
               scope,
-              state
+              state,
             })
             // Clean URL
             globalThis.history.replaceState({}, document.title, globalThis.location.pathname)
