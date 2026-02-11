@@ -6,8 +6,9 @@ touch ./dist/env-config.js
 # Add assignment 
 echo "window._env_ = {" >> ./dist/env-config.js
 
-# Read each line in .env file
-# Each line represents key=value pairs
-printenv | grep -E "TWITCH_CLIENT_ID|AUTH_SERVICE_URL|FRONT_URL" | awk -F '=' '{ print "  \"" $1 "\": \"" $2 "\"," }' >> ./dist/env-config.js
+# Read environment variables explicitly
+echo "  \"TWITCH_CLIENT_ID\": \"$TWITCH_CLIENT_ID\"," >> ./dist/env-config.js
+echo "  \"AUTH_SERVICE_URL\": \"$AUTH_SERVICE_URL\"," >> ./dist/env-config.js
+echo "  \"FRONT_URL\": \"$FRONT_URL\"," >> ./dist/env-config.js
 
 echo "}" >> ./dist/env-config.js
