@@ -26,3 +26,6 @@ jobs:
     secrets:
       GCP_SA_KEY: ${{ secrets.PROD_GCP_SA_KEY }}
       GCP_PROJECT_ID: ${{ secrets.PROD_GCP_PROJECT_ID }}
+      TWITCH_CLIENT_ID: ${{ secrets.PROD_TWITCH_CLIENT_ID }}
+      AUTH_SERVICE_URL: ${{ secrets.PROD_AUTH_SERVICE_URL }}
+      FRONT_URL: ${{ secrets.PROD_FRONT_URL }}

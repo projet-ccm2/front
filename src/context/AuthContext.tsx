@@ -3,9 +3,9 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
 
-const AUTH_SERVICE_URL = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:3000'
-const TWITCH_CLIENT_ID = import.meta.env.VITE_TWITCH_CLIENT_ID
-const REDIRECT_URI = import.meta.env.VITE_TWITCH_REDIRECT_URI || globalThis.location.origin
+const AUTH_SERVICE_URL = import.meta.env.AUTH_SERVICE_URL || 'http://localhost:3000'
+const TWITCH_CLIENT_ID = import.meta.env.TWITCH_CLIENT_ID
+const REDIRECT_URI = import.meta.env.FRONT_URL || globalThis.location.origin
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
