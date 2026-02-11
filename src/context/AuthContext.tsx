@@ -12,6 +12,7 @@ const TWITCH_CLIENT_ID = window._env_?.TWITCH_CLIENT_ID || import.meta.env.TWITC
 const REDIRECT_URI =
   window._env_?.FRONT_URL || import.meta.env.FRONT_URL || globalThis.location.origin
 
+
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
