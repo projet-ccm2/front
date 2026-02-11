@@ -61,6 +61,13 @@ export function AppContent() {
     handleCallback()
   }, [completeAuth])
 
+  useEffect(() => {
+    const runtimeConfig = window._env_ || {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { TWITCH_CLIENT_ID, ...safeConfig } = runtimeConfig
+    console.log('Current Runtime Config:', safeConfig)
+  }, [])
+
   // Redirection is handled during render to avoid cascading renders
   if (isAuthenticated && currentScreen === 'landing') {
     setCurrentScreen('dashboard')
