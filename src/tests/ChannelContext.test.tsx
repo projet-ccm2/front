@@ -4,6 +4,22 @@ import { ChannelProvider, useChannel } from '../context/ChannelContext'
 import React from 'react'
 
 describe('ChannelContext', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    const mockUser = {
+      userId: '123456',
+      username: 'testuser',
+      channel: {
+        id: '123',
+        name: 'MyTwitchChannel',
+        description: 'Test channel',
+        profileImageUrl: 'http://example.com/image.png',
+      },
+      channelsWhichIsMod: ['ProGamingHub'],
+    }
+    localStorage.setItem('twitch_user', JSON.stringify(mockUser))
+  })
+
   it('should render children', () => {
     render(
       <ChannelProvider>
@@ -53,7 +69,7 @@ describe('ChannelContext', () => {
 
   it('should throw error when useChannel is used outside provider', () => {
     const consoleSpy = vi.spyOn(console, 'error')
-    consoleSpy.mockImplementation(() => {})
+    consoleSpy.mockImplementation(() => { })
 
     expect(() => renderHook(() => useChannel())).toThrow(
       'useChannel must be used within a ChannelProvider'

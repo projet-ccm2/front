@@ -5,15 +5,16 @@ import React from 'react'
 
 describe('SuccessManagement', () => {
   const mockOnNavigate = vi.fn()
+  const mockOnOpenSidebar = vi.fn()
 
   it('should render the management dashboard', () => {
-    render(<SuccessManagement onNavigate={mockOnNavigate} />)
+    render(<SuccessManagement onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'Manage Achievements' })).toBeInTheDocument()
     expect(screen.getByText('Enable, disable, and edit your quests')).toBeInTheDocument()
   })
 
   it('should render success list items', () => {
-    render(<SuccessManagement onNavigate={mockOnNavigate} />)
+    render(<SuccessManagement onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByText('First Steps')).toBeInTheDocument()
     expect(screen.getByText('Watch your first stream')).toBeInTheDocument()
     // Check for a few others
@@ -22,7 +23,7 @@ describe('SuccessManagement', () => {
   })
 
   it('should allow navigation to create new achievement', () => {
-    render(<SuccessManagement onNavigate={mockOnNavigate} />)
+    render(<SuccessManagement onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
     const createButtons = screen.getAllByText('Create New')
     const createBtn = createButtons.find(el => el.closest('button'))
@@ -34,22 +35,24 @@ describe('SuccessManagement', () => {
   })
 
   it('should render search input', () => {
-    render(<SuccessManagement onNavigate={mockOnNavigate} />)
+    render(<SuccessManagement onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     const searchInput = screen.getByPlaceholderText('Search achievements...')
     expect(searchInput).toBeInTheDocument()
   })
 
   it('should render filter options', () => {
-    render(<SuccessManagement onNavigate={mockOnNavigate} />)
+    render(<SuccessManagement onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByText('All Achievements')).toBeInTheDocument()
   })
 
   it('should toggle sidebar on mobile', () => {
-    const { container } = render(<SuccessManagement onNavigate={mockOnNavigate} />)
+    const { container } = render(
+      <SuccessManagement onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />
+    )
     const menuBtn = container.querySelector(String.raw`button.lg\:hidden`)
     if (menuBtn) {
       fireEvent.click(menuBtn)
     }
-    expect(true).toBeTruthy()
+    expect(mockOnOpenSidebar).toHaveBeenCalled()
   })
 })

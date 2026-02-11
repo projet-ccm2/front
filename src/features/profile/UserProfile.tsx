@@ -1,9 +1,7 @@
-import { useState } from 'react'
-import { Sidebar } from '../../components/layout/Sidebar'
 import { Trophy, Clock, TrendingUp, Menu } from 'lucide-react'
 
 interface UserProfileProps {
-  readonly onNavigate: (page: string) => void
+  readonly onOpenSidebar: () => void
 }
 
 const getRankStyle = (rank: number) => {
@@ -42,28 +40,20 @@ const leaderboard = [
   { rank: 5, username: 'CasualVibes', level: 35, xp: 7650, avatar: '🎮' },
 ]
 
-export function UserProfile({ onNavigate }: UserProfileProps) {
+export function UserProfile({ onOpenSidebar }: UserProfileProps) {
   const currentLevel = 42
   const currentXP = 9830
   const nextLevelXP = 10000
   const progress = ((currentXP % 1000) / 1000) * 100
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        currentPage="profile"
-        onNavigate={onNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
+    <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header Banner */}
         <div className="relative h-32 sm:h-48 bg-gradient-to-r from-[#9146FF] via-[#772ce8] to-[#9146FF] border-b border-[#2d2d31] dark:border-gray-200">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
           <button
-            onClick={() => setSidebarOpen(true)}
+            onClick={onOpenSidebar}
             data-testid="mobile-menu-btn"
             className="lg:hidden absolute top-4 left-4 text-white z-10"
           >

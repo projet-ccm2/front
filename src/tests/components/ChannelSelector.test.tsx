@@ -4,10 +4,26 @@ import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import React from 'react'
 
 describe('ChannelSelector', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    const mockUser = {
+      userId: '123456',
+      username: 'testuser',
+      channel: {
+        id: '123',
+        name: 'MyTwitchChannel',
+        description: 'Test channel',
+        profileImageUrl: 'http://example.com/image.png',
+      },
+      channelsWhichIsMod: ['ProGamingHub'],
+    }
+    localStorage.setItem('twitch_user', JSON.stringify(mockUser))
+  })
+
   it('should result selected channel information', () => {
     render(<ChannelSelector />)
     expect(screen.getByText('MyTwitchChannel')).toBeInTheDocument()
-    expect(screen.getByText('Moderator')).toBeInTheDocument()
+    expect(screen.getByText('Owner')).toBeInTheDocument()
   })
 
   it('should toggle dropdown when clicked', () => {

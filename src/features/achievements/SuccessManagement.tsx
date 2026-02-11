@@ -1,10 +1,9 @@
-import { useState } from 'react'
-import { Sidebar } from '../../components/layout/Sidebar'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Search, Edit, Trash2, TrendingUp, Menu } from 'lucide-react'
 
 interface SuccessManagementProps {
   onNavigate: (page: string) => void
+  onOpenSidebar: () => void
 }
 
 const achievements = [
@@ -82,25 +81,16 @@ const achievements = [
   },
 ]
 
-export function SuccessManagement({ onNavigate }: Readonly<SuccessManagementProps>) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
+export function SuccessManagement({ onNavigate, onOpenSidebar }: Readonly<SuccessManagementProps>) {
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        currentPage="management"
-        onNavigate={onNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
+    <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
-                onClick={() => setSidebarOpen(true)}
+                onClick={onOpenSidebar}
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >
                 <Menu className="w-6 h-6" />

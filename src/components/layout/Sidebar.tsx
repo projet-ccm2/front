@@ -9,8 +9,10 @@ import {
   X,
   Sun,
   Moon,
+  LogOut,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
 
 interface SidebarProps {
   readonly currentPage: string
@@ -21,6 +23,7 @@ interface SidebarProps {
 
 export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme()
+  const { logout } = useAuth()
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'creator', label: 'Create Achievement', icon: Plus },
@@ -35,6 +38,11 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
     if (onClose) {
       onClose()
     }
+  }
+
+  const handleLogout = () => {
+    logout()
+    handleNavigation('landing')
   }
 
   return (
@@ -110,6 +118,14 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors">
             <Settings className="w-5 h-5" />
             <span>Settings</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{ color: '#ff4b4b' }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#2d2d31] hover:brightness-125 dark:hover:bg-gray-100 transition-all shadow-sm"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Sign Out</span>
           </button>
         </div>
       </div>

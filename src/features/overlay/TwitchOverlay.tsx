@@ -1,10 +1,8 @@
-import { useState } from 'react'
-import { Sidebar } from '../../components/layout/Sidebar'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Trophy, Eye, Menu } from 'lucide-react'
 
 interface TwitchOverlayProps {
-  onNavigate: (page: string) => void
+  onOpenSidebar: () => void
 }
 
 const activeQuests = [
@@ -55,25 +53,16 @@ const activeQuests = [
   },
 ]
 
-export function TwitchOverlay({ onNavigate }: Readonly<TwitchOverlayProps>) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
+export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        currentPage="overlay"
-        onNavigate={onNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
+    <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
         {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
-                onClick={() => setSidebarOpen(true)}
+                onClick={onOpenSidebar}
                 data-testid="mobile-menu-btn"
                 className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
               >

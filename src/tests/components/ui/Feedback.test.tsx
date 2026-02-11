@@ -7,7 +7,6 @@ import { ChartContainer } from '../../../components/ui/chart'
 import { ImageWithFallback } from '../../../components/figma/ImageWithFallback'
 import React from 'react'
 
-
 // Mock recharts
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
