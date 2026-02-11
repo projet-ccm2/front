@@ -123,10 +123,11 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
                         {activeQuests.map(quest => (
                           <div
                             key={quest.id}
-                            className={`p-3 rounded-lg transition-all cursor-pointer ${quest.completed
+                            className={`p-3 rounded-lg transition-all cursor-pointer ${
+                              quest.completed
                                 ? 'bg-gradient-to-r from-[#ffd700]/20 to-[#ffa500]/20 border border-[#ffd700]/50 shadow-lg shadow-[#ffd700]/20'
                                 : 'bg-[#18181b]/80 border border-[#2d2d31] hover:border-[#9146FF]/50'
-                              }`}
+                            }`}
                           >
                             <div className="flex items-start gap-3 mb-2">
                               <div
@@ -162,10 +163,11 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
                               </div>
                               <div className="h-1.5 bg-[#2d2d31] rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full transition-all ${quest.completed
+                                  className={`h-full transition-all ${
+                                    quest.completed
                                       ? 'bg-gradient-to-r from-[#ffd700] to-[#ffa500]'
                                       : 'bg-gradient-to-r from-[#9146FF] to-[#772ce8]'
-                                    }`}
+                                  }`}
                                   style={{ width: `${(quest.progress / quest.max) * 100}%` }}
                                 />
                               </div>

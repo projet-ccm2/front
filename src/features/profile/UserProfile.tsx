@@ -147,10 +147,11 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
               {unlockedBadges.map(badge => (
                 <div
                   key={badge.id}
-                  className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 sm:p-4 transition-all ${badge.unlocked
+                  className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 sm:p-4 transition-all ${
+                    badge.unlocked
                       ? 'bg-gradient-to-br from-[#9146FF]/20 to-[#772ce8]/20 border-[#9146FF] hover:scale-105 cursor-pointer'
                       : 'bg-[#2d2d31] dark:bg-gray-200 border-[#4d4d51] dark:border-gray-300 opacity-40'
-                    }`}
+                  }`}
                   title={badge.title}
                 >
                   <div
@@ -180,10 +181,11 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
               {leaderboard.map(user => (
                 <div
                   key={user.rank}
-                  className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl transition-colors ${user.isCurrentUser
+                  className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl transition-colors ${
+                    user.isCurrentUser
                       ? 'bg-[#9146FF]/20 border-2 border-[#9146FF]'
                       : 'bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                    }`}
+                  }`}
                 >
                   {/* Rank */}
                   <div

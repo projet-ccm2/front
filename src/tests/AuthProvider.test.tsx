@@ -24,7 +24,7 @@ describe('AuthProvider', () => {
 
   it('should handle invalid JSON in localStorage', () => {
     localStorage.setItem('twitch_user', 'invalid-json')
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     const { result } = renderHook(() => useAuth(), {
       wrapper: ({ children }) => <AuthProvider>{children}</AuthProvider>,

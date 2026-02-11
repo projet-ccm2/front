@@ -6,9 +6,7 @@ interface AchievementCreatorProps {
   onOpenSidebar: () => void
 }
 
-export function AchievementCreator({
-  onOpenSidebar,
-}: Readonly<AchievementCreatorProps>) {
+export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreatorProps>) {
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
   const [isHidden, setIsHidden] = useState(false)
   const [title, setTitle] = useState('')
@@ -179,12 +177,14 @@ export function AchievementCreator({
                   </div>
                   <button
                     onClick={() => setIsHidden(!isHidden)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
-                      }`}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${
+                      isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
+                    }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${isHidden ? 'translate-x-6' : 'translate-x-0.5'
-                        }`}
+                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
+                        isHidden ? 'translate-x-6' : 'translate-x-0.5'
+                      }`}
                     />
                   </button>
                 </div>
@@ -192,19 +192,21 @@ export function AchievementCreator({
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setMode('simple')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'simple'
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
+                      mode === 'simple'
                         ? 'bg-[#9146FF] text-white'
                         : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                      }`}
+                    }`}
                   >
                     Simple Mode
                   </button>
                   <button
                     onClick={() => setMode('advanced')}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${mode === 'advanced'
+                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
+                      mode === 'advanced'
                         ? 'bg-[#9146FF] text-white'
                         : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                      }`}
+                    }`}
                   >
                     Advanced Mode
                   </button>

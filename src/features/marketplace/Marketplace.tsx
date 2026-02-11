@@ -168,8 +168,9 @@ export function Marketplace({ onOpenSidebar }: MarketplaceProps) {
         <div className="flex">
           {/* Sidebar Filters */}
           <div
-            className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-              }`}
+            className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-[#18181b] dark:bg-white border-r border-[#2d2d31] dark:border-gray-200 p-6 overflow-y-auto transition-transform duration-300 ${
+              filtersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            }`}
           >
             {/* Mobile close button */}
             <div className="lg:hidden flex justify-end mb-4">
@@ -187,10 +188,11 @@ export function Marketplace({ onOpenSidebar }: MarketplaceProps) {
               {categories.map(category => (
                 <button
                   key={category}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${category === 'All'
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors text-sm ${
+                    category === 'All'
                       ? 'bg-[#9146FF] text-white'
                       : 'text-gray-400 dark:text-gray-600 hover:bg-[#2d2d31] dark:hover:bg-gray-100 hover:text-white dark:hover:text-gray-900'
-                    }`}
+                  }`}
                 >
                   {category}
                 </button>
