@@ -3,14 +3,9 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
 
-// @ts-expect-error - _env_ is injected at runtime
-const AUTH_SERVICE_URL =
-  window._env_?.AUTH_SERVICE_URL || import.meta.env.AUTH_SERVICE_URL || 'http://localhost:3000'
-// @ts-expect-error - _env_ is injected at runtime
+const AUTH_SERVICE_URL = window._env_?.AUTH_SERVICE_URL || import.meta.env.AUTH_SERVICE_URL || 'http://localhost:3000'
 const TWITCH_CLIENT_ID = window._env_?.TWITCH_CLIENT_ID || import.meta.env.TWITCH_CLIENT_ID
-// @ts-expect-error - _env_ is injected at runtime
-const REDIRECT_URI =
-  window._env_?.FRONT_URL || import.meta.env.FRONT_URL || globalThis.location.origin
+const REDIRECT_URI = window._env_?.FRONT_URL || import.meta.env.FRONT_URL || globalThis.location.origin
 
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
