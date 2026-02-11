@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from './utils/test-utils'
-import { AuthProvider } from '../context/AuthProvider'
-import { useAuth } from '../context/AuthContext'
+import { AuthProvider, useAuth } from '../context/AuthContext'
 import React from 'react'
 
 describe('AuthProvider', () => {

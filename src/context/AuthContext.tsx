@@ -33,7 +33,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const login = () => {
     const scope = encodeURIComponent('openid user:read:email')
     const responseType = 'token id_token'
-    const state = Math.random().toString(36).substring(7)
+    const state = crypto.randomUUID()
     sessionStorage.setItem('twitch_auth_state', state)
     const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=${responseType}&scope=${scope}&state=${state}`
     globalThis.location.href = twitchUrl
