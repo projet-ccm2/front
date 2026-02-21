@@ -33,7 +33,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   }, [])
 
   const login = () => {
-    const scope = encodeURIComponent('openid user:read:email')
+    const scope = encodeURIComponent('openid user:read:email moderator:read:followers channel:read:subscriptions bits:read channel:read:redemptions channel:read:hype_train channel:read:polls channel:read:predictions channel:read:charity')
     const responseType = 'token id_token'
     const state = crypto.randomUUID()
     sessionStorage.setItem('twitch_auth_state', state)
