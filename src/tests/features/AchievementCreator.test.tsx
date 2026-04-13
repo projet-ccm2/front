@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { AchievementCreator } from '../../features/achievements/AchievementCreator'
+import { ACHIEVEMENT_PLACEHOLDER_IMAGE_URL } from '../../features/achievements/forms/achievementFormModel'
 import React from 'react'
 
 const marketplaceTemplate = {
@@ -349,6 +350,32 @@ describe('AchievementCreator', () => {
     expect(
       await screen.findByText('Achievement "First 100 Messages" was published.')
     ).toBeInTheDocument()
+  })
+
+  it('should send a placeholder image when no image is provided', async () => {
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+      target: { value: 'First 100 Messages' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+      target: { value: 'Unlock after 100 messages.' },
+    })
+    fireEvent.click(screen.getByText('Publish Achievement'))
+
+    expect(
+      await screen.findByText('Achievement "First 100 Messages" was published.')
+    ).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/achievements'),
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining(`"image":"${ACHIEVEMENT_PLACEHOLDER_IMAGE_URL}"`),
+        })
+      )
+    })
   })
 
   it('should block publishing for synthetic moderator channel ids', async () => {

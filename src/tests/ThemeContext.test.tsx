@@ -1,8 +1,27 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, act } from './utils/test-utils'
-import { renderHook as rawRenderHook } from '@testing-library/react'
+import { render as rawRender } from '@testing-library/react'
 import { ThemeProvider, useTheme } from '../context/ThemeContext'
 import React from 'react'
+
+class TestErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: string | null }
+> {
+  state = { error: null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error: error.message }
+  }
+
+  render() {
+    if (this.state.error) {
+      return <div>{this.state.error}</div>
+    }
+
+    return this.props.children
+  }
+}
 
 describe('ThemeContext', () => {
   it('should render children', () => {
@@ -53,13 +72,21 @@ describe('ThemeContext', () => {
   })
 
   it('should throw error when useTheme is used outside provider', () => {
-    // Suppress console.error for this test as React logs the error
     const consoleSpy = vi.spyOn(console, 'error')
     consoleSpy.mockImplementation(() => {})
 
-    expect(() => rawRenderHook(() => useTheme())).toThrow(
-      'useTheme must be used within a ThemeProvider'
+    const TestComponent = () => {
+      useTheme()
+      return <div>Should not render</div>
+    }
+
+    rawRender(
+      <TestErrorBoundary>
+        <TestComponent />
+      </TestErrorBoundary>
     )
+
+    expect(screen.getByText('useTheme must be used within a ThemeProvider')).toBeInTheDocument()
 
     consoleSpy.mockRestore()
   })
