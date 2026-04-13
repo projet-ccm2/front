@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, renderHook, act } from './utils/test-utils'
+import { renderHook as rawRenderHook } from '@testing-library/react'
 import { ThemeProvider, useTheme } from '../context/ThemeContext'
 import React from 'react'
 
@@ -56,7 +57,7 @@ describe('ThemeContext', () => {
     const consoleSpy = vi.spyOn(console, 'error')
     consoleSpy.mockImplementation(() => {})
 
-    expect(() => renderHook(() => useTheme())).toThrow(
+    expect(() => rawRenderHook(() => useTheme())).toThrow(
       'useTheme must be used within a ThemeProvider'
     )
 

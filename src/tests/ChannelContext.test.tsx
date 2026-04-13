@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, renderHook, act } from './utils/test-utils'
+import { renderHook as rawRenderHook } from '@testing-library/react'
 import { ChannelProvider, useChannel } from '../context/ChannelContext'
 import React from 'react'
 
@@ -71,7 +72,7 @@ describe('ChannelContext', () => {
     const consoleSpy = vi.spyOn(console, 'error')
     consoleSpy.mockImplementation(() => {})
 
-    expect(() => renderHook(() => useChannel())).toThrow(
+    expect(() => rawRenderHook(() => useChannel())).toThrow(
       'useChannel must be used within a ChannelProvider'
     )
 

@@ -34,7 +34,12 @@ describe('Integration Tests', () => {
       { timeout: 5000 }
     )
 
-    expect(screen.getByText('Active Achievements')).toBeInTheDocument()
-    expect(screen.getByText('Active Users')).toBeInTheDocument()
+    await waitFor(
+      () => {
+        expect(screen.getByText('Active Achievements')).toBeInTheDocument()
+        expect(screen.getByText('Public Templates')).toBeInTheDocument()
+      },
+      { timeout: 5000 }
+    )
   })
 })
