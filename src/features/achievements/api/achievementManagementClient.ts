@@ -8,7 +8,7 @@ import type {
 } from './achievementManagement.types'
 
 const ACHIEVEMENT_MANAGEMENT_SERVICE_URL =
-  window._env_?.ACHIEVEMENT_MANAGEMENT_SERVICE_URL ||
+  globalThis._env_?.ACHIEVEMENT_MANAGEMENT_SERVICE_URL ||
   import.meta.env.VITE_ACHIEVEMENT_MANAGEMENT_SERVICE_URL ||
   'http://localhost:3001'
 

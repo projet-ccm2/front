@@ -27,6 +27,22 @@ const formatTriggerLabel = (label: string) =>
     .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(' ')
 
+function getPublishValidationError(
+  selectedChannel: { id: string } | null,
+  formValues: { title: string; description: string }
+): string | null {
+  if (!selectedChannel) {
+    return 'Select a channel before publishing an achievement.'
+  }
+  if (!isOwnerAchievementChannelId(selectedChannel.id)) {
+    return getOwnerOnlyAchievementMessage('creator')
+  }
+  if (!formValues.title.trim() || !formValues.description.trim()) {
+    return 'Title and description are required before publishing.'
+  }
+  return null
+}
+
 export function AchievementCreator({
   achievementId = null,
   templateAchievement = null,
@@ -137,20 +153,9 @@ export function AchievementCreator({
   }, [achievementId, templateAchievement])
 
   const handlePublish = async () => {
-    if (!selectedChannel) {
-      setSubmitError('Select a channel before publishing an achievement.')
-      setSubmitSuccess(null)
-      return
-    }
-
-    if (!isOwnerAchievementChannelId(selectedChannel.id)) {
-      setSubmitError(getOwnerOnlyAchievementMessage('creator'))
-      setSubmitSuccess(null)
-      return
-    }
-
-    if (!formValues.title.trim() || !formValues.description.trim()) {
-      setSubmitError('Title and description are required before publishing.')
+    const validationError = getPublishValidationError(selectedChannel, formValues)
+    if (validationError) {
+      setSubmitError(validationError)
       setSubmitSuccess(null)
       return
     }
@@ -510,7 +515,7 @@ export function AchievementCreator({
                     <input
                       id="achievement-trigger-data"
                       type="text"
-                      value={formValues.type.data === null ? '' : String(formValues.type.data)}
+                      value={formValues.type.data === null ? '' : String(formValues.type.data ?? '')}
                       onChange={event =>
                         setFormValues(current => ({
                           ...current,
@@ -553,12 +558,8 @@ export function AchievementCreator({
                 >
                   <Send className="w-4 h-4" />
                   {isSubmitting
-                    ? achievementId
-                      ? 'Saving...'
-                      : 'Publishing...'
-                    : achievementId
-                      ? 'Update Achievement'
-                      : 'Publish Achievement'}
+                    ? (achievementId ? 'Saving...' : 'Publishing...')
+                    : (achievementId ? 'Update Achievement' : 'Publish Achievement')}
                 </button>
               </div>
             </div>

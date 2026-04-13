@@ -65,7 +65,7 @@ export function AppContent() {
   }, [completeAuth])
 
   useEffect(() => {
-    const runtimeConfig = window._env_ || {}
+    const runtimeConfig = globalThis._env_ || {}
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { TWITCH_CLIENT_ID, ...safeConfig } = runtimeConfig
     console.log('Current Runtime Config:', safeConfig)

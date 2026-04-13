@@ -78,8 +78,10 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
             return right.visits - left.visits
           case 'Highest Reward':
             return right.reward - left.reward
-          case 'Newest Available':
-            return right.active === left.active ? 0 : right.active ? -1 : 1
+          case 'Newest Available': {
+            if (right.active === left.active) return 0
+            return right.active ? -1 : 1
+          }
           case 'Most Downloaded':
           default:
             return right.downloads - left.downloads

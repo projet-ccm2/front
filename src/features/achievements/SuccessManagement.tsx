@@ -115,7 +115,7 @@ export function SuccessManagement({
   }
 
   const handleDelete = async (achievement: Achievement) => {
-    const shouldDelete = window.confirm(`Delete "${achievement.title}"?`)
+    const shouldDelete = globalThis.confirm(`Delete "${achievement.title}"?`)
 
     if (!shouldDelete) {
       return
