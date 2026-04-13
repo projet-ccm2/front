@@ -13,13 +13,18 @@ const ACHIEVEMENT_MANAGEMENT_SERVICE_URL =
   'http://localhost:3001'
 
 export class AchievementManagementError extends Error {
+  readonly status: number
+  readonly details?: unknown
+
   constructor(
     message: string,
-    readonly status: number,
-    readonly details?: unknown
+    status: number,
+    details?: unknown
   ) {
     super(message)
     this.name = 'AchievementManagementError'
+    this.status = status
+    this.details = details
   }
 }
 
