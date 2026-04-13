@@ -1,39 +1,196 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
-import { Sparkles, Upload, Plus, Save, Send, Menu, Trash2 } from 'lucide-react'
+import { Sparkles, Upload, Save, Send, Menu } from 'lucide-react'
+import { useChannel } from '../../context/ChannelContext'
+import { achievementManagementClient } from './api/achievementManagementClient'
+import {
+  achievementTriggerOptions,
+  createFormValuesFromAchievement,
+  defaultAchievementFormValues,
+  mergeSuggestionIntoFormValues,
+} from './forms/achievementFormModel'
+import type { Achievement } from './api/achievementManagement.types'
+import {
+  getOwnerOnlyAchievementMessage,
+  isOwnerAchievementChannelId,
+} from './utils/achievementManagementChannel'
 
 interface AchievementCreatorProps {
+  achievementId?: string | null
+  templateAchievement?: Achievement | null
   onOpenSidebar: () => void
 }
 
-export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreatorProps>) {
+const formatTriggerLabel = (label: string) =>
+  label
+    .split('_')
+    .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ')
+
+export function AchievementCreator({
+  achievementId = null,
+  templateAchievement = null,
+  onOpenSidebar,
+}: Readonly<AchievementCreatorProps>) {
+  const { selectedChannel } = useChannel()
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
-  const [isHidden, setIsHidden] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [xpValue, setXpValue] = useState('100')
-  const [conditions, setConditions] = useState<{ id: string; value: string }[]>([
-    { id: '1', value: 'Watch time > 1 hour' },
-  ])
+  const [formValues, setFormValues] = useState(defaultAchievementFormValues)
+  const [aiPrompt, setAiPrompt] = useState(
+    'Create an achievement for a user who sends 100 messages'
+  )
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingAchievement, setIsLoadingAchievement] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [templateMessage, setTemplateMessage] = useState<string | null>(null)
 
-  const handleAIGenerate = () => {
-    setTitle('Chat Warrior')
-    setDescription('Send 250 messages in the stream chat to unlock this badge!')
-    setXpValue('250')
+  const updateField = <K extends keyof typeof formValues>(
+    field: K,
+    value: (typeof formValues)[K]
+  ) => {
+    setFormValues(current => ({
+      ...current,
+      [field]: value,
+    }))
   }
 
-  const addCondition = () => {
-    setConditions([...conditions, { id: crypto.randomUUID(), value: 'New condition' }])
+  const handleAIGenerate = async () => {
+    if (!aiPrompt.trim()) {
+      setAiError('Enter an AI prompt before requesting a suggestion.')
+      return
+    }
+
+    setIsGenerating(true)
+    setAiError(null)
+
+    try {
+      const suggestion = await achievementManagementClient.getAiSuggestion({
+        prompt: aiPrompt.trim(),
+      })
+
+      setFormValues(current => mergeSuggestionIntoFormValues(current, suggestion))
+    } catch {
+      setAiError('Unable to generate an AI suggestion right now.')
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
-  const removeCondition = (index: number) => {
-    setConditions(conditions.filter((_, i) => i !== index))
+  useEffect(() => {
+    if (!achievementId) {
+      setFormValues(defaultAchievementFormValues)
+      setLoadError(null)
+      setSubmitError(null)
+      setSubmitSuccess(null)
+      return
+    }
+
+    let isMounted = true
+    setIsLoadingAchievement(true)
+    setLoadError(null)
+    setSubmitError(null)
+    setSubmitSuccess(null)
+
+    const loadAchievement = async () => {
+      try {
+        const achievement = await achievementManagementClient.getAchievement(achievementId)
+
+        if (!isMounted) {
+          return
+        }
+
+        setFormValues(createFormValuesFromAchievement(achievement))
+      } catch {
+        if (!isMounted) {
+          return
+        }
+
+        setLoadError('Unable to load this achievement for editing.')
+      } finally {
+        if (isMounted) {
+          setIsLoadingAchievement(false)
+        }
+      }
+    }
+
+    loadAchievement()
+
+    return () => {
+      isMounted = false
+    }
+  }, [achievementId])
+
+  useEffect(() => {
+    if (achievementId || !templateAchievement) {
+      return
+    }
+
+    setFormValues(createFormValuesFromAchievement(templateAchievement))
+    setMode('advanced')
+    setLoadError(null)
+    setSubmitError(null)
+    setSubmitSuccess(null)
+    setTemplateMessage(`Template "${templateAchievement.title}" loaded from the marketplace.`)
+  }, [achievementId, templateAchievement])
+
+  const handlePublish = async () => {
+    if (!selectedChannel) {
+      setSubmitError('Select a channel before publishing an achievement.')
+      setSubmitSuccess(null)
+      return
+    }
+
+    if (!isOwnerAchievementChannelId(selectedChannel.id)) {
+      setSubmitError(getOwnerOnlyAchievementMessage('creator'))
+      setSubmitSuccess(null)
+      return
+    }
+
+    if (!formValues.title.trim() || !formValues.description.trim()) {
+      setSubmitError('Title and description are required before publishing.')
+      setSubmitSuccess(null)
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitError(null)
+    setSubmitSuccess(null)
+
+    try {
+      const normalizedPayload = {
+        ...formValues,
+        title: formValues.title.trim(),
+        description: formValues.description.trim(),
+        label: formValues.label.trim(),
+      }
+
+      if (achievementId) {
+        await achievementManagementClient.updateAchievement(achievementId, normalizedPayload)
+        setSubmitSuccess(`Achievement "${normalizedPayload.title}" was updated.`)
+      } else {
+        await achievementManagementClient.createAchievement({
+          ...normalizedPayload,
+          channelId: selectedChannel.id,
+        })
+        setSubmitSuccess(`Achievement "${normalizedPayload.title}" was published.`)
+      }
+    } catch {
+      setSubmitError(
+        achievementId
+          ? 'Unable to update this achievement right now.'
+          : 'Unable to publish this achievement right now.'
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
-        {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -46,25 +203,24 @@ export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreato
               </button>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                  Create Achievement
+                  {achievementId ? 'Edit Achievement' : 'Create Achievement'}
                 </h1>
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
-                  Design a new quest for your community
+                  {achievementId
+                    ? 'Update an existing quest for your community'
+                    : 'Design a new quest for your community'}
                 </p>
               </div>
             </div>
 
-            {/* Channel Selector */}
             <div className="relative hidden sm:block flex-shrink-0">
               <ChannelSelector />
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="max-w-4xl mx-auto p-4 sm:p-8">
           <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl overflow-hidden">
-            {/* AI Generate Banner */}
             <div className="bg-gradient-to-r from-[#9146FF]/20 to-[#772ce8]/20 border-b border-[#2d2d31] dark:border-gray-200 p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -78,19 +234,66 @@ export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreato
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={handleAIGenerate}
-                  className="w-full sm:w-auto px-6 py-3 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Generate with AI
-                </button>
+                <div className="w-full sm:w-auto sm:min-w-96">
+                  <label htmlFor="ai-prompt" className="sr-only">
+                    AI Prompt
+                  </label>
+                  <textarea
+                    id="ai-prompt"
+                    value={aiPrompt}
+                    onChange={event => setAiPrompt(event.target.value)}
+                    placeholder="Describe the achievement you want AI to draft..."
+                    rows={2}
+                    className="mb-3 w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors resize-none placeholder:text-gray-500"
+                  />
+                  <button
+                    onClick={() => void handleAIGenerate()}
+                    disabled={isGenerating}
+                    className={`w-full px-6 py-3 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                      isGenerating ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {isGenerating ? 'Generating...' : 'Generate with AI'}
+                  </button>
+                </div>
               </div>
+              {aiError && (
+                <div className="mt-4 text-sm text-[#ff8080] dark:text-[#b42318]">{aiError}</div>
+              )}
             </div>
 
-            {/* Form Content */}
             <div className="p-4 sm:p-8">
-              {/* Badge Upload */}
+              {isLoadingAchievement && (
+                <div className="mb-6 rounded-xl border border-[#2d2d31] bg-[#2d2d31] p-4 text-sm text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600">
+                  Loading achievement data...
+                </div>
+              )}
+
+              {loadError && (
+                <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+                  {loadError}
+                </div>
+              )}
+
+              {submitError && (
+                <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+                  {submitError}
+                </div>
+              )}
+
+              {submitSuccess && (
+                <div className="mb-6 rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00f593] dark:text-[#027a48]">
+                  {submitSuccess}
+                </div>
+              )}
+
+              {templateMessage && (
+                <div className="mb-6 rounded-xl border border-[#9146FF]/40 bg-[#9146FF]/10 p-4 text-sm text-[#c6a8ff] dark:text-[#6f42c1]">
+                  {templateMessage}
+                </div>
+              )}
+
               <div className="mb-8">
                 <div className="block text-white dark:text-gray-900 mb-3 font-medium">
                   Achievement Icon
@@ -106,11 +309,19 @@ export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreato
                     <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">
                       Recommended: 512x512px PNG or JPG
                     </p>
+                    <input
+                      type="text"
+                      value={formValues.image ?? ''}
+                      onChange={event =>
+                        updateField('image', event.target.value.trim() ? event.target.value : null)
+                      }
+                      placeholder="Optional image URL..."
+                      className="mt-3 w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Title */}
               <div className="mb-6">
                 <label
                   htmlFor="achievement-title"
@@ -121,14 +332,13 @@ export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreato
                 <input
                   id="achievement-title"
                   type="text"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  value={formValues.title}
+                  onChange={event => updateField('title', event.target.value)}
                   placeholder="Enter achievement name..."
                   className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
                 />
               </div>
 
-              {/* Description */}
               <div className="mb-6">
                 <label
                   htmlFor="achievement-description"
@@ -138,54 +348,101 @@ export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreato
                 </label>
                 <textarea
                   id="achievement-description"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
+                  value={formValues.description}
+                  onChange={event => updateField('description', event.target.value)}
                   placeholder="Describe how to unlock this achievement..."
                   rows={4}
                   className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors resize-none placeholder:text-gray-500"
                 />
               </div>
 
-              {/* XP Value */}
-              <div className="mb-6">
-                <label
-                  htmlFor="achievement-xp"
-                  className="block text-white dark:text-gray-900 mb-3"
-                >
-                  XP / Points Value
-                </label>
-                <div className="flex items-center gap-4">
+              <div className="grid sm:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label
+                    htmlFor="achievement-goal"
+                    className="block text-white dark:text-gray-900 mb-3"
+                  >
+                    Goal
+                  </label>
                   <input
-                    id="achievement-xp"
+                    id="achievement-goal"
                     type="number"
-                    value={xpValue}
-                    onChange={e => setXpValue(e.target.value)}
-                    className="w-32 px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
+                    value={formValues.goal}
+                    onChange={event => updateField('goal', Number(event.target.value) || 0)}
+                    className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
                   />
-                  <span className="text-gray-400 dark:text-gray-600">XP awarded on completion</span>
+                </div>
+                <div>
+                  <label
+                    htmlFor="achievement-reward"
+                    className="block text-white dark:text-gray-900 mb-3"
+                  >
+                    Reward (XP / Points)
+                  </label>
+                  <input
+                    id="achievement-reward"
+                    type="number"
+                    value={formValues.reward}
+                    onChange={event => updateField('reward', Number(event.target.value) || 0)}
+                    className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
+                  />
                 </div>
               </div>
 
-              {/* Toggle Options */}
+              <div className="mb-6">
+                <label
+                  htmlFor="achievement-label"
+                  className="block text-white dark:text-gray-900 mb-3"
+                >
+                  Label
+                </label>
+                <input
+                  id="achievement-label"
+                  type="text"
+                  value={formValues.label}
+                  onChange={event => updateField('label', event.target.value)}
+                  placeholder="Optional short badge label..."
+                  className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
+                />
+              </div>
+
               <div className="mb-8 space-y-4">
-                <div className="flex items-center justify-between p-4 bg-[#2d2d31] dark:bg-gray-100 rounded-lg">
-                  <div>
-                    <div className="text-white dark:text-gray-900">Hidden Achievement</div>
-                    <div className="text-sm text-gray-400 dark:text-gray-600">
-                      Hide this achievement until unlocked
-                    </div>
-                  </div>
+                <div className="grid sm:grid-cols-3 gap-4">
                   <button
-                    onClick={() => setIsHidden(!isHidden)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${
-                      isHidden ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
+                    type="button"
+                    onClick={() => updateField('public', !formValues.public)}
+                    className={`rounded-lg border px-4 py-4 text-left transition-colors ${
+                      formValues.public
+                        ? 'border-[#9146FF] bg-[#9146FF]/15 text-white dark:text-gray-900'
+                        : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
                     }`}
                   >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-                        isHidden ? 'translate-x-6' : 'translate-x-0.5'
-                      }`}
-                    />
+                    <div className="font-medium">Public Template</div>
+                    <div className="mt-1 text-sm">Allow marketplace reuse.</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField('active', !formValues.active)}
+                    className={`rounded-lg border px-4 py-4 text-left transition-colors ${
+                      formValues.active
+                        ? 'border-[#9146FF] bg-[#9146FF]/15 text-white dark:text-gray-900'
+                        : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
+                    }`}
+                  >
+                    <div className="font-medium">Active</div>
+                    <div className="mt-1 text-sm">Achievement available immediately.</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField('secret', !formValues.secret)}
+                    className={`rounded-lg border px-4 py-4 text-left transition-colors ${
+                      formValues.secret
+                        ? 'border-[#9146FF] bg-[#9146FF]/15 text-white dark:text-gray-900'
+                        : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
+                    }`}
+                  >
+                    <div className="font-medium">Secret Achievement</div>
+                    <div className="mt-1 text-sm">Hidden until unlocked.</div>
                   </button>
                 </div>
 
@@ -213,58 +470,63 @@ export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreato
                 </div>
               </div>
 
-              {/* Trigger Conditions */}
               {mode === 'advanced' && (
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="block text-white dark:text-gray-900 font-medium">
-                      Trigger Conditions
-                    </div>
-                    <button
-                      onClick={addCondition}
-                      className="flex items-center gap-2 px-3 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors text-sm"
+                <div className="mb-8 grid sm:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      htmlFor="achievement-trigger-label"
+                      className="block text-white dark:text-gray-900 mb-3 font-medium"
                     >
-                      <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">Add Condition</span>
-                    </button>
+                      Trigger Type
+                    </label>
+                    <select
+                      id="achievement-trigger-label"
+                      value={formValues.type.label}
+                      onChange={event =>
+                        setFormValues(current => ({
+                          ...current,
+                          type: {
+                            ...current.type,
+                            label: event.target.value as (typeof current.type)['label'],
+                          },
+                        }))
+                      }
+                      className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
+                    >
+                      {achievementTriggerOptions.map(trigger => (
+                        <option key={trigger} value={trigger}>
+                          {formatTriggerLabel(trigger)}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="space-y-3">
-                    {conditions.map((condition, index) => (
-                      <div
-                        key={condition.id}
-                        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
-                      >
-                        <select className="flex-1 px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none">
-                          <option>Watch time</option>
-                          <option>Chat messages</option>
-                          <option>Stream attendance</option>
-                          <option>Points earned</option>
-                        </select>
-                        <select className="px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none">
-                          <option>&gt;=</option>
-                          <option>&gt;</option>
-                          <option>=</option>
-                          <option>&lt;</option>
-                        </select>
-                        <input
-                          type="text"
-                          placeholder="Value"
-                          className="w-full sm:w-32 px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
-                        />
-                        <button
-                          onClick={() => removeCondition(index)}
-                          data-testid={`remove-condition-${index}`}
-                          className="p-2 hover:bg-[#2d2d31] rounded-lg text-gray-400 hover:text-[#ff4444]"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ))}
+                  <div>
+                    <label
+                      htmlFor="achievement-trigger-data"
+                      className="block text-white dark:text-gray-900 mb-3 font-medium"
+                    >
+                      Trigger Data
+                    </label>
+                    <input
+                      id="achievement-trigger-data"
+                      type="text"
+                      value={formValues.type.data === null ? '' : String(formValues.type.data)}
+                      onChange={event =>
+                        setFormValues(current => ({
+                          ...current,
+                          type: {
+                            ...current.type,
+                            data: event.target.value.trim() ? event.target.value : null,
+                          },
+                        }))
+                      }
+                      placeholder="Optional trigger data..."
+                      className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
+                    />
                   </div>
                 </div>
               )}
 
-              {/* Version Update */}
               <div className="mb-8 p-4 bg-[#2d2d31] dark:bg-gray-100 rounded-lg border-l-4 border-[#00f593]">
                 <div className="flex items-center gap-2 text-[#00f593] mb-1">
                   <div className="w-2 h-2 bg-[#00f593] rounded-full" />
@@ -275,15 +537,28 @@ export function AchievementCreator({ onOpenSidebar }: Readonly<AchievementCreato
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4">
                 <button className="px-6 py-3 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors flex items-center justify-center gap-2">
                   <Save className="w-4 h-4" />
-                  Save Draft
+                  {achievementId ? 'Save Changes' : 'Save Draft'}
                 </button>
-                <button className="px-6 py-3 bg-gradient-to-r from-[#9146FF] to-[#772ce8] hover:from-[#772ce8] hover:to-[#9146FF] text-white rounded-lg transition-all flex items-center justify-center gap-2">
+                <button
+                  onClick={() => void handlePublish()}
+                  disabled={isSubmitting || isLoadingAchievement || Boolean(loadError)}
+                  className={`px-6 py-3 bg-gradient-to-r from-[#9146FF] to-[#772ce8] hover:from-[#772ce8] hover:to-[#9146FF] text-white rounded-lg transition-all flex items-center justify-center gap-2 ${
+                    isSubmitting || isLoadingAchievement || loadError
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
                   <Send className="w-4 h-4" />
-                  Publish Achievement
+                  {isSubmitting
+                    ? achievementId
+                      ? 'Saving...'
+                      : 'Publishing...'
+                    : achievementId
+                      ? 'Update Achievement'
+                      : 'Publish Achievement'}
                 </button>
               </div>
             </div>

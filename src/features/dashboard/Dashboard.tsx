@@ -17,10 +17,47 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps>) {
-  const { engagementData, recentActivity, loading } = useDashboardData()
+  const { engagementData, recentActivity, stats, loading, errorMessage, contextMessage } =
+    useDashboardData()
 
   if (loading) {
-    // ...
+    return (
+      <div className="flex flex-col">
+        <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
+          <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <button
+                  onClick={onOpenSidebar}
+                  data-testid="mobile-menu-btn"
+                  className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
+                >
+                  <Menu className="w-6 h-6" />
+                </button>
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
+                    Dashboard
+                  </h1>
+                  <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+                    Welcome back, manage your gamification system
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative hidden sm:block flex-shrink-0">
+                <ChannelSelector />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-8">
+            <div className="rounded-xl border border-[#2d2d31] bg-[#18181b] p-6 text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
+              Loading dashboard achievements...
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -63,9 +100,13 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#9146FF]/20 rounded-lg flex items-center justify-center">
                   <Award className="w-4 h-4 sm:w-5 sm:h-5 text-[#9146FF]" />
                 </div>
-                <span className="text-xs text-[#00f593]">+12%</span>
+                <span className="text-xs text-gray-400 dark:text-gray-600">
+                  {stats.totalAchievements} total
+                </span>
               </div>
-              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">24</div>
+              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
+                {stats.activeAchievements}
+              </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
                 Active Achievements
               </div>
@@ -76,11 +117,13 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#00f593]/20 rounded-lg flex items-center justify-center">
                   <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f593]" />
                 </div>
-                <span className="text-xs text-[#00f593]">+24%</span>
+                <span className="text-xs text-gray-400 dark:text-gray-600">channel-ready</span>
               </div>
-              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">1,284</div>
+              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
+                {stats.publicTemplates}
+              </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                Active Users
+                Public Templates
               </div>
             </div>
 
@@ -89,11 +132,13 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#ffd700]/20 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#ffd700]" />
                 </div>
-                <span className="text-xs text-[#00f593]">+8%</span>
+                <span className="text-xs text-gray-400 dark:text-gray-600">your progress</span>
               </div>
-              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">3,942</div>
+              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
+                {stats.completedAchievements}
+              </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                Total Unlocks
+                Completed Achievements
               </div>
             </div>
 
@@ -102,14 +147,28 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#ff4444]/20 rounded-lg flex items-center justify-center">
                   <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff4444]" />
                 </div>
-                <span className="text-xs text-[#00f593]">+32%</span>
+                <span className="text-xs text-gray-400 dark:text-gray-600">earned</span>
               </div>
-              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">67%</div>
+              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
+                {stats.totalXpEarned}
+              </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                Engagement Rate
+                Achievement XP
               </div>
             </div>
           </div>
+
+          {contextMessage && (
+            <div className="mb-6 rounded-xl border border-[#2d2d31] bg-[#18181b] p-4 text-sm text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
+              {contextMessage}
+            </div>
+          )}
+
+          {errorMessage && (
+            <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+              {errorMessage}
+            </div>
+          )}
 
           {/* Charts and Activity */}
           <div className="grid lg:grid-cols-3 gap-6">
@@ -117,10 +176,10 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
             <div className="lg:col-span-2 bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
               <div className="mb-6">
                 <h2 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-1">
-                  User Engagement
+                  Unlock Activity
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                  Active users over the last 7 days
+                  Your achievement unlocks over the last 7 days
                 </p>
               </div>
               <ResponsiveContainer width="100%" height={300}>
@@ -142,7 +201,7 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                   />
                   <Line
                     type="monotone"
-                    dataKey="users"
+                    dataKey="unlocks"
                     stroke="#9146FF"
                     strokeWidth={3}
                     dot={{ fill: '#9146FF', strokeWidth: 2, r: 4 }}
@@ -158,27 +217,33 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                   Recent Activity
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                  Latest achievement unlocks
+                  Your latest completed achievements
                 </p>
               </div>
-              <div className="space-y-4">
-                {recentActivity.map(activity => (
-                  <div key={activity.id} className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-full flex items-center justify-center flex-shrink-0">
-                      <Award className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm text-white dark:text-gray-900 truncate">
-                        {activity.user}
+              {recentActivity.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-[#2d2d31] bg-[#0e0e10] p-6 text-sm text-gray-400 dark:border-gray-200 dark:bg-gray-50 dark:text-gray-600">
+                  Complete an achievement to populate this activity feed.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentActivity.map(activity => (
+                    <div key={activity.id} className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-full flex items-center justify-center flex-shrink-0">
+                        <Award className="w-4 h-4 text-white" />
                       </div>
-                      <div className="text-xs text-gray-400 dark:text-gray-600 truncate">
-                        {activity.achievement}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-white dark:text-gray-900 truncate">
+                          {activity.user}
+                        </div>
+                        <div className="text-xs text-gray-400 dark:text-gray-600 truncate">
+                          {activity.achievement}
+                        </div>
+                        <div className="text-xs text-gray-500">{activity.time}</div>
                       </div>
-                      <div className="text-xs text-gray-500">{activity.time}</div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

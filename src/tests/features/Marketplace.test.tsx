@@ -1,100 +1,214 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '../utils/test-utils'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { Marketplace } from '../../features/marketplace/Marketplace'
 import React from 'react'
 
-describe('Marketplace', () => {
-  const mockOnNavigate = vi.fn()
-  const mockOnOpenSidebar = vi.fn()
+const mockAchievements = [
+  {
+    id: '1',
+    title: 'Speed Runner',
+    description: 'Complete a game in under 2 hours',
+    goal: 2,
+    reward: 1000,
+    label: 'SR',
+    public: true,
+    downloads: 234,
+    visits: 980,
+    active: true,
+    secret: false,
+    image: null,
+    channelId: null,
+    type: {
+      label: 'message',
+      data: null,
+    },
+  },
+  {
+    id: '2',
+    title: 'Hype Train Conductor',
+    description: 'Participate in 5 hype trains',
+    goal: 5,
+    reward: 500,
+    label: '',
+    public: true,
+    downloads: 567,
+    visits: 1200,
+    active: false,
+    secret: true,
+    image: null,
+    channelId: null,
+    type: {
+      label: 'redeem_channel_point',
+      data: null,
+    },
+  },
+]
 
-  it('should render the marketplace page', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
-    expect(screen.getByRole('heading', { name: 'Community Marketplace' })).toBeInTheDocument()
+describe('Marketplace', () => {
+  const mockOnOpenSidebar = vi.fn()
+  const mockOnUseTemplate = vi.fn()
+
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockAchievements),
+        })
+      )
+    )
   })
 
-  it('should display achievement cards', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
-    expect(screen.getByText('Speed Runner')).toBeInTheDocument()
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('should render the marketplace page', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    expect(screen.getByRole('heading', { name: 'Community Marketplace' })).toBeInTheDocument()
+    expect(await screen.findByText('Speed Runner')).toBeInTheDocument()
+  })
+
+  it('should display achievement cards from the API', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    expect(await screen.findByText('Speed Runner')).toBeInTheDocument()
     expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
   })
 
-  it('should show search input', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
-    const searchInput = screen.getByPlaceholderText('Find new quests for your community...')
-    expect(searchInput).toBeInTheDocument()
+  it('should show search input', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    await screen.findByText('Speed Runner')
+    expect(screen.getByPlaceholderText('Find new quests for your community...')).toBeInTheDocument()
   })
 
-  it('should display category filters', async () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
+  it('should display category filters from trigger labels', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    await screen.findByText('Speed Runner')
     expect(screen.getByText('All')).toBeInTheDocument()
-    const chatInteractionButtons = screen.getAllByRole('button', { name: 'Chat interaction' })
-    expect(chatInteractionButtons.length).toBeGreaterThan(0)
-    expect(screen.getByRole('button', { name: 'Watch time' })).toBeInTheDocument()
-  }, 20000)
-
-  it('should toggle filters on mobile', () => {
-    const { container } = render(
-      <Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />
-    )
-    const filterBtn = container.querySelector(String.raw`.lg:hidden`)
-    if (filterBtn) {
-      fireEvent.click(filterBtn)
-    }
-    expect(true).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Message' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Redeem Channel Point' })).toBeInTheDocument()
   })
 
-  it('should handle category selection', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
+  it('should toggle filters on mobile', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
-    const categories = ['Chat interaction', 'Watch time', 'Donations', 'Points']
-    categories.forEach(category => {
-      const btn = screen.getByRole('button', { name: category })
-      fireEvent.click(btn)
+    await screen.findByText('Speed Runner')
+    fireEvent.click(screen.getByTestId('mobile-filter-btn'))
+
+    expect(screen.getByTestId('close-filters-btn')).toBeInTheDocument()
+  })
+
+  it('should handle category selection', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    await screen.findByText('Speed Runner')
+    fireEvent.click(screen.getByRole('button', { name: 'Redeem Channel Point' }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Speed Runner')).not.toBeInTheDocument()
     })
-    expect(true).toBeTruthy()
-  }, 30000)
+    expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
+  })
 
   it('should handle detailed interactions', async () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
-    // Toggle mobile filters
-    const filterBtn = screen.getByTestId('mobile-filter-btn')
-    fireEvent.click(filterBtn)
+    await screen.findByText('Speed Runner')
+    fireEvent.click(screen.getByTestId('mobile-filter-btn'))
 
-    // 1. Sort By
-    const sortSelect = screen.getByRole('combobox')
-    fireEvent.change(sortSelect, { target: { value: 'Newest' } })
+    fireEvent.change(screen.getByRole('combobox'), {
+      target: { value: 'Highest Reward' },
+    })
 
-    // 2. Add to Channel buttons
-    const addBtns = screen.getAllByText('Add to Channel')
-    addBtns.forEach(btn => fireEvent.click(btn))
+    screen.getAllByText('Use as Template').forEach(button => fireEvent.click(button))
 
-    // 3. Difficulty checkboxes
-    const checkbox = screen.getByLabelText('Hard')
-    fireEvent.click(checkbox)
-    expect(true).toBeTruthy()
+    fireEvent.click(screen.getByLabelText('Secret only'))
+    expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
   })
 
-  it('should toggle mobile filters sidebar', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
-    // Open
-    const filterBtn = screen.getByTestId('mobile-filter-btn')
-    fireEvent.click(filterBtn)
+  it('should toggle mobile filters sidebar', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
-    // Close
-    const closeBtn = screen.getByTestId('close-filters-btn')
-    fireEvent.click(closeBtn)
+    await screen.findByText('Speed Runner')
+    fireEvent.click(screen.getByTestId('mobile-filter-btn'))
+    fireEvent.click(screen.getByTestId('close-filters-btn'))
+    fireEvent.click(screen.getByTestId('mobile-menu-btn'))
 
-    // Open menu
-    const menuBtn = screen.getByTestId('mobile-menu-btn')
-    fireEvent.click(menuBtn)
     expect(mockOnOpenSidebar).toHaveBeenCalled()
   })
 
-  it('should display achievement stats', () => {
-    render(<Marketplace onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
-    const ratings = screen.getAllByText('4.8')
-    expect(ratings.length).toBeGreaterThan(0)
+  it('should display achievement stats', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    await screen.findByText('Speed Runner')
     expect(screen.getByText('234')).toBeInTheDocument()
+    expect(screen.getByText('980')).toBeInTheDocument()
+    expect(screen.getByText('1000 XP')).toBeInTheDocument()
+  })
+
+  it('should filter achievements with search', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    await screen.findByText('Speed Runner')
+    fireEvent.change(screen.getByPlaceholderText('Find new quests for your community...'), {
+      target: { value: 'Hype' },
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByText('Speed Runner')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
+  })
+
+  it('should render an empty state when the API returns no achievements', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve([]),
+        })
+      )
+    )
+
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    expect(await screen.findByText('No public achievements found')).toBeInTheDocument()
+  })
+
+  it('should render an error state when the API fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: false,
+          status: 502,
+          json: () => Promise.resolve({ message: 'bad gateway' }),
+          text: () => Promise.resolve('bad gateway'),
+        })
+      )
+    )
+
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    expect(
+      await screen.findByText('The achievement service is currently unavailable.')
+    ).toBeInTheDocument()
+  })
+
+  it('should pass the selected public achievement to the creator flow', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    const templateButtons = await screen.findAllByText('Use as Template')
+    fireEvent.click(templateButtons[0])
+
+    expect(mockOnUseTemplate).toHaveBeenCalledWith(mockAchievements[0])
   })
 })
