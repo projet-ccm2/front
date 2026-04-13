@@ -8,6 +8,7 @@ import {
   createFormValuesFromAchievement,
   defaultAchievementFormValues,
   mergeSuggestionIntoFormValues,
+  normalizeAchievementImage,
 } from './forms/achievementFormModel'
 import type { Achievement } from './api/achievementManagement.types'
 import {
@@ -170,6 +171,7 @@ export function AchievementCreator({
         title: formValues.title.trim(),
         description: formValues.description.trim(),
         label: formValues.label.trim(),
+        image: normalizeAchievementImage(formValues.image),
       }
 
       if (achievementId) {
@@ -323,6 +325,9 @@ export function AchievementCreator({
                       placeholder="Optional image URL..."
                       className="mt-3 w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
                     />
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
+                      If left empty, a default placeholder image will be sent automatically.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -515,7 +520,9 @@ export function AchievementCreator({
                     <input
                       id="achievement-trigger-data"
                       type="text"
-                      value={formValues.type.data === null ? '' : String(formValues.type.data ?? '')}
+                      value={
+                        formValues.type.data === null ? '' : String(formValues.type.data ?? '')
+                      }
                       onChange={event =>
                         setFormValues(current => ({
                           ...current,
@@ -558,8 +565,12 @@ export function AchievementCreator({
                 >
                   <Send className="w-4 h-4" />
                   {isSubmitting
-                    ? (achievementId ? 'Saving...' : 'Publishing...')
-                    : (achievementId ? 'Update Achievement' : 'Publish Achievement')}
+                    ? achievementId
+                      ? 'Saving...'
+                      : 'Publishing...'
+                    : achievementId
+                      ? 'Update Achievement'
+                      : 'Publish Achievement'}
                 </button>
               </div>
             </div>

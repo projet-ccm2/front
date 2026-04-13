@@ -1,8 +1,27 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, act } from './utils/test-utils'
-import { renderHook as rawRenderHook } from '@testing-library/react'
+import { render as rawRender } from '@testing-library/react'
 import { ChannelProvider, useChannel } from '../context/ChannelContext'
 import React from 'react'
+
+class TestErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: string | null }
+> {
+  state = { error: null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error: error.message }
+  }
+
+  render() {
+    if (this.state.error) {
+      return <div>{this.state.error}</div>
+    }
+
+    return this.props.children
+  }
+}
 
 describe('ChannelContext', () => {
   beforeEach(() => {
@@ -72,9 +91,18 @@ describe('ChannelContext', () => {
     const consoleSpy = vi.spyOn(console, 'error')
     consoleSpy.mockImplementation(() => {})
 
-    expect(() => rawRenderHook(() => useChannel())).toThrow(
-      'useChannel must be used within a ChannelProvider'
+    const TestComponent = () => {
+      useChannel()
+      return <div>Should not render</div>
+    }
+
+    rawRender(
+      <TestErrorBoundary>
+        <TestComponent />
+      </TestErrorBoundary>
     )
+
+    expect(screen.getByText('useChannel must be used within a ChannelProvider')).toBeInTheDocument()
 
     consoleSpy.mockRestore()
   })

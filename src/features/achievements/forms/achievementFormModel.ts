@@ -7,6 +7,8 @@ import type {
 
 export type AchievementFormValues = AchievementUpsertPayload
 
+export const ACHIEVEMENT_PLACEHOLDER_IMAGE_URL = 'https://placehold.co/512x512/png?text=Achievement'
+
 export const achievementTriggerOptions: AchievementTriggerLabel[] = [
   'message',
   'message_content',
@@ -70,4 +72,10 @@ export function createFormValuesFromAchievement(
     image: achievement.image,
     type: achievement.type,
   }
+}
+
+export function normalizeAchievementImage(image: string | null | undefined) {
+  const trimmedImage = image?.trim()
+
+  return trimmedImage ? trimmedImage : ACHIEVEMENT_PLACEHOLDER_IMAGE_URL
 }
