@@ -4,10 +4,10 @@ import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
 
 const AUTH_SERVICE_URL =
-  window._env_?.AUTH_SERVICE_URL || import.meta.env.AUTH_SERVICE_URL || 'http://localhost:3000'
-const TWITCH_CLIENT_ID = window._env_?.TWITCH_CLIENT_ID || import.meta.env.TWITCH_CLIENT_ID
+  globalThis._env_?.AUTH_SERVICE_URL || import.meta.env.AUTH_SERVICE_URL || 'http://localhost:3000'
+const TWITCH_CLIENT_ID = globalThis._env_?.TWITCH_CLIENT_ID || import.meta.env.TWITCH_CLIENT_ID
 const REDIRECT_URI =
-  window._env_?.FRONT_URL || import.meta.env.FRONT_URL || globalThis.location.origin
+  globalThis._env_?.FRONT_URL || import.meta.env.FRONT_URL || globalThis.location.origin
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -33,7 +33,9 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   }, [])
 
   const login = () => {
-    const scope = encodeURIComponent('openid user:read:email moderator:read:followers channel:read:subscriptions bits:read channel:read:redemptions channel:read:hype_train channel:read:polls channel:read:predictions channel:read:charity')
+    const scope = encodeURIComponent(
+      'openid user:read:email moderator:read:followers channel:read:subscriptions bits:read channel:read:redemptions channel:read:hype_train channel:read:polls channel:read:predictions channel:read:charity'
+    )
     const responseType = 'token id_token'
     const state = crypto.randomUUID()
     sessionStorage.setItem('twitch_auth_state', state)

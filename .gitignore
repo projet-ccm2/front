@@ -31,3 +31,8 @@ android/
 ios/
 .capacitor/
 .env
+
+
+.skills/
+docs/
+skills/

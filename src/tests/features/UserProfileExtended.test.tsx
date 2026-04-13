@@ -1,61 +1,94 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '../utils/test-utils'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen } from '../utils/test-utils'
 import { UserProfile } from '../../features/profile/UserProfile'
 import React from 'react'
 
+const authUser = {
+  userId: 'user-1',
+  username: 'streamer',
+  channel: {
+    id: 'channel-1',
+    name: 'MyChannel',
+    description: 'desc',
+    profileImageUrl: '',
+  },
+  channelsWhichIsMod: [],
+}
+
+const mockUserAchievements = [
+  {
+    id: '1',
+    title: 'First Steps',
+    description: 'Watch your first stream',
+    goal: 1,
+    reward: 50,
+    label: 'FS',
+    public: true,
+    downloads: 0,
+    visits: 0,
+    active: true,
+    secret: false,
+    image: null,
+    channelId: 'channel-1',
+    type: {
+      label: 'message',
+      data: null,
+    },
+    userState: {
+      progressCount: 1,
+      finished: true,
+      acquiredDate: null,
+    },
+  },
+]
+
 describe('UserProfile - Function Coverage', () => {
-  const mockOnNavigate = vi.fn()
+  beforeEach(() => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockUserAchievements),
+        })
+      )
+    )
+  })
 
-  it('should render user profile with correct user info', () => {
-    render(<UserProfile onNavigate={mockOnNavigate} />)
-    // Username appears in header and leaderboard
-    const usernameElements = screen.getAllByText('xXGamerXx')
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    localStorage.clear()
+  })
+
+  it('should render user profile with correct user info', async () => {
+    render(<UserProfile onOpenSidebar={() => {}} />)
+    const usernameElements = screen.getAllByText('streamer')
     expect(usernameElements.length).toBeGreaterThan(0)
-    expect(usernameElements[0]).toBeInTheDocument()
-
-    // Level 42 appears in header and leaderboard
-    const levelElements = screen.getAllByText(/Level 42/)
-    expect(levelElements.length).toBeGreaterThan(0)
-    expect(levelElements[0]).toBeInTheDocument()
+    expect(await screen.findByText('First Steps')).toBeInTheDocument()
   })
 
-  it('should toggle sidebar on mobile', () => {
-    const { container } = render(<UserProfile onNavigate={mockOnNavigate} />)
-    const menuBtn = screen.getByTestId('mobile-menu-btn')
+  it('should render stats cards', async () => {
+    render(<UserProfile onOpenSidebar={() => {}} />)
 
-    // Open sidebar
-    fireEvent.click(menuBtn)
-
-    // Close sidebar via overlay if found, or try to find the close button
-    // The overlay has class 'fixed inset-0 bg-black/50 z-40 lg:hidden'
-    // We can use container.querySelector to find it by class
-    const overlay = container.querySelector(String.raw`.fixed.inset-0.bg-black\/50`)
-    if (overlay) {
-      fireEvent.click(overlay)
-    }
-    expect(true).toBeTruthy()
-  })
-
-  it('should render stats cards', () => {
-    render(<UserProfile onNavigate={mockOnNavigate} />)
-
+    await screen.findByText('First Steps')
     expect(screen.getByText('Total Watch Time')).toBeInTheDocument()
-    expect(screen.getByText('247h')).toBeInTheDocument()
     expect(screen.getByText('Achievements Unlocked')).toBeInTheDocument()
-    expect(screen.getByText('Global Rank')).toBeInTheDocument()
+    expect(screen.getByText('Achievement XP')).toBeInTheDocument()
   })
 
-  it('should render badges section', () => {
-    render(<UserProfile onNavigate={mockOnNavigate} />)
+  it('should render badges section', async () => {
+    render(<UserProfile onOpenSidebar={() => {}} />)
 
     expect(screen.getByText('Achievement Badges')).toBeInTheDocument()
-    expect(screen.getByText('First Steps')).toBeInTheDocument()
-    expect(screen.getByText('Chat Master')).toBeInTheDocument()
+    expect(await screen.findByText('First Steps')).toBeInTheDocument()
   })
 
-  it('should render leaderboard section', () => {
-    render(<UserProfile onNavigate={mockOnNavigate} />)
+  it('should render leaderboard section', async () => {
+    render(<UserProfile onOpenSidebar={() => {}} />)
 
+    await screen.findByText('First Steps')
     expect(screen.getByText('Leaderboard')).toBeInTheDocument()
     expect(screen.getByText('View Full Rankings')).toBeInTheDocument()
     expect(screen.getByText('ProGamer99')).toBeInTheDocument()

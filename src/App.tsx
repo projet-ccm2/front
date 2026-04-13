@@ -10,6 +10,7 @@ import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
 import { TwitchOverlay } from './features/overlay/TwitchOverlay'
+import type { Achievement } from './features/achievements/api/achievementManagement.types'
 
 type Screen =
   | 'landing'
@@ -24,6 +25,8 @@ export function AppContent() {
   const { isAuthenticated, isLoading, login, completeAuth } = useAuth()
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
+  const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -62,7 +65,7 @@ export function AppContent() {
   }, [completeAuth])
 
   useEffect(() => {
-    const runtimeConfig = window._env_ || {}
+    const runtimeConfig = globalThis._env_ || {}
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { TWITCH_CLIENT_ID, ...safeConfig } = runtimeConfig
     console.log('Current Runtime Config:', safeConfig)
@@ -74,7 +77,25 @@ export function AppContent() {
   }
 
   const handleNavigate = (page: string) => {
+    if (page !== 'creator') {
+      setEditingAchievementId(null)
+      setTemplateAchievement(null)
+    }
     setCurrentScreen(page as Screen)
+    setSidebarOpen(false)
+  }
+
+  const handleEditAchievement = (achievementId: Achievement['id']) => {
+    setTemplateAchievement(null)
+    setEditingAchievementId(achievementId)
+    setCurrentScreen('creator')
+    setSidebarOpen(false)
+  }
+
+  const handleUseAchievementTemplate = (achievement: Achievement) => {
+    setEditingAchievementId(null)
+    setTemplateAchievement(achievement)
+    setCurrentScreen('creator')
     setSidebarOpen(false)
   }
 
@@ -104,16 +125,24 @@ export function AppContent() {
             <Dashboard onNavigate={handleNavigate} onOpenSidebar={() => setSidebarOpen(true)} />
           )}
           {currentScreen === 'creator' && (
-            <AchievementCreator onOpenSidebar={() => setSidebarOpen(true)} />
+            <AchievementCreator
+              achievementId={editingAchievementId}
+              templateAchievement={templateAchievement}
+              onOpenSidebar={() => setSidebarOpen(true)}
+            />
           )}
           {currentScreen === 'management' && (
             <SuccessManagement
+              onEditAchievement={handleEditAchievement}
               onNavigate={handleNavigate}
               onOpenSidebar={() => setSidebarOpen(true)}
             />
           )}
           {currentScreen === 'marketplace' && (
-            <Marketplace onOpenSidebar={() => setSidebarOpen(true)} />
+            <Marketplace
+              onOpenSidebar={() => setSidebarOpen(true)}
+              onUseTemplate={handleUseAchievementTemplate}
+            />
           )}
           {currentScreen === 'profile' && (
             <UserProfile onOpenSidebar={() => setSidebarOpen(true)} />
