@@ -178,7 +178,7 @@ export function AchievementCreator({
       } else {
         await achievementManagementClient.createAchievement({
           ...normalizedPayload,
-          channelId: selectedChannel.id,
+          channelId: selectedChannel!.id,
         })
         setSubmitSuccess(`Achievement "${normalizedPayload.title}" was published.`)
       }
