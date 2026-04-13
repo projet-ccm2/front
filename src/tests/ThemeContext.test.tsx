@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, renderHook, act } from './utils/test-utils'
+import { render, screen, act } from './utils/test-utils'
 import { renderHook as rawRenderHook } from '@testing-library/react'
 import { ThemeProvider, useTheme } from '../context/ThemeContext'
 import React from 'react'

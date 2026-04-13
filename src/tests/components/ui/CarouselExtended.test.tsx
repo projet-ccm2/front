@@ -236,20 +236,68 @@ describe('Carousel Components - Extended Coverage', () => {
       expect(screen.getByLabelText('Next slide')).toBeInTheDocument()
     })
 
-    it('should render carousel with different basis sizes', () => {
+    it('should handle ArrowLeft keydown to navigate previous', () => {
       render(
         <Carousel>
           <CarouselContent>
-            <CarouselItem className="basis-1/2">Item 1</CarouselItem>
-            <CarouselItem className="basis-1/3">Item 2</CarouselItem>
-            <CarouselItem className="basis-1/4">Item 3</CarouselItem>
+            <CarouselItem>Item 1</CarouselItem>
+            <CarouselItem>Item 2</CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      )
+
+      const carousel = document.querySelector('[data-slot="carousel"]')!
+      fireEvent.keyDown(carousel, { key: 'ArrowLeft' })
+      expect(carousel).toBeInTheDocument()
+    })
+
+    it('should handle ArrowRight keydown to navigate next', () => {
+      render(
+        <Carousel>
+          <CarouselContent>
+            <CarouselItem>Item 1</CarouselItem>
+            <CarouselItem>Item 2</CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      )
+
+      const carousel = document.querySelector('[data-slot="carousel"]')!
+      fireEvent.keyDown(carousel, { key: 'ArrowRight' })
+      expect(carousel).toBeInTheDocument()
+    })
+
+    it('should handle other keydown events without side effects', () => {
+      render(
+        <Carousel>
+          <CarouselContent>
+            <CarouselItem>Item 1</CarouselItem>
           </CarouselContent>
         </Carousel>
       )
 
-      expect(screen.getByText('Item 1')).toBeInTheDocument()
-      expect(screen.getByText('Item 2')).toBeInTheDocument()
-      expect(screen.getByText('Item 3')).toBeInTheDocument()
+      const carousel = document.querySelector('[data-slot="carousel"]')!
+      fireEvent.keyDown(carousel, { key: 'Enter' })
+      expect(carousel).toBeInTheDocument()
+    })
+
+    it('should render vertical carousel with navigation buttons', () => {
+      render(
+        <Carousel orientation="vertical">
+          <CarouselContent>
+            <CarouselItem>Item 1</CarouselItem>
+            <CarouselItem>Item 2</CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      )
+
+      const buttons = screen.getAllByRole('button')
+      expect(buttons).toHaveLength(2)
     })
   })
 })

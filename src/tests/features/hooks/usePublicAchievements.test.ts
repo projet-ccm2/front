@@ -17,10 +17,7 @@ const mockAchievements = [
     secret: false,
     image: null,
     channelId: null,
-    type: {
-      label: 'message',
-      data: null,
-    },
+    type: { label: 'message', data: null },
   },
 ]
 
@@ -60,7 +57,7 @@ describe('usePublicAchievements', () => {
     expect(result.current.errorMessage).toBeNull()
   })
 
-  it('should expose a marketplace-specific error on upstream failure', async () => {
+  it('should expose a 502 upstream error', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 502,
@@ -76,5 +73,69 @@ describe('usePublicAchievements', () => {
 
     expect(result.current.achievements).toEqual([])
     expect(result.current.errorMessage).toBe('The achievement service is currently unavailable.')
+  })
+
+  it('should expose a 400 bad request error', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: () => Promise.resolve({ message: 'bad request' }),
+      text: () => Promise.resolve('bad request'),
+    } as Response)
+
+    const { result } = renderHook(() => usePublicAchievements())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('The marketplace request is invalid.')
+  })
+
+  it('should expose a 404 not found error', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({ message: 'not found' }),
+      text: () => Promise.resolve('not found'),
+    } as Response)
+
+    const { result } = renderHook(() => usePublicAchievements())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('No public achievements route was found.')
+  })
+
+  it('should expose a generic error for unknown status codes', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: () => Promise.resolve({ message: 'unavailable' }),
+      text: () => Promise.resolve('unavailable'),
+    } as Response)
+
+    const { result } = renderHook(() => usePublicAchievements())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('Unable to load marketplace achievements.')
+  })
+
+  it('should expose a generic error when fetch throws a non-HTTP error', async () => {
+    vi.mocked(fetch).mockRejectedValue(new Error('Network failure'))
+
+    const { result } = renderHook(() => usePublicAchievements())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.achievements).toEqual([])
+    expect(result.current.errorMessage).toBe('Unable to load marketplace achievements.')
   })
 })

@@ -29,10 +29,7 @@ const mockChannelAchievements = [
     secret: false,
     image: null,
     channelId: 'channel-1',
-    type: {
-      label: 'message',
-      data: null,
-    },
+    type: { label: 'message', data: null },
   },
   {
     id: 'achievement-2',
@@ -48,10 +45,7 @@ const mockChannelAchievements = [
     secret: false,
     image: null,
     channelId: 'channel-1',
-    type: {
-      label: 'message',
-      data: null,
-    },
+    type: { label: 'message', data: null },
   },
 ]
 
@@ -74,38 +68,63 @@ const mockUserAchievements = [
   },
 ]
 
+function makeFetch(channelStatus: number, userStatus: number) {
+  return vi.fn((input: RequestInfo | URL) => {
+    const url = String(input)
+
+    if (url.includes('/achievements/channel/channel-1')) {
+      if (channelStatus === 200) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockChannelAchievements),
+        })
+      }
+      return Promise.resolve({
+        ok: false,
+        status: channelStatus,
+        json: () => Promise.resolve({ message: 'error' }),
+        text: () => Promise.resolve('error'),
+      })
+    }
+
+    if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+      if (userStatus === 200) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockUserAchievements),
+        })
+      }
+      return Promise.resolve({
+        ok: false,
+        status: userStatus,
+        json: () => Promise.resolve({ message: 'error' }),
+        text: () => Promise.resolve('error'),
+      })
+    }
+
+    if (url.includes('/achievements/user/user-1') && userStatus === 200) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockUserAchievements),
+      })
+    }
+
+    return Promise.resolve({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ message: `Unhandled: ${url}` }),
+      text: () => Promise.resolve(`Unhandled: ${url}`),
+    })
+  })
+}
+
 describe('useDashboardData', () => {
   beforeEach(() => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((input: RequestInfo | URL) => {
-        const url = String(input)
-
-        if (url.includes('/achievements/channel/channel-1')) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve(mockChannelAchievements),
-          })
-        }
-
-        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve(mockUserAchievements),
-          })
-        }
-
-        return Promise.resolve({
-          ok: false,
-          status: 500,
-          json: () => Promise.resolve({ message: `Unhandled request: ${url}` }),
-          text: () => Promise.resolve(`Unhandled request: ${url}`),
-        })
-      })
-    )
+    vi.stubGlobal('fetch', makeFetch(200, 200))
   })
 
   afterEach(() => {
@@ -178,18 +197,8 @@ describe('useDashboardData', () => {
     })
   })
 
-  it('should show an upstream error when dashboard requests fail', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: false,
-          status: 502,
-          json: () => Promise.resolve({ message: 'bad gateway' }),
-          text: () => Promise.resolve('bad gateway'),
-        })
-      )
-    )
+  it('should show an upstream error when dashboard requests fail (502)', async () => {
+    vi.stubGlobal('fetch', makeFetch(502, 502))
 
     const { result } = renderHook(() => useDashboardData())
 
@@ -199,5 +208,303 @@ describe('useDashboardData', () => {
 
     expect(result.current.errorMessage).toBe('The achievement service is currently unavailable.')
     expect(result.current.stats.totalAchievements).toBe(0)
+  })
+
+  it('should show a 400 error message when dashboard request is invalid', async () => {
+    vi.stubGlobal('fetch', makeFetch(400, 400))
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('The dashboard request is invalid.')
+  })
+
+  it('should show a 404 error message when dashboard data is not found', async () => {
+    vi.stubGlobal('fetch', makeFetch(404, 404))
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('No achievement data was found for this dashboard.')
+  })
+
+  it('should show a generic error for unknown server error codes', async () => {
+    vi.stubGlobal('fetch', makeFetch(503, 503))
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('Unable to load dashboard achievements.')
+  })
+
+  it('should show a generic error when fetch throws a non-HTTP error', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new Error('Network failure')))
+    )
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('Unable to load dashboard achievements.')
+  })
+
+  it('should show sign-in message when user is not authenticated', async () => {
+    localStorage.clear()
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('Sign in to load dashboard achievements.')
+    expect(result.current.stats.totalAchievements).toBe(0)
+  })
+
+  it('should handle achievements with null acquiredDate in engagement data', async () => {
+    const achievementsWithNullDate = mockUserAchievements.map(a => ({
+      ...a,
+      userState: { ...a.userState, finished: true, acquiredDate: null },
+    }))
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/achievements/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockChannelAchievements),
+          })
+        }
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(achievementsWithNullDate),
+          })
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.engagementData.every(d => d.unlocks === 0)).toBe(true)
+  })
+
+  it('should not count achievements acquired more than 7 days ago in engagement data', async () => {
+    const oldAchievements = [
+      {
+        ...mockUserAchievements[0],
+        userState: {
+          progressCount: 1,
+          finished: true,
+          acquiredDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+      },
+    ]
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/achievements/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockChannelAchievements),
+          })
+        }
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(oldAchievements),
+          })
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.engagementData.every(d => d.unlocks === 0)).toBe(true)
+  })
+
+  it('should show recent activity time as hours ago for achievements unlocked hours ago', async () => {
+    const hoursAgoAchievements = [
+      {
+        ...mockUserAchievements[0],
+        userState: {
+          progressCount: 1,
+          finished: true,
+          acquiredDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+        },
+      },
+    ]
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/achievements/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockChannelAchievements),
+          })
+        }
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(hoursAgoAchievements),
+          })
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.recentActivity[0].time).toMatch(/hours? ago/)
+  })
+
+  it('should show recent activity time as days ago for old achievements', async () => {
+    const daysAgoAchievements = [
+      {
+        ...mockUserAchievements[0],
+        userState: {
+          progressCount: 1,
+          finished: true,
+          acquiredDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+        },
+      },
+    ]
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/achievements/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockChannelAchievements),
+          })
+        }
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(daysAgoAchievements),
+          })
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.recentActivity[0].time).toMatch(/days? ago/)
+  })
+
+  it('should handle a single completed achievement (singular time units)', async () => {
+    const oneHourAgoAchievements = [
+      {
+        ...mockUserAchievements[0],
+        userState: {
+          progressCount: 1,
+          finished: true,
+          acquiredDate: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // exactly 1 hour ago
+        },
+      },
+    ]
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/achievements/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockChannelAchievements),
+          })
+        }
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(oneHourAgoAchievements),
+          })
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.recentActivity[0].time).toMatch(/hour(s)? ago/)
   })
 })
