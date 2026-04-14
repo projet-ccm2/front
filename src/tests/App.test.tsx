@@ -14,7 +14,7 @@ describe('App Component', () => {
     it('should render the Landing Page initially', () => {
       render(<App />)
       expect(screen.getAllByText(/Gamifiez votre stream/i).length).toBeGreaterThan(0)
-      expect(screen.getAllByText(/Transformez l’engagement des viewers/i).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(/Transformez l'engagement des viewers/i).length).toBeGreaterThan(0)
     })
 
     it('should display the connect buttons', () => {
@@ -60,17 +60,14 @@ describe('App Component', () => {
 
       render(<App />)
 
-      // Wait for authenticated layout
       await waitFor(() => {
         expect(screen.getAllByText(/Tableau de bord/i).length).toBeGreaterThan(0)
       })
 
-      // Navigate to Creator using the sidebar button
       const creatorButtons = screen.getAllByText(/Créer un succès/i)
       creatorButtons[0].click()
 
       await waitFor(() => {
-        // We should see the header on the new screen
         expect(screen.getAllByText(/Design a new quest/i).length).toBeGreaterThan(0)
       })
     })
@@ -118,13 +115,12 @@ describe('App Component', () => {
 
     it('should handle missing tokens in hash gracefully', async () => {
       vi.stubGlobal('location', {
-        hash: '#access_token=at', // missing id_token
+        hash: '#access_token=at',
         pathname: '/',
       })
 
       render(<App />)
 
-      // Should stay on landing page
       expect(screen.getAllByText(/Gamifiez votre stream/i).length).toBeGreaterThan(0)
 
       vi.unstubAllGlobals()

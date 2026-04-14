@@ -70,7 +70,6 @@ describe('LandingPage', () => {
     const themeButton = screen.getByLabelText('Toggle theme')
     fireEvent.click(themeButton)
 
-    // Theme should toggle (tested via ThemeContext)
     expect(themeButton).toBeInTheDocument()
   })
 
@@ -88,7 +87,7 @@ describe('LandingPage', () => {
 
     expect(screen.getByText(/Créez des succès personnalisés pour vos viewers/i)).toBeInTheDocument()
     expect(screen.getByText(/Gardez vos viewers engagés plus longtemps/i)).toBeInTheDocument()
-    expect(screen.getByText(/Suivez les métriques d’engagement/i)).toBeInTheDocument()
+    expect(screen.getByText(/Suivez les métriques d'engagement/i)).toBeInTheDocument()
   })
 
   it('should render extension features', () => {
