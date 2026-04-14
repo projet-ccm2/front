@@ -10,6 +10,7 @@ import { AchievementCreator } from './features/achievements/AchievementCreator'
 import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
+import { ViewerHub } from './features/viewer/ViewerHub'
 import { TwitchOverlay } from './features/overlay/TwitchOverlay'
 import { PublicTwitchPanel } from './features/overlay/PublicTwitchPanel'
 import { TwitchExtensionPanel } from './features/overlay/TwitchExtensionPanel'
@@ -28,6 +29,7 @@ type Screen =
   | 'management'
   | 'marketplace'
   | 'profile'
+  | 'viewerHub'
   | 'overlay'
 
 export function AppContent() {
@@ -156,6 +158,9 @@ export function AppContent() {
           )}
           {currentScreen === 'profile' && (
             <UserProfile onOpenSidebar={() => setSidebarOpen(true)} />
+          )}
+          {currentScreen === 'viewerHub' && (
+            <ViewerHub onOpenSidebar={() => setSidebarOpen(true)} />
           )}
           {currentScreen === 'overlay' && (
             <TwitchOverlay onOpenSidebar={() => setSidebarOpen(true)} />

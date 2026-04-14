@@ -133,6 +133,16 @@ describe('useDashboardData', () => {
   })
 
   it('should return initial loading state', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>(() => {
+            // keep the request pending so the hook stays in loading state for this assertion
+          })
+      )
+    )
+
     const { result } = renderHook(() => useDashboardData())
 
     expect(result.current.loading).toBe(true)
@@ -145,6 +155,8 @@ describe('useDashboardData', () => {
       completedAchievements: 0,
       totalXpEarned: 0,
     })
+
+    vi.unstubAllGlobals()
   })
 
   it('should load dashboard achievement data from the backend routes', async () => {

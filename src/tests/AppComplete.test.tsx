@@ -20,6 +20,9 @@ describe('App - Functional Coverage', () => {
   }
 
   beforeEach(() => {
+    window.history.pushState({}, '', '/')
+    localStorage.clear()
+    vi.clearAllMocks()
     vi.stubGlobal('fetch', vi.fn())
   })
 
@@ -196,5 +199,63 @@ describe('App - Functional Coverage', () => {
 
     expect(screen.getByRole('heading', { name: 'Extension Twitch' })).toBeInTheDocument()
     expect(screen.getByText(/\/twitch-extension\/panel$/)).toBeInTheDocument()
+  })
+
+  it('should render the viewer hub from the sidebar navigation', async () => {
+    setupAuthenticated()
+    window.history.pushState({}, '', '/')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/achievements/user/123456')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve([
+                {
+                  id: 'ach-1',
+                  title: 'First Steps',
+                  description: 'Send your first message',
+                  goal: 1,
+                  reward: 50,
+                  label: '',
+                  public: true,
+                  downloads: 0,
+                  visits: 0,
+                  active: true,
+                  secret: false,
+                  image: null,
+                  channelId: '123',
+                  type: { label: 'message', data: null },
+                  userState: {
+                    progressCount: 1,
+                    finished: true,
+                    acquiredDate: new Date().toISOString(),
+                  },
+                },
+              ]),
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve([]),
+        })
+      })
+    )
+
+    render(<App />)
+    await screen.findAllByText('Tableau de bord')
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Hub viewer|Viewer Hub/i })[0])
+
+    expect(
+      await screen.findByRole('heading', { name: /Hub viewer|Viewer Hub/i })
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Chaînes suivies|Tracked channels/i)).toBeInTheDocument()
   })
 })

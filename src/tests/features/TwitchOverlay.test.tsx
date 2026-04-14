@@ -116,9 +116,10 @@ describe('TwitchOverlay', () => {
     expect(screen.getByText('3 au total')).toBeInTheDocument()
   })
 
-  it('should toggle sidebar on mobile', () => {
+  it('should toggle sidebar on mobile', async () => {
     render(<TwitchOverlay onOpenSidebar={mockOnOpenSidebar} />)
 
+    await screen.findByText('Succès du viewer')
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     expect(menuBtn).toBeInTheDocument()
     fireEvent.click(menuBtn)

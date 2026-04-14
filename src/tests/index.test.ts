@@ -1,4 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+
+beforeEach(() => {
+  window.history.pushState({}, '', '/')
+  localStorage.clear()
+})
 
 describe('Imports de modules', () => {
   it('devrait pouvoir importer App sans erreur', async () => {

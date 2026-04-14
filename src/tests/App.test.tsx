@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import App from '../App'
 import React from 'react'
 
@@ -65,7 +65,7 @@ describe('App Component', () => {
       })
 
       const creatorButtons = screen.getAllByText(/Créer un succès/i)
-      creatorButtons[0].click()
+      fireEvent.click(creatorButtons[0])
 
       await waitFor(() => {
         expect(screen.getAllByText(/Design a new quest/i).length).toBeGreaterThan(0)

@@ -1,25 +1,24 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '../utils/test-utils'
-import { Sidebar } from '../../components/layout/Sidebar'
 import React from 'react'
+import { describe, it, expect, vi } from 'vitest'
+import { fireEvent, render, screen } from '../utils/test-utils'
+import { Sidebar } from '../../components/layout/Sidebar'
 
-vi.mock('lucide-react', async importOriginal => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    LayoutDashboard: () => <div data-testid="icon-dashboard" />,
-    Trophy: () => <div data-testid="icon-trophy" />,
-    Plus: () => <div data-testid="icon-plus" />,
-    Store: () => <div data-testid="icon-store" />,
-    User: () => <div data-testid="icon-user" />,
-    Tv: () => <div data-testid="icon-tv" />,
-    X: () => <div data-testid="icon-x" />,
-    Sun: () => <div data-testid="icon-sun" />,
-    Moon: () => <div data-testid="icon-moon" />,
-    Settings: () => <div data-testid="icon-settings" />,
-    LogOut: () => <div data-testid="icon-logout" />,
-  }
-})
+vi.mock('lucide-react', () => ({
+  Languages: () => <div data-testid="icon-languages" />,
+  Check: () => <div data-testid="icon-check" />,
+  LayoutDashboard: () => <div data-testid="icon-dashboard" />,
+  Trophy: () => <div data-testid="icon-trophy" />,
+  Plus: () => <div data-testid="icon-plus" />,
+  Store: () => <div data-testid="icon-store" />,
+  User: () => <div data-testid="icon-user" />,
+  Eye: () => <div data-testid="icon-eye" />,
+  Tv: () => <div data-testid="icon-tv" />,
+  X: () => <div data-testid="icon-x" />,
+  Sun: () => <div data-testid="icon-sun" />,
+  Moon: () => <div data-testid="icon-moon" />,
+  Settings: () => <div data-testid="icon-settings" />,
+  LogOut: () => <div data-testid="icon-logout" />,
+}))
 
 describe('Sidebar', () => {
   const mockOnNavigate = vi.fn()
@@ -32,6 +31,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Gérer les succès')).toBeInTheDocument()
     expect(screen.getByText('Marketplace')).toBeInTheDocument()
     expect(screen.getByText('Profil utilisateur')).toBeInTheDocument()
+    expect(screen.getByText('Hub viewer')).toBeInTheDocument()
     expect(screen.getByText('Panneau Twitch')).toBeInTheDocument()
   })
 

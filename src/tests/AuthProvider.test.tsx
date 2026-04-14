@@ -97,10 +97,19 @@ describe('AuthProvider', () => {
       wrapper: ({ children }) => <AuthProvider>{children}</AuthProvider>,
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(result.current.completeAuth({} as any)).rejects.toThrow(
-      'Failed to authenticate with backend'
-    )
+    let thrown: unknown = null
+
+    await act(async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await result.current.completeAuth({} as any)
+      } catch (error) {
+        thrown = error
+      }
+    })
+
+    expect(thrown).toBeInstanceOf(Error)
+    expect((thrown as Error).message).toBe('Failed to authenticate with backend')
     vi.unstubAllGlobals()
   })
 
@@ -115,8 +124,19 @@ describe('AuthProvider', () => {
       wrapper: ({ children }) => <AuthProvider>{children}</AuthProvider>,
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(result.current.completeAuth({} as any)).rejects.toThrow('Custom Error')
+    let thrown: unknown = null
+
+    await act(async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await result.current.completeAuth({} as any)
+      } catch (error) {
+        thrown = error
+      }
+    })
+
+    expect(thrown).toBeInstanceOf(Error)
+    expect((thrown as Error).message).toBe('Custom Error')
     vi.unstubAllGlobals()
   })
 
@@ -128,8 +148,19 @@ describe('AuthProvider', () => {
       wrapper: ({ children }) => <AuthProvider>{children}</AuthProvider>,
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(result.current.completeAuth({} as any)).rejects.toThrow('Network Error')
+    let thrown: unknown = null
+
+    await act(async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await result.current.completeAuth({} as any)
+      } catch (error) {
+        thrown = error
+      }
+    })
+
+    expect(thrown).toBeInstanceOf(Error)
+    expect((thrown as Error).message).toBe('Network Error')
     vi.unstubAllGlobals()
   })
 })
