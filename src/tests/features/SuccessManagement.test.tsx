@@ -242,7 +242,7 @@ describe('SuccessManagement', () => {
     renderManagement()
 
     expect(
-      await screen.findByText('The achievement service is currently unavailable.')
+      await screen.findByText('Le service de succès est actuellement indisponible.')
     ).toBeInTheDocument()
   })
 

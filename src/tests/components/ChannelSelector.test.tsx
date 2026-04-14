@@ -23,7 +23,7 @@ describe('ChannelSelector', () => {
   it('should result selected channel information', () => {
     render(<ChannelSelector />)
     expect(screen.getByText('MyTwitchChannel')).toBeInTheDocument()
-    expect(screen.getByText('Owner')).toBeInTheDocument()
+    expect(screen.getByText('Propriétaire')).toBeInTheDocument()
   })
 
   it('should toggle dropdown when clicked', () => {
@@ -33,11 +33,11 @@ describe('ChannelSelector', () => {
     fireEvent.click(button)
 
     // Check for dropdown content
-    expect(screen.getByText('MANAGE CHANNELS')).toBeInTheDocument()
+    expect(screen.getByText('Gérer les chaînes')).toBeInTheDocument()
 
     // Close it
     fireEvent.click(button)
-    expect(screen.queryByText('MANAGE CHANNELS')).not.toBeInTheDocument()
+    expect(screen.queryByText('Gérer les chaînes')).not.toBeInTheDocument()
   })
 
   it('should allow selecting a different channel', () => {

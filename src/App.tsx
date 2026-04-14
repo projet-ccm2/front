@@ -11,6 +11,11 @@ import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
 import { TwitchOverlay } from './features/overlay/TwitchOverlay'
+import { PublicTwitchPanel } from './features/overlay/PublicTwitchPanel'
+import {
+  getPublicPanelChannelId,
+  getPublicPanelViewerId,
+} from './features/overlay/utils/publicPanelLink'
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
 import { useLanguage } from './context/LanguageContext'
 
@@ -160,6 +165,19 @@ export function AppContent() {
 }
 
 function App() {
+  const publicPanelChannelId = getPublicPanelChannelId(globalThis.location.pathname)
+  const publicPanelViewerId = getPublicPanelViewerId(globalThis.location.search)
+
+  if (publicPanelChannelId) {
+    return (
+      <ThemeProvider>
+        <LanguageProvider>
+          <PublicTwitchPanel channelId={publicPanelChannelId} viewerId={publicPanelViewerId} />
+        </LanguageProvider>
+      </ThemeProvider>
+    )
+  }
+
   return (
     <ThemeProvider>
       <LanguageProvider>

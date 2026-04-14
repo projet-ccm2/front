@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import { useChannel } from '../../../context/ChannelContext'
+import { useLanguage } from '../../../context/LanguageContext'
+import type { Language } from '../../../i18n/translations'
 import {
   achievementManagementClient,
   AchievementManagementError,
@@ -51,25 +53,40 @@ const EMPTY_STATS: DashboardStats = {
   totalXpEarned: 0,
 }
 
-function getErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown, language: Language) {
   if (error instanceof AchievementManagementError) {
     switch (error.status) {
       case 400:
-        return 'The dashboard request is invalid.'
+        return language === 'fr'
+          ? 'La requête du tableau de bord est invalide.'
+          : 'The dashboard request is invalid.'
       case 404:
-        return 'No achievement data was found for this dashboard.'
+        return language === 'fr'
+          ? 'Aucune donnée de succès n’a été trouvée pour ce tableau de bord.'
+          : 'No achievement data was found for this dashboard.'
       case 502:
-        return 'The achievement service is currently unavailable.'
+        return language === 'fr'
+          ? 'Le service de succès est actuellement indisponible.'
+          : 'The achievement service is currently unavailable.'
       default:
-        return 'Unable to load dashboard achievements.'
+        return language === 'fr'
+          ? 'Impossible de charger les succès du tableau de bord.'
+          : 'Unable to load dashboard achievements.'
     }
   }
 
-  return 'Unable to load dashboard achievements.'
+  return language === 'fr'
+    ? 'Impossible de charger les succès du tableau de bord.'
+    : 'Unable to load dashboard achievements.'
 }
 
-function buildEngagementData(achievements: UserAchievement[]): EngagementData[] {
-  const formatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' })
+function buildEngagementData(
+  achievements: UserAchievement[],
+  language: Language
+): EngagementData[] {
+  const formatter = new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-US', {
+    weekday: 'short',
+  })
   const today = new Date()
   const countsByDay = new Map<string, number>()
 
@@ -102,34 +119,45 @@ function buildEngagementData(achievements: UserAchievement[]): EngagementData[] 
   })
 }
 
-function formatRelativeTime(value: string | null) {
+function formatRelativeTime(value: string | null, language: Language) {
   if (!value) {
-    return 'Not unlocked yet'
+    return language === 'fr' ? 'Pas encore débloqué' : 'Not unlocked yet'
   }
 
   const timestamp = new Date(value).getTime()
 
   if (Number.isNaN(timestamp)) {
-    return 'Recently'
+    return language === 'fr' ? 'Récemment' : 'Recently'
   }
 
   const diffInMinutes = Math.max(1, Math.floor((Date.now() - timestamp) / (1000 * 60)))
 
+  const formatWithRelativeTime = (unit: Intl.RelativeTimeFormatUnit, amount: number) => {
+    const formatter = new Intl.RelativeTimeFormat(language === 'fr' ? 'fr-FR' : 'en-US', {
+      numeric: 'auto',
+    })
+
+    return formatter.format(-amount, unit)
+  }
+
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`
+    return formatWithRelativeTime('minute', diffInMinutes)
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60)
 
   if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+    return formatWithRelativeTime('hour', diffInHours)
   }
 
   const diffInDays = Math.floor(diffInHours / 24)
-  return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
+  return formatWithRelativeTime('day', diffInDays)
 }
 
-function buildRecentActivity(achievements: UserAchievement[]): RecentActivity[] {
+function buildRecentActivity(
+  achievements: UserAchievement[],
+  language: ReturnType<typeof useLanguage>['language']
+): RecentActivity[] {
   return achievements
     .filter(achievement => achievement.userState.finished)
     .sort((left, right) => {
@@ -145,9 +173,9 @@ function buildRecentActivity(achievements: UserAchievement[]): RecentActivity[] 
     .slice(0, 5)
     .map(achievement => ({
       id: achievement.id,
-      user: 'You',
+      user: language === 'fr' ? 'Vous' : 'You',
       achievement: achievement.title,
-      time: formatRelativeTime(achievement.userState.acquiredDate),
+      time: formatRelativeTime(achievement.userState.acquiredDate, language),
     }))
 }
 
@@ -174,6 +202,7 @@ function buildStats(
 export function useDashboardData(): DashboardDataResult {
   const { user } = useAuth()
   const { selectedChannel } = useChannel()
+  const { language } = useLanguage()
   const [engagementData, setEngagementData] = useState<EngagementData[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS)
@@ -186,7 +215,11 @@ export function useDashboardData(): DashboardDataResult {
       setEngagementData([])
       setRecentActivity([])
       setStats(EMPTY_STATS)
-      setErrorMessage('Sign in to load dashboard achievements.')
+      setErrorMessage(
+        language === 'fr'
+          ? 'Connecte-toi pour charger les succès du tableau de bord.'
+          : 'Sign in to load dashboard achievements.'
+      )
       setContextMessage(null)
       setLoading(false)
       return
@@ -220,12 +253,12 @@ export function useDashboardData(): DashboardDataResult {
         }
 
         setStats(buildStats(channelAchievements, userAchievements))
-        setEngagementData(buildEngagementData(userAchievements))
-        setRecentActivity(buildRecentActivity(userAchievements))
+        setEngagementData(buildEngagementData(userAchievements, language))
+        setRecentActivity(buildRecentActivity(userAchievements, language))
         setErrorMessage(null)
         setContextMessage(
           selectedChannel && !isOwnerAchievementChannelId(selectedChannel.id)
-            ? getOwnerOnlyAchievementMessage('dashboard')
+            ? getOwnerOnlyAchievementMessage(language, 'dashboard')
             : null
         )
       } catch (error) {
@@ -236,7 +269,7 @@ export function useDashboardData(): DashboardDataResult {
         setEngagementData([])
         setRecentActivity([])
         setStats(EMPTY_STATS)
-        setErrorMessage(getErrorMessage(error))
+        setErrorMessage(getErrorMessage(error, language))
         setContextMessage(null)
       } finally {
         if (isMounted) {
@@ -250,7 +283,7 @@ export function useDashboardData(): DashboardDataResult {
     return () => {
       isMounted = false
     }
-  }, [selectedChannel, user])
+  }, [selectedChannel, user, language])
 
   return {
     engagementData,

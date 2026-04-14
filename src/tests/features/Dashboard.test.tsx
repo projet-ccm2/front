@@ -136,25 +136,25 @@ describe('Dashboard', () => {
   it('should render dashboard title', async () => {
     render(<Dashboard onNavigate={() => {}} onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(screen.getByText('Loading dashboard achievements...')).toBeInTheDocument()
+    expect(screen.getByText('Chargement des succès du dashboard...')).toBeInTheDocument()
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Tableau de bord' })).toBeInTheDocument()
     })
   })
 
   it('should render real achievement statistics after loading', async () => {
     render(<Dashboard onNavigate={() => {}} onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(await screen.findByText('Active Achievements')).toBeInTheDocument()
-    expect(screen.getByText('Public Templates')).toBeInTheDocument()
-    expect(screen.getByText('Completed Achievements')).toBeInTheDocument()
-    expect(screen.getByText('Achievement XP')).toBeInTheDocument()
+    expect(await screen.findByText('Succès actifs')).toBeInTheDocument()
+    expect(screen.getByText('Modèles publics')).toBeInTheDocument()
+    expect(screen.getByText('Succès terminés')).toBeInTheDocument()
+    expect(screen.getByText('XP de succès')).toBeInTheDocument()
 
-    expect(screen.getByText('2 total')).toBeInTheDocument()
-    expect(screen.getByText('channel-ready')).toBeInTheDocument()
-    expect(screen.getByText('your progress')).toBeInTheDocument()
-    expect(screen.getByText('earned')).toBeInTheDocument()
+    expect(screen.getByText('2 au total')).toBeInTheDocument()
+    expect(screen.getByText('prêt pour la chaîne')).toBeInTheDocument()
+    expect(screen.getByText('votre progression')).toBeInTheDocument()
+    expect(screen.getByText('gagnés')).toBeInTheDocument()
     expect(screen.getAllByText('1').length).toBeGreaterThan(1)
     expect(screen.getByText('50')).toBeInTheDocument()
   })
@@ -162,8 +162,8 @@ describe('Dashboard', () => {
   it('should render recent activity from completed achievements', async () => {
     render(<Dashboard onNavigate={() => {}} onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(await screen.findByText('Recent Activity')).toBeInTheDocument()
-    expect(screen.getByText('You')).toBeInTheDocument()
+    expect(await screen.findByText('Activité récente')).toBeInTheDocument()
+    expect(screen.getByText('Vous')).toBeInTheDocument()
     expect(screen.getByText('First Steps')).toBeInTheDocument()
   })
 
@@ -171,9 +171,9 @@ describe('Dashboard', () => {
     const mockNavigate = vi.fn()
     render(<Dashboard onNavigate={mockNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
-    await screen.findByText('Create Achievement')
+    await screen.findByText('Créer un succès')
 
-    const createBtns = screen.getAllByText('Create Achievement')
+    const createBtns = screen.getAllByText('Créer un succès')
     const createBtn = createBtns.find(element => element.closest('button'))
 
     if (createBtn) {
@@ -186,7 +186,7 @@ describe('Dashboard', () => {
     const mockOnNavigate = vi.fn()
     render(<Dashboard onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
-    await screen.findByText('Active Achievements')
+    await screen.findByText('Succès actifs')
 
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
@@ -197,7 +197,7 @@ describe('Dashboard', () => {
     const mockOnNavigate = vi.fn()
     render(<Dashboard onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
-    await screen.findByText('Active Achievements')
+    await screen.findByText('Succès actifs')
 
     const createBtn = screen.getByTestId('quick-create-btn')
     fireEvent.click(createBtn)
@@ -212,7 +212,7 @@ describe('Dashboard', () => {
     const mockOnNavigate = vi.fn()
     render(<Dashboard onNavigate={mockOnNavigate} onOpenSidebar={mockOnOpenSidebar} />)
 
-    await screen.findByText('Active Achievements')
+    await screen.findByText('Succès actifs')
 
     const marketplaceBtn = screen.getByTestId('quick-marketplace-btn')
     fireEvent.click(marketplaceBtn)
@@ -235,7 +235,7 @@ describe('Dashboard', () => {
     render(<Dashboard onNavigate={() => {}} onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(
-      await screen.findByText('The achievement service is currently unavailable.')
+      await screen.findByText('Le service de succès est actuellement indisponible.')
     ).toBeInTheDocument()
   })
 })

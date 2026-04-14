@@ -394,7 +394,7 @@ describe('AchievementCreator', () => {
 
     expect(
       await screen.findByText(
-        'Achievement management currently supports only the connected user channel. Moderator channels are not handled yet.'
+        'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.'
       )
     ).toBeInTheDocument()
   })

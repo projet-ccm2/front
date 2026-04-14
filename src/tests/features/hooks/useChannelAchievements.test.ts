@@ -38,7 +38,7 @@ describe('useChannelAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe('Select a channel to load achievements.')
+    expect(result.current.errorMessage).toBe('Sélectionne une chaîne pour charger les succès.')
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -51,7 +51,7 @@ describe('useChannelAchievements', () => {
 
     expect(result.current.achievements).toEqual([])
     expect(result.current.errorMessage).toBe(
-      'Achievement management currently supports only the connected user channel. Moderator channels are not handled yet.'
+      'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.'
     )
     expect(fetch).not.toHaveBeenCalled()
   })
@@ -92,7 +92,7 @@ describe('useChannelAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe('No achievements were found for this channel.')
+    expect(result.current.errorMessage).toBe('Aucun succès n’a été trouvé pour cette chaîne.')
   })
 
   it('should expose a 400 bad request error', async () => {
@@ -110,7 +110,7 @@ describe('useChannelAchievements', () => {
     })
 
     expect(result.current.errorMessage).toBe(
-      'The selected channel cannot be queried with the current request.'
+      'La chaîne sélectionnée ne peut pas être interrogée avec cette requête.'
     )
   })
 
@@ -128,7 +128,7 @@ describe('useChannelAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('The achievement service is currently unavailable.')
+    expect(result.current.errorMessage).toBe('Le service de succès est actuellement indisponible.')
   })
 
   it('should expose a generic error for unknown status codes', async () => {
@@ -145,7 +145,7 @@ describe('useChannelAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('Unable to load channel achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès de la chaîne.')
   })
 
   it('should expose a generic error when fetch throws a non-HTTP error', async () => {
@@ -158,6 +158,6 @@ describe('useChannelAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe('Unable to load channel achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès de la chaîne.')
   })
 })

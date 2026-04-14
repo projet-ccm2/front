@@ -32,7 +32,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Gérer les succès')).toBeInTheDocument()
     expect(screen.getByText('Marketplace')).toBeInTheDocument()
     expect(screen.getByText('Profil utilisateur')).toBeInTheDocument()
-    expect(screen.getByText('Overlay Twitch')).toBeInTheDocument()
+    expect(screen.getByText('Panneau Twitch')).toBeInTheDocument()
   })
 
   it('should show basic stream quest title', () => {

@@ -124,21 +124,21 @@ describe('UserProfile', () => {
   it('should display derived user level and XP', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     expect(await screen.findByText(/50 \/ 250 XP/)).toBeInTheDocument()
-    expect(screen.getAllByText('Level 1').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Niveau 1').length).toBeGreaterThan(0)
   })
 
   it('should show stats cards', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     await screen.findAllByText('First Steps')
-    expect(screen.getByText('Total Watch Time')).toBeInTheDocument()
+    expect(screen.getByText('Temps de visionnage total')).toBeInTheDocument()
     expect(screen.getByText('--')).toBeInTheDocument()
-    expect(screen.getByText('Achievements Unlocked')).toBeInTheDocument()
+    expect(screen.getByText('Succès débloqués')).toBeInTheDocument()
     expect(screen.getByText('1 / 2')).toBeInTheDocument()
   })
 
   it('should display achievement badges', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    expect(screen.getByRole('heading', { name: 'Achievement Badges' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Badges de succès' })).toBeInTheDocument()
     expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
     expect(screen.getAllByText('Chat Master').length).toBeGreaterThan(0)
   })
@@ -146,9 +146,11 @@ describe('UserProfile', () => {
   it('should show leaderboard', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     await screen.findAllByText('First Steps')
-    expect(screen.getByRole('heading', { name: 'Leaderboard' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Classement' })).toBeInTheDocument()
     expect(
-      screen.getByText('Top achievements ranked from the data returned by achievement-management.')
+      screen.getByText(
+        'Les meilleurs succès classés à partir des données renvoyées par achievement-management.'
+      )
     ).toBeInTheDocument()
     expect(screen.getAllByText('Chat Master').length).toBeGreaterThan(0)
     expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
@@ -309,7 +311,7 @@ describe('UserProfile', () => {
     const profileImage = document.querySelector('img')
     expect(profileImage).not.toBeNull()
     expect(profileImage).toHaveAttribute('src', 'https://example.com/avatar.png')
-    expect(screen.getByRole('heading', { name: 'Leaderboard' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Classement' })).toBeInTheDocument()
     expect(screen.getAllByText('Bravo').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Charlie').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Delta').length).toBeGreaterThan(0)
@@ -330,7 +332,9 @@ describe('UserProfile', () => {
 
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(await screen.findByText('No profile achievements found yet.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Aucun succès de profil trouvé pour le moment.')
+    ).toBeInTheDocument()
   })
 
   it('should show an error state when the backend fails', async () => {
@@ -349,7 +353,7 @@ describe('UserProfile', () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(
-      await screen.findByText('The achievement service is currently unavailable.')
+      await screen.findByText('Le service de succès est actuellement indisponible.')
     ).toBeInTheDocument()
   })
 })

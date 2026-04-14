@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import { useChannel } from '../../../context/ChannelContext'
+import { useLanguage } from '../../../context/LanguageContext'
+import type { Language } from '../../../i18n/translations'
 import {
   achievementManagementClient,
   AchievementManagementError,
@@ -14,26 +16,37 @@ interface UseUserAchievementsResult {
   errorMessage: string | null
 }
 
-function getErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown, language: Language) {
   if (error instanceof AchievementManagementError) {
     switch (error.status) {
       case 400:
-        return 'The current profile request is invalid.'
+        return language === 'fr'
+          ? 'La requête du profil est invalide.'
+          : 'The current profile request is invalid.'
       case 404:
-        return 'No achievement progress was found for this profile.'
+        return language === 'fr'
+          ? 'Aucune progression de succès n’a été trouvée pour ce profil.'
+          : 'No achievement progress was found for this profile.'
       case 502:
-        return 'The achievement service is currently unavailable.'
+        return language === 'fr'
+          ? 'Le service de succès est actuellement indisponible.'
+          : 'The achievement service is currently unavailable.'
       default:
-        return 'Unable to load profile achievements.'
+        return language === 'fr'
+          ? 'Impossible de charger les succès du profil.'
+          : 'Unable to load profile achievements.'
     }
   }
 
-  return 'Unable to load profile achievements.'
+  return language === 'fr'
+    ? 'Impossible de charger les succès du profil.'
+    : 'Unable to load profile achievements.'
 }
 
 export function useUserAchievements(): UseUserAchievementsResult {
   const { user } = useAuth()
   const { selectedChannel } = useChannel()
+  const { language } = useLanguage()
   const [achievements, setAchievements] = useState<UserAchievement[]>([])
   const [isLoading, setIsLoading] = useState(Boolean(user))
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -41,7 +54,11 @@ export function useUserAchievements(): UseUserAchievementsResult {
   useEffect(() => {
     if (!user) {
       setAchievements([])
-      setErrorMessage('Sign in to load profile achievements.')
+      setErrorMessage(
+        language === 'fr'
+          ? 'Connecte-toi pour charger les succès du profil.'
+          : 'Sign in to load profile achievements.'
+      )
       setIsLoading(false)
       return
     }
@@ -71,7 +88,7 @@ export function useUserAchievements(): UseUserAchievementsResult {
         }
 
         setAchievements([])
-        setErrorMessage(getErrorMessage(error))
+        setErrorMessage(getErrorMessage(error, language))
       } finally {
         if (isMounted) {
           setIsLoading(false)
@@ -84,7 +101,7 @@ export function useUserAchievements(): UseUserAchievementsResult {
     return () => {
       isMounted = false
     }
-  }, [selectedChannel, user])
+  }, [selectedChannel, user, language])
 
   return {
     achievements,

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useLanguage } from '../../../context/LanguageContext'
+import type { Language } from '../../../i18n/translations'
 import {
   achievementManagementClient,
   AchievementManagementError,
@@ -15,24 +17,35 @@ interface UseChannelAchievementsResult {
   errorMessage: string | null
 }
 
-function getErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown, language: Language) {
   if (error instanceof AchievementManagementError) {
     switch (error.status) {
       case 400:
-        return 'The selected channel cannot be queried with the current request.'
+        return language === 'fr'
+          ? 'La chaîne sélectionnée ne peut pas être interrogée avec cette requête.'
+          : 'The selected channel cannot be queried with the current request.'
       case 404:
-        return 'No achievements were found for this channel.'
+        return language === 'fr'
+          ? 'Aucun succès n’a été trouvé pour cette chaîne.'
+          : 'No achievements were found for this channel.'
       case 502:
-        return 'The achievement service is currently unavailable.'
+        return language === 'fr'
+          ? 'Le service de succès est actuellement indisponible.'
+          : 'The achievement service is currently unavailable.'
       default:
-        return 'Unable to load channel achievements.'
+        return language === 'fr'
+          ? 'Impossible de charger les succès de la chaîne.'
+          : 'Unable to load channel achievements.'
     }
   }
 
-  return 'Unable to load channel achievements.'
+  return language === 'fr'
+    ? 'Impossible de charger les succès de la chaîne.'
+    : 'Unable to load channel achievements.'
 }
 
 export function useChannelAchievements(channelId: string | null): UseChannelAchievementsResult {
+  const { language } = useLanguage()
   const [achievements, setAchievements] = useState<Achievement[]>([])
   const [isLoading, setIsLoading] = useState(Boolean(channelId))
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -40,14 +53,18 @@ export function useChannelAchievements(channelId: string | null): UseChannelAchi
   useEffect(() => {
     if (!channelId) {
       setAchievements([])
-      setErrorMessage('Select a channel to load achievements.')
+      setErrorMessage(
+        language === 'fr'
+          ? 'Sélectionne une chaîne pour charger les succès.'
+          : 'Select a channel to load achievements.'
+      )
       setIsLoading(false)
       return
     }
 
     if (!isOwnerAchievementChannelId(channelId)) {
       setAchievements([])
-      setErrorMessage(getOwnerOnlyAchievementMessage('channel'))
+      setErrorMessage(getOwnerOnlyAchievementMessage(language, 'channel'))
       setIsLoading(false)
       return
     }
@@ -71,7 +88,7 @@ export function useChannelAchievements(channelId: string | null): UseChannelAchi
         }
 
         setAchievements([])
-        setErrorMessage(getErrorMessage(error))
+        setErrorMessage(getErrorMessage(error, language))
       } finally {
         if (isMounted) {
           setIsLoading(false)
@@ -84,7 +101,7 @@ export function useChannelAchievements(channelId: string | null): UseChannelAchi
     return () => {
       isMounted = false
     }
-  }, [channelId])
+  }, [channelId, language])
 
   return {
     achievements,
