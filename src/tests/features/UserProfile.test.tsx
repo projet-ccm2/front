@@ -110,12 +110,12 @@ describe('UserProfile', () => {
   it('should render user profile with username', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'streamer' })).toBeInTheDocument()
-    expect(await screen.findByText('First Steps')).toBeInTheDocument()
+    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
   it('should toggle sidebar on mobile', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
     expect(mockOnOpenSidebar).toHaveBeenCalled()
@@ -129,7 +129,7 @@ describe('UserProfile', () => {
 
   it('should show stats cards', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     expect(screen.getByText('Total Watch Time')).toBeInTheDocument()
     expect(screen.getByText('--')).toBeInTheDocument()
     expect(screen.getByText('Achievements Unlocked')).toBeInTheDocument()
@@ -139,16 +139,181 @@ describe('UserProfile', () => {
   it('should display achievement badges', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'Achievement Badges' })).toBeInTheDocument()
-    expect(await screen.findByText('First Steps')).toBeInTheDocument()
-    expect(screen.getByText('Chat Master')).toBeInTheDocument()
+    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Chat Master').length).toBeGreaterThan(0)
   })
 
   it('should show leaderboard', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     expect(screen.getByRole('heading', { name: 'Leaderboard' })).toBeInTheDocument()
-    expect(screen.getByText('ProGamer99')).toBeInTheDocument()
-    expect(screen.getByText('StreamFan42')).toBeInTheDocument()
+    expect(
+      screen.getByText('Top achievements ranked from the data returned by achievement-management.')
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('Chat Master').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
+    expect(screen.getByText('250 XP')).toBeInTheDocument()
+  })
+
+  it('should render profile image and leaderboard fallback avatars', async () => {
+    const richAchievements = [
+      {
+        id: '1',
+        title: 'Top Streamer',
+        description: 'High value reward',
+        goal: 1,
+        reward: 250,
+        label: 'TS',
+        public: true,
+        downloads: 0,
+        visits: 0,
+        active: true,
+        secret: false,
+        image: null,
+        channelId: 'channel-1',
+        type: {
+          label: 'message',
+          data: null,
+        },
+        userState: {
+          progressCount: 1,
+          finished: true,
+          acquiredDate: null,
+        },
+      },
+      {
+        id: '2',
+        title: 'Bravo',
+        description: 'Blank label uses title fallback',
+        goal: 10,
+        reward: 100,
+        label: '   ',
+        public: true,
+        downloads: 0,
+        visits: 0,
+        active: true,
+        secret: false,
+        image: null,
+        channelId: 'channel-1',
+        type: {
+          label: 'message',
+          data: null,
+        },
+        userState: {
+          progressCount: 10,
+          finished: true,
+          acquiredDate: null,
+        },
+      },
+      {
+        id: '3',
+        title: 'Alpha',
+        description: 'Tie breaker entry',
+        goal: 20,
+        reward: 100,
+        label: 'A',
+        public: true,
+        downloads: 0,
+        visits: 0,
+        active: true,
+        secret: false,
+        image: null,
+        channelId: 'channel-1',
+        type: {
+          label: 'message',
+          data: null,
+        },
+        userState: {
+          progressCount: 5,
+          finished: false,
+          acquiredDate: null,
+        },
+      },
+      {
+        id: '4',
+        title: 'Charlie',
+        description: 'Same progress for title comparison',
+        goal: 20,
+        reward: 100,
+        label: 'C',
+        public: true,
+        downloads: 0,
+        visits: 0,
+        active: true,
+        secret: false,
+        image: null,
+        channelId: 'channel-1',
+        type: {
+          label: 'message',
+          data: null,
+        },
+        userState: {
+          progressCount: 5,
+          finished: false,
+          acquiredDate: null,
+        },
+      },
+      {
+        id: '5',
+        title: 'Delta',
+        description: 'Lower progress branch',
+        goal: 20,
+        reward: 100,
+        label: 'D',
+        public: true,
+        downloads: 0,
+        visits: 0,
+        active: true,
+        secret: false,
+        image: null,
+        channelId: 'channel-1',
+        type: {
+          label: 'message',
+          data: null,
+        },
+        userState: {
+          progressCount: 2,
+          finished: false,
+          acquiredDate: null,
+        },
+      },
+    ]
+
+    localStorage.setItem(
+      'twitch_user',
+      JSON.stringify({
+        ...authUser,
+        channel: {
+          ...authUser.channel,
+          profileImageUrl: 'https://example.com/avatar.png',
+        },
+      })
+    )
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(richAchievements),
+        })
+      )
+    )
+
+    render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
+
+    await screen.findAllByText('Bravo')
+    await screen.findAllByText('Charlie')
+    await screen.findAllByText('Delta')
+
+    const profileImage = document.querySelector('img')
+    expect(profileImage).not.toBeNull()
+    expect(profileImage).toHaveAttribute('src', 'https://example.com/avatar.png')
+    expect(screen.getByRole('heading', { name: 'Leaderboard' })).toBeInTheDocument()
+    expect(screen.getAllByText('Bravo').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Charlie').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Delta').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('B').length).toBeGreaterThan(0)
   })
 
   it('should show an empty state when no user achievements are returned', async () => {

@@ -104,7 +104,7 @@ describe('Integration Tests', () => {
 
   it('should render Landing Page initially', async () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: /Gamify Your Stream/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Gamifiez votre stream/i })).toBeInTheDocument()
   })
 
   it('should show Dashboard when user is authenticated', async () => {

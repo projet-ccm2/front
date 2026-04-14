@@ -13,6 +13,8 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
+import { LanguageSwitcher } from '../ui/LanguageSwitcher'
 
 interface SidebarProps {
   readonly currentPage: string
@@ -24,13 +26,14 @@ interface SidebarProps {
 export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme()
   const { logout } = useAuth()
+  const { t } = useLanguage()
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'creator', label: 'Create Achievement', icon: Plus },
-    { id: 'management', label: 'Manage Achievements', icon: Trophy },
-    { id: 'marketplace', label: 'Marketplace', icon: Store },
-    { id: 'profile', label: 'User Profile', icon: User },
-    { id: 'overlay', label: 'Twitch Overlay', icon: Tv },
+    { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { id: 'creator', label: t('nav.creator'), icon: Plus },
+    { id: 'management', label: t('nav.management'), icon: Trophy },
+    { id: 'marketplace', label: t('nav.marketplace'), icon: Store },
+    { id: 'profile', label: t('nav.profile'), icon: User },
+    { id: 'overlay', label: t('nav.overlay'), icon: Tv },
   ]
 
   const handleNavigation = (page: string) => {
@@ -69,7 +72,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
             <div className="w-8 h-8 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-lg flex items-center justify-center">
               <Trophy className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white dark:text-gray-900">Stream Quest</span>
+            <span className="text-white dark:text-gray-900">{t('app.name')}</span>
           </div>
           {onClose && (
             <button
@@ -113,19 +116,22 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors"
           >
             {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-            <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+            <span>{theme === 'light' ? t('common.darkMode') : t('common.lightMode')}</span>
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors">
             <Settings className="w-5 h-5" />
-            <span>Settings</span>
+            <span>{t('common.settings')}</span>
           </button>
+          <div className="pt-1">
+            <LanguageSwitcher />
+          </div>
           <button
             onClick={handleLogout}
             style={{ color: '#ff4b4b' }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#2d2d31] hover:brightness-125 dark:hover:bg-gray-100 transition-all shadow-sm"
           >
             <LogOut className="w-5 h-5" />
-            <span className="font-medium">Sign Out</span>
+            <span className="font-medium">{t('common.signOut')}</span>
           </button>
         </div>
       </div>

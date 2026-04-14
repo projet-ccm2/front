@@ -156,7 +156,7 @@ describe('AchievementCreator', () => {
     expect(screen.getByDisplayValue('Imported from marketplace')).toBeInTheDocument()
     expect(screen.getByLabelText('Goal')).toHaveValue(75)
     expect(screen.getByLabelText('Reward (XP / Points)')).toHaveValue(300)
-    expect(screen.getByText('Advanced Mode')).toBeInTheDocument()
+    expect(screen.getByText('Simple Mode')).toBeInTheDocument()
     expect(screen.getByLabelText('Trigger Type')).toHaveValue('message_content')
     expect(screen.getByLabelText('Trigger Data')).toHaveValue('gg')
   })
@@ -183,11 +183,12 @@ describe('AchievementCreator', () => {
     expect(toggle).toBeInTheDocument()
   })
 
-  it('should switch between simple and advanced modes', () => {
+  it('should switch between simple mode and the API feature preview', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    fireEvent.click(screen.getByText('Advanced Mode'))
-    expect(screen.getByText('Trigger Type')).toBeInTheDocument()
     fireEvent.click(screen.getByText('Simple Mode'))
+    expect(screen.getByLabelText('Trigger Type')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('API'))
+    expect(screen.getByText('API feature coming soon')).toBeInTheDocument()
   })
 
   it('should render the default AI prompt', () => {
@@ -274,9 +275,8 @@ describe('AchievementCreator', () => {
     expect(screen.getByPlaceholderText('Optional image URL...')).toBeInTheDocument()
   })
 
-  it('should render advanced trigger fields', () => {
+  it('should render simple mode trigger fields', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    fireEvent.click(screen.getByText('Advanced Mode'))
 
     expect(screen.getByLabelText('Trigger Type')).toBeInTheDocument()
     expect(screen.getByLabelText('Trigger Data')).toBeInTheDocument()
@@ -284,7 +284,6 @@ describe('AchievementCreator', () => {
 
   it('should allow changing trigger type and trigger data', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    fireEvent.click(screen.getByText('Advanced Mode'))
 
     const triggerSelect = screen.getByLabelText('Trigger Type')
     const triggerDataInput = screen.getByLabelText('Trigger Data')

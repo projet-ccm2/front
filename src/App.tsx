@@ -5,12 +5,14 @@ import { Sidebar } from './components/layout/Sidebar'
 import { ThemeProvider } from './context/ThemeContext'
 import { ChannelProvider } from './context/ChannelContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { LanguageProvider } from './context/LanguageContext'
 import { AchievementCreator } from './features/achievements/AchievementCreator'
 import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
 import { TwitchOverlay } from './features/overlay/TwitchOverlay'
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
+import { useLanguage } from './context/LanguageContext'
 
 type Screen =
   | 'landing'
@@ -23,6 +25,7 @@ type Screen =
 
 export function AppContent() {
   const { isAuthenticated, isLoading, login, completeAuth } = useAuth()
+  const { t } = useLanguage()
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
@@ -102,7 +105,7 @@ export function AppContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0e0e10] flex items-center justify-center">
-        <div className="text-[#9146FF] animate-pulse text-xl">Loading...</div>
+        <div className="text-[#9146FF] animate-pulse text-xl">{t('app.loading')}</div>
       </div>
     )
   }
@@ -159,11 +162,13 @@ export function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <ChannelProvider>
-          <AppContent />
-        </ChannelProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ChannelProvider>
+            <AppContent />
+          </ChannelProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   )
 }

@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '../utils/test-utils'
 import { Sidebar } from '../../components/layout/Sidebar'
 import React from 'react'
 
-// Mock Lucide icons to avoid rendering issues if any
 vi.mock('lucide-react', async importOriginal => {
   const actual = await importOriginal()
   return {
@@ -18,6 +17,7 @@ vi.mock('lucide-react', async importOriginal => {
     Sun: () => <div data-testid="icon-sun" />,
     Moon: () => <div data-testid="icon-moon" />,
     Settings: () => <div data-testid="icon-settings" />,
+    LogOut: () => <div data-testid="icon-logout" />,
   }
 })
 
@@ -27,12 +27,12 @@ describe('Sidebar', () => {
 
   it('should render all menu items', () => {
     render(<Sidebar currentPage="dashboard" onNavigate={mockOnNavigate} isOpen={true} />)
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('Create Achievement')).toBeInTheDocument()
-    expect(screen.getByText('Manage Achievements')).toBeInTheDocument()
+    expect(screen.getByText('Tableau de bord')).toBeInTheDocument()
+    expect(screen.getByText('Créer un succès')).toBeInTheDocument()
+    expect(screen.getByText('Gérer les succès')).toBeInTheDocument()
     expect(screen.getByText('Marketplace')).toBeInTheDocument()
-    expect(screen.getByText('User Profile')).toBeInTheDocument()
-    expect(screen.getByText('Twitch Overlay')).toBeInTheDocument()
+    expect(screen.getByText('Profil utilisateur')).toBeInTheDocument()
+    expect(screen.getByText('Overlay Twitch')).toBeInTheDocument()
   })
 
   it('should show basic stream quest title', () => {
@@ -42,8 +42,40 @@ describe('Sidebar', () => {
 
   it('should call onNavigate when item clicked', () => {
     render(<Sidebar currentPage="dashboard" onNavigate={mockOnNavigate} isOpen={true} />)
-    fireEvent.click(screen.getByText('Create Achievement'))
+    fireEvent.click(screen.getByText('Créer un succès'))
     expect(mockOnNavigate).toHaveBeenCalledWith('creator')
+  })
+
+  it('should toggle the theme when the theme button is clicked', () => {
+    render(<Sidebar currentPage="dashboard" onNavigate={mockOnNavigate} isOpen={true} />)
+
+    expect(screen.getByRole('button', { name: 'Mode sombre' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mode sombre' }))
+    expect(screen.getByRole('button', { name: 'Mode clair' })).toBeInTheDocument()
+  })
+
+  it('should log out and navigate to landing', () => {
+    localStorage.setItem(
+      'twitch_user',
+      JSON.stringify({
+        userId: 'user-1',
+        username: 'streamer',
+        channel: {
+          id: 'channel-1',
+          name: 'MyChannel',
+          description: 'desc',
+          profileImageUrl: '',
+        },
+        channelsWhichIsMod: [],
+      })
+    )
+
+    render(<Sidebar currentPage="dashboard" onNavigate={mockOnNavigate} isOpen={true} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Déconnexion' }))
+
+    expect(mockOnNavigate).toHaveBeenCalledWith('landing')
+    expect(localStorage.getItem('twitch_user')).toBeNull()
   })
 
   it('should open and close properly on mobile (mock logic)', () => {
@@ -55,10 +87,8 @@ describe('Sidebar', () => {
         onClose={mockOnClose}
       />
     )
-    // Check for overlay
+
     const overlay = document.querySelector('.bg-black\\/50')
-    // It might be hidden on desktop but present in DOM
-    // To verify close click:
     if (overlay) {
       fireEvent.click(overlay)
       expect(mockOnClose).toHaveBeenCalled()
