@@ -72,7 +72,7 @@ describe('usePublicAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe('The achievement service is currently unavailable.')
+    expect(result.current.errorMessage).toBe('Le service de succès est actuellement indisponible.')
   })
 
   it('should expose a 400 bad request error', async () => {
@@ -89,7 +89,7 @@ describe('usePublicAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('The marketplace request is invalid.')
+    expect(result.current.errorMessage).toBe('La requête de marketplace est invalide.')
   })
 
   it('should expose a 404 not found error', async () => {
@@ -106,7 +106,7 @@ describe('usePublicAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('No public achievements route was found.')
+    expect(result.current.errorMessage).toBe('Aucune route de succès publics n’a été trouvée.')
   })
 
   it('should expose a generic error for unknown status codes', async () => {
@@ -123,7 +123,7 @@ describe('usePublicAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('Unable to load marketplace achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès de la marketplace.')
   })
 
   it('should expose a generic error when fetch throws a non-HTTP error', async () => {
@@ -136,6 +136,6 @@ describe('usePublicAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe('Unable to load marketplace achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès de la marketplace.')
   })
 })

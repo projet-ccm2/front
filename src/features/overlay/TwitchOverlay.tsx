@@ -1,63 +1,57 @@
-import { ChannelSelector } from '../../components/ui/ChannelSelector'
-import { Trophy, Eye, Menu } from 'lucide-react'
+import { Copy, ExternalLink, CircleHelp, Menu, Trophy, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { useLanguage } from '../../context/LanguageContext'
+import { useUserAchievements } from '../profile/hooks/useUserAchievements'
+import {
+  buildLeaderboardEntries,
+  buildPanelAchievementEntries,
+} from '../achievements/utils/achievementLeaderboard'
+import { useChannel } from '../../context/ChannelContext'
+import { buildPublicPanelUrl } from './utils/publicPanelLink'
 
 interface TwitchOverlayProps {
   onOpenSidebar: () => void
 }
 
-const activeQuests = [
-  {
-    id: 1,
-    title: 'Chat Master',
-    description: 'Send 100 messages',
-    progress: 75,
-    max: 100,
-    completed: false,
-    icon: '💬',
-  },
-  {
-    id: 2,
-    title: 'Loyal Viewer',
-    description: 'Watch 10 streams',
-    progress: 10,
-    max: 10,
-    completed: true,
-    icon: '👑',
-  },
-  {
-    id: 3,
-    title: 'Night Owl',
-    description: 'Watch past midnight',
-    progress: 1,
-    max: 1,
-    completed: true,
-    icon: '🦉',
-  },
-  {
-    id: 4,
-    title: 'Week Warrior',
-    description: 'Watch daily for 7 days',
-    progress: 5,
-    max: 7,
-    completed: false,
-    icon: '⚔️',
-  },
-  {
-    id: 5,
-    title: 'Emote Master',
-    description: 'Use 50 different emotes',
-    progress: 32,
-    max: 50,
-    completed: false,
-    icon: '😎',
-  },
-]
+function clampProgress(value: number) {
+  return Math.max(0, Math.min(value, 100))
+}
 
 export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
+  const { selectedChannel } = useChannel()
+  const { t } = useLanguage()
+  const { achievements, isLoading, errorMessage } = useUserAchievements()
+  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
+
+  const leaderboard = buildLeaderboardEntries(achievements, t)
+  const panelAchievements = buildPanelAchievementEntries(achievements, t)
+  const panelUrl =
+    selectedChannel && typeof window !== 'undefined'
+      ? buildPublicPanelUrl(selectedChannel.id, window.location.origin)
+      : ''
+
+  const handleCopyLink = async () => {
+    if (!panelUrl || !navigator.clipboard?.writeText) {
+      return
+    }
+
+    await navigator.clipboard.writeText(panelUrl)
+    setCopyState('copied')
+    globalThis.setTimeout(() => setCopyState('idle'), 2000)
+  }
+
+  const unlockedCount = achievements.filter(achievement => achievement.userState.finished).length
+  const hiddenCount = achievements.filter(
+    achievement => achievement.secret && !achievement.userState.finished
+  ).length
+  const currentXP = achievements.reduce(
+    (total, achievement) => total + (achievement.userState.finished ? achievement.reward : 0),
+    0
+  )
+
   return (
     <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
-        {/* Header */}
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -70,179 +64,216 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
               </button>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                  Twitch Extension Overlay
+                  {t('overlay.title')}
                 </h1>
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
-                  Preview of the viewer-facing overlay panel
+                  {selectedChannel
+                    ? t('overlay.subtitle.channel', { channel: selectedChannel.name })
+                    : t('overlay.subtitle.connected')}
                 </p>
               </div>
             </div>
 
-            {/* Channel Selector */}
-            <div className="relative hidden sm:block flex-shrink-0">
-              <ChannelSelector />
+            <div className="hidden sm:flex items-center gap-2 rounded-full border border-[#2d2d31] bg-[#0e0e10] px-3 py-2 text-xs text-gray-300 dark:border-gray-200 dark:bg-white dark:text-gray-700">
+              <div className="h-2.5 w-2.5 rounded-full bg-[#ff4444] shadow-[0_0_0_4px_rgba(255,68,68,0.15)]" />
+              {t('overlay.liveBadge')}
             </div>
           </div>
         </div>
 
-        {/* Preview Section */}
         <div className="p-4 sm:p-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6">
-              <h2 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">
-                Extension Preview
-              </h2>
-              <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base mb-6">
-                This is how the achievement overlay will appear to viewers on your Twitch stream.
-                The panel is designed to be compact and non-intrusive.
-              </p>
-
-              <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
-                {/* Mock Stream Preview */}
-                <div className="w-full lg:flex-1 bg-[#2d2d31] dark:bg-gray-200 rounded-xl aspect-video flex items-center justify-center">
-                  <div className="text-center text-gray-500 dark:text-gray-600">
-                    <div className="text-4xl sm:text-6xl mb-4">🎮</div>
-                    <div className="text-sm sm:text-base">Stream Preview Area</div>
-                  </div>
+          <div className="max-w-6xl mx-auto space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  {t('overlay.metric.achievements')}
                 </div>
+                <div className="mt-2 text-2xl text-white dark:text-gray-900">
+                  {unlockedCount} / {achievements.length}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  {t('overlay.metric.hidden')}
+                </div>
+                <div className="mt-2 text-2xl text-white dark:text-gray-900">{hiddenCount}</div>
+              </div>
+              <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  {t('overlay.metric.xp')}
+                </div>
+                <div className="mt-2 text-2xl text-white dark:text-gray-900">{currentXP}</div>
+              </div>
+              <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  {t('overlay.metric.rank')}
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-2xl text-white dark:text-gray-900">
+                  <Zap className="h-5 w-5 text-[#9146FF]" />
+                  {t('overlay.status.live')}
+                </div>
+              </div>
+            </div>
 
-                {/* Overlay Panel */}
-                <div className="w-full lg:w-80 flex-shrink-0">
-                  <div className="bg-black/90 backdrop-blur-sm border border-[#9146FF]/50 rounded-xl overflow-hidden shadow-2xl shadow-[#9146FF]/20">
-                    {/* Panel Header */}
-                    <div className="bg-gradient-to-r from-[#9146FF] to-[#772ce8] px-4 py-3 border-b border-[#9146FF]/30">
-                      <div className="flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-white" />
-                        <span className="text-white">Active Quests</span>
-                      </div>
+            <div className="rounded-3xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+              <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-xl text-white dark:text-gray-900">
+                    {t('overlay.public.linkSection')}
+                  </h2>
+                  <p className="text-sm text-gray-400 dark:text-gray-600">
+                    {t('overlay.public.linkDescription')}
+                  </p>
+                </div>
+                <button
+                  onClick={handleCopyLink}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#9146FF] px-4 py-2 text-sm text-white transition-colors hover:bg-[#772ce8]"
+                >
+                  <Copy className="h-4 w-4" />
+                  {copyState === 'copied' ? t('overlay.public.copied') : t('overlay.public.copy')}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-[#2d2d31] bg-[#0f0f12] px-4 py-3 text-sm text-gray-300 dark:border-gray-200 dark:bg-gray-50 dark:text-gray-700">
+                <ExternalLink className="h-4 w-4 flex-shrink-0 text-[#9146FF]" />
+                <span className="min-w-0 break-all">{panelUrl}</span>
+              </div>
+            </div>
+
+            {isLoading && (
+              <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-6 text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
+                {t('overlay.loading')}
+              </div>
+            )}
+
+            {!isLoading && errorMessage && (
+              <div className="rounded-2xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-[#ff8080] dark:text-[#b42318]">
+                {errorMessage}
+              </div>
+            )}
+
+            {!isLoading && !errorMessage && achievements.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-[#2d2d31] p-8 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600">
+                {t('overlay.empty')}
+              </div>
+            )}
+
+            {!isLoading && !errorMessage && achievements.length > 0 && (
+              <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
+                <div className="rounded-3xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900">
+                        {t('overlay.section.viewerAchievements')}
+                      </h2>
+                      <p className="text-sm text-gray-400 dark:text-gray-600">
+                        {t('overlay.section.viewerDescription')}
+                      </p>
                     </div>
+                    <div className="rounded-full border border-[#2d2d31] px-3 py-1 text-xs text-gray-300 dark:border-gray-200 dark:text-gray-700">
+                      {t('overlay.totalSuffix', { count: achievements.length })}
+                    </div>
+                  </div>
 
-                    {/* Scrollable Quest List */}
-                    <div className="max-h-[400px] sm:max-h-[500px] overflow-y-auto">
-                      <div className="p-3 space-y-2">
-                        {activeQuests.map(quest => (
+                  <div className="space-y-3">
+                    {panelAchievements.map(achievement => (
+                      <div
+                        key={achievement.id}
+                        className={`rounded-2xl border p-4 transition-colors ${
+                          achievement.isUnlocked
+                            ? 'border-[#9146FF]/50 bg-[#9146FF]/10'
+                            : 'border-[#2d2d31] bg-[#0f0f12] dark:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
                           <div
-                            key={quest.id}
-                            className={`p-3 rounded-lg transition-all cursor-pointer ${
-                              quest.completed
-                                ? 'bg-gradient-to-r from-[#ffd700]/20 to-[#ffa500]/20 border border-[#ffd700]/50 shadow-lg shadow-[#ffd700]/20'
-                                : 'bg-[#18181b]/80 border border-[#2d2d31] hover:border-[#9146FF]/50'
+                            className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl font-semibold ${
+                              achievement.isHidden
+                                ? 'bg-[#2d2d31] text-white dark:bg-gray-200 dark:text-gray-900'
+                                : 'bg-gradient-to-br from-[#9146FF] to-[#772ce8] text-white'
                             }`}
                           >
-                            <div className="flex items-start gap-3 mb-2">
-                              <div
-                                className={`text-2xl flex-shrink-0 ${quest.completed && 'animate-pulse'}`}
-                              >
-                                {quest.icon}
+                            {achievement.avatar}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0">
+                                <h3 className="truncate text-base text-white dark:text-gray-900">
+                                  {achievement.title}
+                                </h3>
+                                <p className="text-sm text-gray-400 dark:text-gray-600">
+                                  {achievement.description}
+                                </p>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <div className="text-white text-sm truncate">{quest.title}</div>
-                                  {quest.completed && (
-                                    <div className="px-2 py-0.5 bg-[#ffd700] text-black text-xs rounded-full flex-shrink-0">
-                                      DONE
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="text-xs text-gray-400 truncate">
-                                  {quest.description}
-                                </div>
-                              </div>
-                              <Eye className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                              {achievement.isHidden ? (
+                                <CircleHelp className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
+                              ) : (
+                                <Trophy className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
+                              )}
                             </div>
 
-                            {/* Progress Bar */}
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-400">Progress</span>
-                                <span
-                                  className={quest.completed ? 'text-[#ffd700]' : 'text-gray-400'}
-                                >
-                                  {quest.progress}/{quest.max}
-                                </span>
+                            <div className="mt-3 space-y-2">
+                              <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-600">
+                                <span>{achievement.progressText}</span>
+                                <span>{achievement.reward} XP</span>
                               </div>
-                              <div className="h-1.5 bg-[#2d2d31] rounded-full overflow-hidden">
+                              <div className="h-2 rounded-full bg-[#2d2d31] dark:bg-gray-200">
                                 <div
-                                  className={`h-full transition-all ${
-                                    quest.completed
-                                      ? 'bg-gradient-to-r from-[#ffd700] to-[#ffa500]'
-                                      : 'bg-gradient-to-r from-[#9146FF] to-[#772ce8]'
-                                  }`}
-                                  style={{ width: `${(quest.progress / quest.max) * 100}%` }}
+                                  className="h-full rounded-full bg-gradient-to-r from-[#9146FF] to-[#772ce8]"
+                                  style={{
+                                    width: `${clampProgress(achievement.progressPercent)}%`,
+                                  }}
                                 />
                               </div>
                             </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                </div>
 
-                    {/* Panel Footer */}
-                    <div className="bg-[#18181b]/90 backdrop-blur-sm px-4 py-3 border-t border-[#2d2d31]">
-                      <div className="flex items-center justify-between text-xs mb-2">
-                        <span className="text-white">Level 42</span>
-                        <span className="text-white">9,830 / 10,000 XP</span>
+                <div className="rounded-3xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+                  <div className="mb-4">
+                    <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900">
+                      {t('overlay.leaderboard')}
+                    </h2>
+                    <p className="text-sm text-gray-400 dark:text-gray-600">
+                      {t('overlay.leaderboardDescription')}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {leaderboard.map(entry => (
+                      <div
+                        key={entry.rank}
+                        className={`flex items-center gap-3 rounded-2xl border p-3 ${
+                          entry.isUnlocked
+                            ? 'border-[#9146FF]/50 bg-[#9146FF]/10'
+                            : 'border-[#2d2d31] bg-[#0f0f12] dark:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2d2d31] text-sm text-white dark:bg-gray-200 dark:text-gray-900">
+                          #{entry.rank}
+                        </div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#9146FF] to-[#772ce8] text-sm text-white">
+                          {entry.avatar}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm text-white dark:text-gray-900">
+                            {entry.title}
+                          </div>
+                          <div className="text-xs text-gray-400 dark:text-gray-600">
+                            {entry.status}
+                          </div>
+                        </div>
+                        <div className="text-right text-sm text-[#ffd700]">{entry.xp} XP</div>
                       </div>
-                      <div className="h-2 bg-[#1a1a1d] rounded-full overflow-hidden border border-[#2d2d31]">
-                        <div
-                          className="h-full bg-gradient-to-r from-[#9146FF] via-[#b366ff] to-[#772ce8] shadow-lg shadow-[#9146FF]/30"
-                          style={{ width: '83%' }}
-                        />
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Technical Specs */}
-            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
-                <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">
-                  Technical Specifications
-                </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 dark:text-gray-600">Width:</span>
-                    <span className="text-white dark:text-gray-900">320px</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 dark:text-gray-600">Background:</span>
-                    <span className="text-white dark:text-gray-900">Semi-transparent black</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 dark:text-gray-600">Position:</span>
-                    <span className="text-white dark:text-gray-900">Right sidebar</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 dark:text-gray-600">Update Rate:</span>
-                    <span className="text-white dark:text-gray-900">Real-time</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
-                <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-4">Features</h3>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2 text-gray-300 dark:text-gray-700">
-                    <div className="w-1.5 h-1.5 bg-[#9146FF] rounded-full" />
-                    Real-time progress tracking
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300 dark:text-gray-700">
-                    <div className="w-1.5 h-1.5 bg-[#9146FF] rounded-full" />
-                    Visual feedback on completion
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300 dark:text-gray-700">
-                    <div className="w-1.5 h-1.5 bg-[#9146FF] rounded-full" />
-                    Scrollable quest list
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-300 dark:text-gray-700">
-                    <div className="w-1.5 h-1.5 bg-[#9146FF] rounded-full" />
-                    Level and XP display
-                  </li>
-                </ul>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

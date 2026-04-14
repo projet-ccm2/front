@@ -68,7 +68,7 @@ describe('Marketplace', () => {
   it('should render the marketplace page', async () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
-    expect(screen.getByRole('heading', { name: 'Community Marketplace' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Marketplace communautaire' })).toBeInTheDocument()
     expect(await screen.findByText('Speed Runner')).toBeInTheDocument()
   })
 
@@ -83,14 +83,16 @@ describe('Marketplace', () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     await screen.findByText('Speed Runner')
-    expect(screen.getByPlaceholderText('Find new quests for your community...')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('Trouver de nouvelles quêtes pour votre communauté...')
+    ).toBeInTheDocument()
   })
 
   it('should display category filters from trigger labels', async () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     await screen.findByText('Speed Runner')
-    expect(screen.getByText('All')).toBeInTheDocument()
+    expect(screen.getByText('Tous')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Message' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Redeem Channel Point' })).toBeInTheDocument()
   })
@@ -123,12 +125,12 @@ describe('Marketplace', () => {
     fireEvent.click(screen.getByTestId('mobile-filter-btn'))
 
     fireEvent.change(screen.getByRole('combobox'), {
-      target: { value: 'Highest Reward' },
+      target: { value: 'highestReward' },
     })
 
-    screen.getAllByText('Use as Template').forEach(button => fireEvent.click(button))
+    screen.getAllByText('Utiliser comme modèle').forEach(button => fireEvent.click(button))
 
-    fireEvent.click(screen.getByLabelText('Secret only'))
+    fireEvent.click(screen.getByLabelText('Secrets uniquement'))
     expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
   })
 
@@ -156,9 +158,12 @@ describe('Marketplace', () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     await screen.findByText('Speed Runner')
-    fireEvent.change(screen.getByPlaceholderText('Find new quests for your community...'), {
-      target: { value: 'Hype' },
-    })
+    fireEvent.change(
+      screen.getByPlaceholderText('Trouver de nouvelles quêtes pour votre communauté...'),
+      {
+        target: { value: 'Hype' },
+      }
+    )
 
     await waitFor(() => {
       expect(screen.queryByText('Speed Runner')).not.toBeInTheDocument()
@@ -180,7 +185,7 @@ describe('Marketplace', () => {
 
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
-    expect(await screen.findByText('No public achievements found')).toBeInTheDocument()
+    expect(await screen.findByText('Aucun succès public trouvé')).toBeInTheDocument()
   })
 
   it('should render an error state when the API fails', async () => {
@@ -199,14 +204,14 @@ describe('Marketplace', () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     expect(
-      await screen.findByText('The achievement service is currently unavailable.')
+      await screen.findByText('Le service de succès est actuellement indisponible.')
     ).toBeInTheDocument()
   })
 
   it('should pass the selected public achievement to the creator flow', async () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
-    const templateButtons = await screen.findAllByText('Use as Template')
+    const templateButtons = await screen.findAllByText('Utiliser comme modèle')
     fireEvent.click(templateButtons[0])
 
     expect(mockOnUseTemplate).toHaveBeenCalledWith(mockAchievements[0])

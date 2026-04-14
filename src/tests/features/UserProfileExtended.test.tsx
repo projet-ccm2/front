@@ -73,15 +73,15 @@ describe('UserProfile - Function Coverage', () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
     await screen.findAllByText('First Steps')
-    expect(screen.getByText('Total Watch Time')).toBeInTheDocument()
-    expect(screen.getByText('Achievements Unlocked')).toBeInTheDocument()
-    expect(screen.getByText('Achievement XP')).toBeInTheDocument()
+    expect(screen.getByText('Temps de visionnage total')).toBeInTheDocument()
+    expect(screen.getByText('Succès débloqués')).toBeInTheDocument()
+    expect(screen.getByText('XP de succès')).toBeInTheDocument()
   })
 
   it('should render badges section', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
-    expect(screen.getByText('Achievement Badges')).toBeInTheDocument()
+    expect(screen.getByText('Badges de succès')).toBeInTheDocument()
     expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
@@ -89,10 +89,12 @@ describe('UserProfile - Function Coverage', () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
     await screen.findAllByText('First Steps')
-    expect(screen.getByText('Leaderboard')).toBeInTheDocument()
-    expect(screen.getByText('View Full Rankings')).toBeInTheDocument()
+    expect(screen.getByText('Classement')).toBeInTheDocument()
+    expect(screen.getByText('Voir le classement complet')).toBeInTheDocument()
     expect(
-      screen.getByText('Top achievements ranked from the data returned by achievement-management.')
+      screen.getByText(
+        'Les meilleurs succès classés à partir des données renvoyées par achievement-management.'
+      )
     ).toBeInTheDocument()
     expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
   })

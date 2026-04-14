@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Search, Download, Filter, Menu, X, Plus, Eye, Target } from 'lucide-react'
 import { usePublicAchievements } from './hooks/usePublicAchievements'
+import { useLanguage } from '../../context/LanguageContext'
 import type { Achievement } from '../achievements/api/achievementManagement.types'
 
 interface MarketplaceProps {
@@ -9,14 +10,7 @@ interface MarketplaceProps {
   readonly onOpenSidebar: () => void
 }
 
-type SortOption = 'Most Downloaded' | 'Most Visited' | 'Highest Reward' | 'Newest Available'
-
-const SORT_OPTIONS: SortOption[] = [
-  'Most Downloaded',
-  'Most Visited',
-  'Highest Reward',
-  'Newest Available',
-]
+type SortOption = 'mostDownloaded' | 'mostVisited' | 'highestReward' | 'newestAvailable'
 
 const formatTriggerLabel = (label: string) =>
   label
@@ -33,12 +27,13 @@ const getVisibilityBadgeClassName = (isSecret: boolean) => {
 }
 
 export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) {
+  const { t } = useLanguage()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedCategory, setSelectedCategory] = useState('all')
   const [showSecretOnly, setShowSecretOnly] = useState(false)
   const [showActiveOnly, setShowActiveOnly] = useState(false)
-  const [sortBy, setSortBy] = useState<SortOption>('Most Downloaded')
+  const [sortBy, setSortBy] = useState<SortOption>('mostDownloaded')
   const { achievements, isLoading, errorMessage } = usePublicAchievements()
 
   const categories = useMemo(() => {
@@ -46,7 +41,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
       new Set(achievements.map(achievement => formatTriggerLabel(achievement.type.label)))
     )
 
-    return ['All', ...uniqueCategories]
+    return ['all', ...uniqueCategories]
   }, [achievements])
 
   const filteredAchievements = useMemo(() => {
@@ -54,7 +49,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
 
     return [...achievements]
       .filter(achievement => {
-        if (selectedCategory !== 'All') {
+        if (selectedCategory !== 'all') {
           return formatTriggerLabel(achievement.type.label) === selectedCategory
         }
 
@@ -74,15 +69,15 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
       .filter(achievement => (showActiveOnly ? achievement.active : true))
       .sort((left, right) => {
         switch (sortBy) {
-          case 'Most Visited':
+          case 'mostVisited':
             return right.visits - left.visits
-          case 'Highest Reward':
+          case 'highestReward':
             return right.reward - left.reward
-          case 'Newest Available': {
+          case 'newestAvailable': {
             if (right.active === left.active) return 0
             return right.active ? -1 : 1
           }
-          case 'Most Downloaded':
+          case 'mostDownloaded':
           default:
             return right.downloads - left.downloads
         }
@@ -104,10 +99,10 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
               </button>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                  Community Marketplace
+                  {t('marketplace.title')}
                 </h1>
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
-                  Discover and add achievements created by the community
+                  {t('marketplace.subtitle')}
                 </p>
               </div>
             </div>
@@ -126,7 +121,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                 type="text"
                 value={search}
                 onChange={event => setSearch(event.target.value)}
-                placeholder="Find new quests for your community..."
+                placeholder={t('marketplace.search')}
                 className="w-full pl-10 pr-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
               />
             </div>
@@ -156,7 +151,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
               </button>
             </div>
 
-            <h3 className="text-white dark:text-gray-900 mb-4">Categories</h3>
+            <h3 className="text-white dark:text-gray-900 mb-4">{t('marketplace.categories')}</h3>
             <div className="space-y-2">
               {categories.map(category => (
                 <button
@@ -168,13 +163,15 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                       : 'text-gray-400 dark:text-gray-600 hover:bg-[#2d2d31] dark:hover:bg-gray-100 hover:text-white dark:hover:text-gray-900'
                   }`}
                 >
-                  {category}
+                  {category === 'all'
+                    ? t('marketplace.category.all')
+                    : formatTriggerLabel(category)}
                 </button>
               ))}
             </div>
 
             <div className="mt-8">
-              <h3 className="text-white dark:text-gray-900 mb-4">Visibility</h3>
+              <h3 className="text-white dark:text-gray-900 mb-4">{t('marketplace.visibility')}</h3>
               <div className="space-y-2">
                 <label className="flex items-center gap-3 cursor-pointer text-sm">
                   <input
@@ -183,7 +180,9 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                     onChange={event => setShowActiveOnly(event.target.checked)}
                     className="w-4 h-4 rounded border-[#4d4d51] dark:border-gray-300 bg-[#2d2d31] dark:bg-gray-100 text-[#9146FF] focus:ring-[#9146FF]"
                   />
-                  <span className="text-gray-400 dark:text-gray-600">Active only</span>
+                  <span className="text-gray-400 dark:text-gray-600">
+                    {t('marketplace.visibility.activeOnly')}
+                  </span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer text-sm">
                   <input
@@ -192,20 +191,29 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                     onChange={event => setShowSecretOnly(event.target.checked)}
                     className="w-4 h-4 rounded border-[#4d4d51] dark:border-gray-300 bg-[#2d2d31] dark:bg-gray-100 text-[#9146FF] focus:ring-[#9146FF]"
                   />
-                  <span className="text-gray-400 dark:text-gray-600">Secret only</span>
+                  <span className="text-gray-400 dark:text-gray-600">
+                    {t('marketplace.visibility.secretOnly')}
+                  </span>
                 </label>
               </div>
             </div>
 
             <div className="mt-8">
-              <h3 className="text-white dark:text-gray-900 mb-4">Sort By</h3>
+              <h3 className="text-white dark:text-gray-900 mb-4">{t('marketplace.sortBy')}</h3>
               <select
                 value={sortBy}
                 onChange={event => setSortBy(event.target.value as SortOption)}
                 className="w-full px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none text-sm"
               >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option}>{option}</option>
+                {[
+                  { value: 'mostDownloaded', label: t('marketplace.sort.downloaded') },
+                  { value: 'mostVisited', label: t('marketplace.sort.visited') },
+                  { value: 'highestReward', label: t('marketplace.sort.reward') },
+                  { value: 'newestAvailable', label: t('marketplace.sort.newest') },
+                ].map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -216,14 +224,14 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
               type="button"
               className="fixed inset-0 bg-black/50 z-20 lg:hidden w-full h-full cursor-default"
               onClick={() => setFiltersOpen(false)}
-              aria-label="Close filters"
+              aria-label={t('marketplace.filters.close')}
             />
           )}
 
           <div className="flex-1 p-4 sm:p-8">
             {isLoading && (
               <div className="rounded-xl border border-[#2d2d31] bg-[#18181b] p-6 text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
-                Loading public achievements...
+                {t('marketplace.loading')}
               </div>
             )}
 
@@ -236,10 +244,10 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
             {!isLoading && !errorMessage && filteredAchievements.length === 0 && (
               <div className="rounded-xl border border-dashed border-[#2d2d31] bg-[#18181b] p-8 text-center dark:border-gray-200 dark:bg-white">
                 <h2 className="mb-2 text-xl text-white dark:text-gray-900">
-                  No public achievements found
+                  {t('marketplace.empty.title')}
                 </h2>
                 <p className="text-sm text-gray-400 dark:text-gray-600">
-                  Adjust your filters or wait for new marketplace templates to be published.
+                  {t('marketplace.empty.description')}
                 </p>
               </div>
             )}
@@ -261,7 +269,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                             achievement.secret
                           )}`}
                         >
-                          {achievement.secret ? 'Secret' : 'Visible'}
+                          {achievement.secret ? t('marketplace.secret') : t('marketplace.visible')}
                         </div>
                       </div>
                       <h3 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-2">
@@ -300,7 +308,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                               : 'text-gray-500 dark:text-gray-500'
                           }
                         >
-                          {achievement.active ? 'Active' : 'Inactive'}
+                          {achievement.active ? t('marketplace.active') : t('marketplace.inactive')}
                         </span>
                       </div>
                       <button
@@ -308,7 +316,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                         className="w-full px-4 py-2 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors flex items-center justify-center gap-2"
                       >
                         <Plus className="w-4 h-4" />
-                        Use as Template
+                        {t('marketplace.useTemplate')}
                       </button>
                     </div>
                   </div>

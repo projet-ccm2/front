@@ -1,14 +1,9 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent } from './utils/test-utils'
-import App from '../App'
 import React from 'react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from './utils/test-utils'
+import App from '../App'
 
 describe('App - Functional Coverage', () => {
-  it('should render landing page initially', () => {
-    render(<App />)
-    expect(screen.getByText('Gamifiez votre stream')).toBeInTheDocument()
-  })
-
   const setupAuthenticated = () => {
     const mockUser = {
       userId: '123456',
@@ -24,6 +19,16 @@ describe('App - Functional Coverage', () => {
     localStorage.setItem('twitch_user', JSON.stringify(mockUser))
   }
 
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
   it('should render landing page initially', () => {
     render(<App />)
     expect(screen.getByText('Gamifiez votre stream')).toBeInTheDocument()
@@ -33,28 +38,154 @@ describe('App - Functional Coverage', () => {
     setupAuthenticated()
     render(<App />)
 
-    // Should now show dashboard
-    const dashboardElements = await screen.findAllByText('Dashboard')
+    const dashboardElements = await screen.findAllByText('Tableau de bord')
     expect(dashboardElements.length).toBeGreaterThan(0)
   })
 
   it('should navigate between screens', async () => {
     setupAuthenticated()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/achievements/channel/123')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve([
+                {
+                  id: 'achievement-1',
+                  title: 'First Steps',
+                  description: 'Send your first message',
+                  goal: 1,
+                  reward: 50,
+                  label: '',
+                  public: true,
+                  downloads: 0,
+                  visits: 0,
+                  active: true,
+                  secret: false,
+                  image: null,
+                  channelId: '123',
+                  type: { label: 'message', data: null },
+                },
+              ]),
+          })
+        }
+
+        if (url.includes('/achievements/user/123456/channel/123')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve([
+                {
+                  id: 'achievement-1',
+                  title: 'First Steps',
+                  description: 'Send your first message',
+                  goal: 1,
+                  reward: 50,
+                  label: '',
+                  public: true,
+                  downloads: 0,
+                  visits: 0,
+                  active: true,
+                  secret: false,
+                  image: null,
+                  channelId: '123',
+                  type: { label: 'message', data: null },
+                  userState: {
+                    progressCount: 1,
+                    finished: true,
+                    acquiredDate: new Date().toISOString(),
+                  },
+                },
+              ]),
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve([]),
+        })
+      })
+    )
+
     render(<App />)
-    await screen.findAllByText('Dashboard')
+    await screen.findAllByText('Tableau de bord')
 
-    // Test one navigation (e.g. to Marketplace which seems stable)
-    const marketplaceLinks = screen.getAllByText('Marketplace')
-    fireEvent.click(marketplaceLinks[0])
+    fireEvent.click(screen.getAllByRole('button', { name: /G.*succ.*s|Manage Achievements/i })[0])
+    expect(await screen.findByText('All Achievements')).toBeInTheDocument()
 
-    const marketplaceHeading = await screen.findByRole('heading', { name: /Marketplace/i })
-    expect(marketplaceHeading).toBeInTheDocument()
-  })
+    fireEvent.click(screen.getAllByRole('button', { name: /Profil utilisateur|User Profile/i })[0])
+    expect(await screen.findByText(/Classement|Leaderboard/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Panneau Twitch|Twitch Panel/i })[0])
+    expect(
+      await screen.findByRole('heading', { name: /Panneau Twitch|Twitch Panel/ })
+    ).toBeInTheDocument()
+  }, 10000)
 
   it('should maintain authentication state', async () => {
     setupAuthenticated()
     render(<App />)
-    const dashboardElements = await screen.findAllByText('Dashboard')
+    const dashboardElements = await screen.findAllByText('Tableau de bord')
     expect(dashboardElements.length).toBeGreaterThan(0)
+  })
+
+  it('should reuse a marketplace template from the creator flow', async () => {
+    setupAuthenticated()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/achievements/public')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve([
+                {
+                  id: 'template-1',
+                  title: 'Template One',
+                  description: 'Template description',
+                  goal: 10,
+                  reward: 100,
+                  label: 'T1',
+                  public: true,
+                  downloads: 1,
+                  visits: 2,
+                  active: true,
+                  secret: false,
+                  image: null,
+                  channelId: 'channel-public',
+                  type: { label: 'message', data: null },
+                },
+              ]),
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve([]),
+        })
+      })
+    )
+
+    render(<App />)
+    await screen.findAllByText('Tableau de bord')
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Marketplace/i })[0])
+    expect(await screen.findByRole('heading', { name: /Marketplace/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Use as Template|Utiliser comme mod.*le/i }))
+    expect(
+      await screen.findByRole('heading', { name: /Create Achievement|Cr.*er un succ.*s/i })
+    ).toBeInTheDocument()
   })
 })

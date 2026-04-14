@@ -52,7 +52,7 @@ describe('useUserAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe('Sign in to load profile achievements.')
+    expect(result.current.errorMessage).toBe('Connecte-toi pour charger les succès du profil.')
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -91,7 +91,7 @@ describe('useUserAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('The current profile request is invalid.')
+    expect(result.current.errorMessage).toBe('La requête du profil est invalide.')
   })
 
   it('should expose a 404 error when no profile achievements found', async () => {
@@ -110,7 +110,9 @@ describe('useUserAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('No achievement progress was found for this profile.')
+    expect(result.current.errorMessage).toBe(
+      'Aucune progression de succès n’a été trouvée pour ce profil.'
+    )
   })
 
   it('should expose a 502 upstream error', async () => {
@@ -129,7 +131,7 @@ describe('useUserAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('The achievement service is currently unavailable.')
+    expect(result.current.errorMessage).toBe('Le service de succès est actuellement indisponible.')
   })
 
   it('should expose a generic error for unknown server error codes', async () => {
@@ -148,7 +150,7 @@ describe('useUserAchievements', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('Unable to load profile achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès du profil.')
   })
 
   it('should expose a generic error when fetch throws a non-HTTP error', async () => {
@@ -163,6 +165,6 @@ describe('useUserAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe('Unable to load profile achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès du profil.')
   })
 })

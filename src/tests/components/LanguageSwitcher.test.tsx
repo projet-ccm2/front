@@ -10,16 +10,26 @@ describe('LanguageSwitcher', () => {
   it('should render the default French state', () => {
     render(<LanguageSwitcher />)
 
-    expect(screen.getByRole('button', { name: /Angl/i })).toHaveAttribute('aria-pressed', 'false')
-    expect(screen.getByRole('button', { name: /Fran/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /anglais/i })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    )
+    expect(screen.getByRole('button', { name: /fran/i })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('should switch language when a button is clicked', () => {
     render(<LanguageSwitcher />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Angl/i }))
+    const [englishButton] = screen.getAllByRole('button')
+    fireEvent.click(englishButton)
 
-    expect(screen.getByRole('button', { name: 'English' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: 'French' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: /switch to english/i })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    )
+    expect(screen.getByRole('button', { name: /switch to french/i })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    )
   })
 })

@@ -113,15 +113,15 @@ describe('Integration Tests', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { name: 'Tableau de bord' })).toBeInTheDocument()
       },
       { timeout: 5000 }
     )
 
     await waitFor(
       () => {
-        expect(screen.getByText('Active Achievements')).toBeInTheDocument()
-        expect(screen.getByText('Public Templates')).toBeInTheDocument()
+        expect(screen.getByText('Succès actifs')).toBeInTheDocument()
+        expect(screen.getByText('Modèles publics')).toBeInTheDocument()
       },
       { timeout: 5000 }
     )

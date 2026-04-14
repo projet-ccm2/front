@@ -1,7 +1,8 @@
 import { Trophy, Clock, TrendingUp, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { useUserAchievements } from './hooks/useUserAchievements'
-import type { UserAchievement } from '../achievements/api/achievementManagement.types'
+import { buildLeaderboardEntries } from '../achievements/utils/achievementLeaderboard'
 
 interface UserProfileProps {
   readonly onOpenSidebar: () => void
@@ -20,56 +21,11 @@ const getRankStyle = (rank: number) => {
   }
 }
 
-interface LeaderboardEntry {
-  rank: number
-  title: string
-  xp: number
-  avatar: string
-  status: string
-  isUnlocked: boolean
-}
-
-function buildLeaderboardEntries(achievements: UserAchievement[]): LeaderboardEntry[] {
-  return achievements
-    .slice()
-    .sort((left, right) => {
-      const rewardDiff = right.reward - left.reward
-      if (rewardDiff !== 0) {
-        return rewardDiff
-      }
-
-      const finishedDiff = Number(right.userState.finished) - Number(left.userState.finished)
-      if (finishedDiff !== 0) {
-        return finishedDiff
-      }
-
-      const progressDiff = right.userState.progressCount - left.userState.progressCount
-      if (progressDiff !== 0) {
-        return progressDiff
-      }
-
-      return left.title.localeCompare(right.title)
-    })
-    .slice(0, 5)
-    .map((achievement, index) => ({
-      rank: index + 1,
-      title: achievement.title,
-      xp: achievement.reward,
-      avatar:
-        achievement.label.trim().charAt(0).toUpperCase() ||
-        achievement.title.charAt(0).toUpperCase() ||
-        'A',
-      status: achievement.userState.finished
-        ? 'Unlocked'
-        : `${achievement.userState.progressCount}/${achievement.goal}`,
-      isUnlocked: achievement.userState.finished,
-    }))
-}
-
 export function UserProfile({ onOpenSidebar }: UserProfileProps) {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useUserAchievements()
-  const leaderboard = buildLeaderboardEntries(achievements)
+  const leaderboard = buildLeaderboardEntries(achievements, t)
 
   const unlockedCount = achievements.filter(achievement => achievement.userState.finished).length
   const totalCount = achievements.length
@@ -122,15 +78,17 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
               <div className="flex-1 pb-4 text-center sm:text-left">
                 <div className="flex flex-col sm:flex-row items-center gap-4 mb-3">
                   <h1 className="text-3xl sm:text-4xl text-white dark:text-gray-900">
-                    {user?.username ?? 'Profile'}
+                    {user?.username ?? t('profile.titleFallback')}
                   </h1>
                 </div>
 
                 <div className="mb-2">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-white dark:text-gray-900">Level {currentLevel}</span>
                     <span className="text-white dark:text-gray-900">
-                      {currentXP} / {nextLevelXP} XP
+                      {t('profile.level', { level: currentLevel })}
+                    </span>
+                    <span className="text-white dark:text-gray-900">
+                      {t('profile.xpProgress', { currentXp: currentXP, nextLevelXp: nextLevelXP })}
                     </span>
                   </div>
                   <div className="h-4 bg-[#1a1a1d] dark:bg-gray-200 rounded-full overflow-hidden border border-[#2d2d31] dark:border-gray-300">
@@ -141,7 +99,7 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                   </div>
                 </div>
                 <p className="text-gray-300 dark:text-gray-700">
-                  {nextLevelXP - currentXP} XP until next level.
+                  {t('profile.untilNextLevel', { xp: nextLevelXP - currentXP })}
                 </p>
               </div>
             </div>
@@ -153,7 +111,9 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                 <div className="w-10 h-10 bg-[#9146FF]/20 rounded-lg flex items-center justify-center">
                   <Clock className="w-5 h-5 text-[#9146FF]" />
                 </div>
-                <div className="text-sm text-gray-400 dark:text-gray-600">Total Watch Time</div>
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  {t('profile.totalWatchTime')}
+                </div>
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900">--</div>
             </div>
@@ -164,7 +124,7 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                   <Trophy className="w-5 h-5 text-[#00f593]" />
                 </div>
                 <div className="text-sm text-gray-400 dark:text-gray-600">
-                  Achievements Unlocked
+                  {t('profile.achievementsUnlocked')}
                 </div>
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900">
@@ -177,7 +137,9 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                 <div className="w-10 h-10 bg-[#ffd700]/20 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-[#ffd700]" />
                 </div>
-                <div className="text-sm text-gray-400 dark:text-gray-600">Achievement XP</div>
+                <div className="text-sm text-gray-400 dark:text-gray-600">
+                  {t('profile.achievementXp')}
+                </div>
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900">{currentXP}</div>
             </div>
@@ -185,13 +147,11 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
 
           <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6 sm:mb-8">
             <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900 mb-4 sm:mb-6">
-              Achievement Badges
+              {t('profile.section.badges')}
             </h2>
 
             {isLoading && (
-              <div className="text-gray-400 dark:text-gray-600">
-                Loading achievement progress...
-              </div>
+              <div className="text-gray-400 dark:text-gray-600">{t('profile.loading')}</div>
             )}
 
             {!isLoading && errorMessage && (
@@ -202,7 +162,7 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
 
             {!isLoading && !errorMessage && achievements.length === 0 && (
               <div className="rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600">
-                No profile achievements found yet.
+                {t('profile.empty')}
               </div>
             )}
 
@@ -232,7 +192,7 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                     </div>
                     <div className="mt-2 text-[10px] text-gray-400 dark:text-gray-600 text-center">
                       {achievement.userState.finished
-                        ? 'Unlocked'
+                        ? t('profile.unlocked')
                         : `${achievement.userState.progressCount}/${achievement.goal}`}
                     </div>
                   </div>
@@ -243,13 +203,15 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
 
           <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
-              <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900">Leaderboard</h2>
+              <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900">
+                {t('profile.leaderboard')}
+              </h2>
               <button className="w-full sm:w-auto px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors text-sm">
-                View Full Rankings
+                {t('profile.leaderboardAction')}
               </button>
             </div>
             <p className="mb-4 text-sm text-gray-400 dark:text-gray-600">
-              Top achievements ranked from the data returned by achievement-management.
+              {t('profile.leaderboardDescription')}
             </p>
             <div className="space-y-3">
               {leaderboard.map(entry => (

@@ -192,7 +192,7 @@ describe('useDashboardData', () => {
     expect(result.current.recentActivity).toHaveLength(1)
     expect(result.current.recentActivity[0]).toMatchObject({
       id: 'achievement-1',
-      user: 'You',
+      user: 'Vous',
       achievement: 'First Steps',
     })
   })
@@ -206,7 +206,7 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('The achievement service is currently unavailable.')
+    expect(result.current.errorMessage).toBe('Le service de succès est actuellement indisponible.')
     expect(result.current.stats.totalAchievements).toBe(0)
   })
 
@@ -219,7 +219,7 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('The dashboard request is invalid.')
+    expect(result.current.errorMessage).toBe('La requête du tableau de bord est invalide.')
   })
 
   it('should show a 404 error message when dashboard data is not found', async () => {
@@ -231,7 +231,9 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('No achievement data was found for this dashboard.')
+    expect(result.current.errorMessage).toBe(
+      'Aucune donnée de succès n’a été trouvée pour ce tableau de bord.'
+    )
   })
 
   it('should show a generic error for unknown server error codes', async () => {
@@ -243,7 +245,7 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('Unable to load dashboard achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès du tableau de bord.')
   })
 
   it('should show a generic error when fetch throws a non-HTTP error', async () => {
@@ -258,7 +260,7 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('Unable to load dashboard achievements.')
+    expect(result.current.errorMessage).toBe('Impossible de charger les succès du tableau de bord.')
   })
 
   it('should show sign-in message when user is not authenticated', async () => {
@@ -270,7 +272,9 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.errorMessage).toBe('Sign in to load dashboard achievements.')
+    expect(result.current.errorMessage).toBe(
+      'Connecte-toi pour charger les succès du tableau de bord.'
+    )
     expect(result.current.stats.totalAchievements).toBe(0)
   })
 
@@ -409,7 +413,7 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.recentActivity[0].time).toMatch(/hours? ago/)
+    expect(result.current.recentActivity[0].time).toMatch(/il y a/i)
   })
 
   it('should show recent activity time as days ago for old achievements', async () => {
@@ -457,7 +461,7 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.recentActivity[0].time).toMatch(/days? ago/)
+    expect(result.current.recentActivity[0].time).toMatch(/il y a/i)
   })
 
   it('should handle a single completed achievement (singular time units)', async () => {
@@ -505,6 +509,6 @@ describe('useDashboardData', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.recentActivity[0].time).toMatch(/hour(s)? ago/)
+    expect(result.current.recentActivity[0].time).toMatch(/il y a/i)
   })
 })

@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import { useLanguage } from '../../context/LanguageContext'
 import { useDashboardData } from './hooks/useDashboardData'
 
 interface DashboardProps {
@@ -17,6 +18,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps>) {
+  const { t } = useLanguage()
   const { engagementData, recentActivity, stats, loading, errorMessage, contextMessage } =
     useDashboardData()
 
@@ -36,10 +38,10 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 </button>
                 <div className="min-w-0">
                   <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                    Dashboard
+                    {t('dashboard.title')}
                   </h1>
                   <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
-                    Welcome back, manage your gamification system
+                    {t('dashboard.subtitle')}
                   </p>
                 </div>
               </div>
@@ -52,7 +54,7 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
 
           <div className="p-4 sm:p-8">
             <div className="rounded-xl border border-[#2d2d31] bg-[#18181b] p-6 text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
-              Loading dashboard achievements...
+              {t('dashboard.loading')}
             </div>
           </div>
         </div>
@@ -76,10 +78,10 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
               </button>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                  Dashboard
+                  {t('dashboard.title')}
                 </h1>
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
-                  Welcome back, manage your gamification system
+                  {t('dashboard.subtitle')}
                 </p>
               </div>
             </div>
@@ -101,14 +103,14 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                   <Award className="w-4 h-4 sm:w-5 sm:h-5 text-[#9146FF]" />
                 </div>
                 <span className="text-xs text-gray-400 dark:text-gray-600">
-                  {stats.totalAchievements} total
+                  {t('dashboard.stats.totalSuffix', { count: stats.totalAchievements })}
                 </span>
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
                 {stats.activeAchievements}
               </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                Active Achievements
+                {t('dashboard.stats.activeAchievements')}
               </div>
             </div>
 
@@ -117,13 +119,15 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#00f593]/20 rounded-lg flex items-center justify-center">
                   <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f593]" />
                 </div>
-                <span className="text-xs text-gray-400 dark:text-gray-600">channel-ready</span>
+                <span className="text-xs text-gray-400 dark:text-gray-600">
+                  {t('dashboard.stats.channelReady')}
+                </span>
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
                 {stats.publicTemplates}
               </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                Public Templates
+                {t('dashboard.stats.publicTemplates')}
               </div>
             </div>
 
@@ -132,13 +136,15 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#ffd700]/20 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#ffd700]" />
                 </div>
-                <span className="text-xs text-gray-400 dark:text-gray-600">your progress</span>
+                <span className="text-xs text-gray-400 dark:text-gray-600">
+                  {t('dashboard.stats.yourProgress')}
+                </span>
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
                 {stats.completedAchievements}
               </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                Completed Achievements
+                {t('dashboard.stats.completedAchievements')}
               </div>
             </div>
 
@@ -147,13 +153,15 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#ff4444]/20 rounded-lg flex items-center justify-center">
                   <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff4444]" />
                 </div>
-                <span className="text-xs text-gray-400 dark:text-gray-600">earned</span>
+                <span className="text-xs text-gray-400 dark:text-gray-600">
+                  {t('dashboard.stats.earned')}
+                </span>
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-1">
                 {stats.totalXpEarned}
               </div>
               <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                Achievement XP
+                {t('dashboard.stats.achievementXp')}
               </div>
             </div>
           </div>
@@ -176,10 +184,10 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
             <div className="lg:col-span-2 bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
               <div className="mb-6">
                 <h2 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-1">
-                  Unlock Activity
+                  {t('dashboard.chart.title')}
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                  Your achievement unlocks over the last 7 days
+                  {t('dashboard.chart.description')}
                 </p>
               </div>
               <ResponsiveContainer width="100%" height={300}>
@@ -214,15 +222,15 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
             <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
               <div className="mb-6">
                 <h2 className="text-lg sm:text-xl text-white dark:text-gray-900 mb-1">
-                  Recent Activity
+                  {t('dashboard.activity.title')}
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                  Your latest completed achievements
+                  {t('dashboard.activity.description')}
                 </p>
               </div>
               {recentActivity.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-[#2d2d31] bg-[#0e0e10] p-6 text-sm text-gray-400 dark:border-gray-200 dark:bg-gray-50 dark:text-gray-600">
-                  Complete an achievement to populate this activity feed.
+                  {t('dashboard.activity.empty')}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -260,10 +268,10 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 </div>
                 <div className="text-left">
                   <div className="text-white dark:text-gray-900 font-medium">
-                    Create Achievement
+                    {t('dashboard.quick.create.title')}
                   </div>
                   <div className="text-sm text-gray-400 dark:text-gray-600">
-                    Design a new custom quest
+                    {t('dashboard.quick.create.description')}
                   </div>
                 </div>
               </div>
@@ -281,10 +289,10 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 </div>
                 <div className="text-left">
                   <div className="text-white dark:text-gray-900 font-medium">
-                    Browse Marketplace
+                    {t('dashboard.quick.marketplace.title')}
                   </div>
                   <div className="text-sm text-gray-400 dark:text-gray-600">
-                    Discover community achievements
+                    {t('dashboard.quick.marketplace.description')}
                   </div>
                 </div>
               </div>
@@ -302,10 +310,10 @@ export function Dashboard({ onNavigate, onOpenSidebar }: Readonly<DashboardProps
                 </div>
                 <div className="text-left">
                   <div className="text-white dark:text-gray-900 font-medium">
-                    Manage Achievements
+                    {t('dashboard.quick.management.title')}
                   </div>
                   <div className="text-sm text-gray-400 dark:text-gray-600">
-                    Edit and toggle your quests
+                    {t('dashboard.quick.management.description')}
                   </div>
                 </div>
               </div>

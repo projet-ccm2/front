@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Sparkles, Upload, Save, Send, Menu } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { achievementManagementClient } from './api/achievementManagementClient'
 import {
   achievementTriggerOptions,
@@ -30,13 +31,14 @@ const formatTriggerLabel = (label: string) =>
 
 function getPublishValidationError(
   selectedChannel: { id: string } | null,
+  language: 'en' | 'fr',
   formValues: { title: string; description: string }
 ): string | null {
   if (!selectedChannel) {
     return 'Select a channel before publishing an achievement.'
   }
   if (!isOwnerAchievementChannelId(selectedChannel.id)) {
-    return getOwnerOnlyAchievementMessage('creator')
+    return getOwnerOnlyAchievementMessage(language, 'creator')
   }
   if (!formValues.title.trim() || !formValues.description.trim()) {
     return 'Title and description are required before publishing.'
@@ -50,6 +52,7 @@ export function AchievementCreator({
   onOpenSidebar,
 }: Readonly<AchievementCreatorProps>) {
   const { selectedChannel } = useChannel()
+  const { language } = useLanguage()
   const [mode, setMode] = useState<'simple' | 'api'>('simple')
   const [formValues, setFormValues] = useState(defaultAchievementFormValues)
   const [aiPrompt, setAiPrompt] = useState(
@@ -154,7 +157,7 @@ export function AchievementCreator({
   }, [achievementId, templateAchievement])
 
   const handlePublish = async () => {
-    const validationError = getPublishValidationError(selectedChannel, formValues)
+    const validationError = getPublishValidationError(selectedChannel, language, formValues)
     if (validationError) {
       setSubmitError(validationError)
       setSubmitSuccess(null)

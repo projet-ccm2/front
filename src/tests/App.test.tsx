@@ -126,4 +126,59 @@ describe('App Component', () => {
       vi.unstubAllGlobals()
     })
   })
+
+  describe('Public Panel Route', () => {
+    it('should render the public Twitch panel for a shareable URL', async () => {
+      const publicAchievements = [
+        {
+          id: 'ach-public-1',
+          title: 'First Steps',
+          description: 'Send your first message',
+          goal: 1,
+          reward: 50,
+          label: '',
+          public: true,
+          downloads: 0,
+          visits: 0,
+          active: true,
+          secret: false,
+          image: null,
+          channelId: 'channel-1',
+          type: { label: 'message', data: null },
+        },
+      ]
+
+      window.history.pushState({}, '', '/panel/channel-1')
+      vi.stubGlobal(
+        'fetch',
+        vi.fn((input: RequestInfo | URL) => {
+          const url = String(input)
+
+          if (url.includes('/achievements/channel/channel-1')) {
+            return Promise.resolve({
+              ok: true,
+              status: 200,
+              json: () => Promise.resolve(publicAchievements),
+            })
+          }
+
+          return Promise.resolve({
+            ok: false,
+            status: 500,
+            json: () => Promise.resolve({ message: `Unhandled request: ${url}` }),
+            text: () => Promise.resolve(`Unhandled request: ${url}`),
+          })
+        })
+      )
+
+      render(<App />)
+
+      expect(await screen.findByText('Panneau Twitch public')).toBeInTheDocument()
+      expect(screen.getByText('Lien public du panneau')).toBeInTheDocument()
+      expect(screen.getByText(/\/panel\/channel-1$/)).toBeInTheDocument()
+
+      window.history.pushState({}, '', '/')
+      vi.unstubAllGlobals()
+    })
+  })
 })
