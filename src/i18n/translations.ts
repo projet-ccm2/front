@@ -4,6 +4,21 @@ type TranslationValue = string
 
 type TranslationMap = Record<string, TranslationValue>
 
+function mergeTranslations(
+  baseTranslations: TranslationMap,
+  overrides: Partial<TranslationMap>
+): TranslationMap {
+  const mergedTranslations: TranslationMap = { ...baseTranslations }
+
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value !== undefined) {
+      mergedTranslations[key] = value
+    }
+  }
+
+  return mergedTranslations
+}
+
 const EN_TRANSLATIONS: TranslationMap = {
   'app.name': 'Stream Quest',
   'app.loading': 'Loading...',
@@ -103,10 +118,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
 
 export const TRANSLATIONS: Record<Language, TranslationMap> = {
   en: EN_TRANSLATIONS,
-  fr: {
-    ...EN_TRANSLATIONS,
-    ...FR_TRANSLATION_OVERRIDES,
-  },
+  fr: mergeTranslations(EN_TRANSLATIONS, FR_TRANSLATION_OVERRIDES),
 }
 
 export function resolveTranslation(
