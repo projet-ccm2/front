@@ -18,6 +18,17 @@ export function ChannelSelector() {
   }
 
   const isUrl = (str: string) => str.startsWith('http')
+  const resolveRoleLabel = (role: string) => {
+    if (role === 'Owner') {
+      return t('channel.owner')
+    }
+
+    if (role === 'Moderator') {
+      return t('channel.moderator')
+    }
+
+    return role
+  }
 
   return (
     <div className="relative">
@@ -34,7 +45,9 @@ export function ChannelSelector() {
         </div>
         <div className="hidden text-left sm:block">
           <div className="text-sm">{selectedChannel.name}</div>
-          <div className="text-xs text-gray-400 dark:text-gray-600">{selectedChannel.role}</div>
+          <div className="text-xs text-gray-400 dark:text-gray-600">
+            {resolveRoleLabel(selectedChannel.role)}
+          </div>
         </div>
         <ChevronDown
           className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -82,7 +95,7 @@ export function ChannelSelector() {
                     {channel.name}
                   </div>
                   <div className="text-xs text-gray-400 dark:text-gray-600">
-                    {channel.role}
+                    {resolveRoleLabel(channel.role)}
                     {channel.followers > 0 &&
                       ` • ${t('channel.followers', { count: channel.followers.toLocaleString() })}`}
                   </div>

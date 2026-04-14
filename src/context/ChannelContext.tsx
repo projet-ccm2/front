@@ -2,7 +2,6 @@
 import { createContext, useContext, useState, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
-import { useLanguage } from './LanguageContext'
 import type { Channel } from '../types/twitch'
 
 export interface ChannelContextType {
@@ -15,7 +14,6 @@ export const ChannelContext = createContext<ChannelContextType | undefined>(unde
 
 export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
   const { user } = useAuth()
-  const { t } = useLanguage()
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
 
   const availableChannels = useMemo(() => {
@@ -25,7 +23,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
       id: user.channel.id,
       name: user.channel.name,
       avatar: user.channel.profileImageUrl || user.channel.name.charAt(0).toUpperCase(),
-      role: t('channel.owner'),
+      role: 'Owner',
       followers: 0,
     }
 
@@ -33,12 +31,12 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
       id: `mod-${index}`,
       name: channelName,
       avatar: channelName.charAt(0).toUpperCase(),
-      role: t('channel.moderator'),
+      role: 'Moderator',
       followers: 0,
     }))
 
     return [userChannel, ...modChannels]
-  }, [user, t])
+  }, [user])
 
   const selectedChannel = useMemo(() => {
     if (selectedChannelId) {

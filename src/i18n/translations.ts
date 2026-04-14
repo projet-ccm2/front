@@ -1,8 +1,18 @@
-export type Language = 'en' | 'fr'
+﻿export type Language = 'en' | 'fr'
 
 type TranslationValue = string
 
 type TranslationMap = Record<string, TranslationValue>
+
+const EN_OWNER_ONLY_MESSAGE =
+  'Achievement management currently supports only the connected user channel. Moderator channels are not handled yet.'
+const EN_OWNER_ONLY_DASHBOARD_MESSAGE =
+  'Achievement management currently supports only the connected user channel. Channel metrics stay hidden for moderator channels, but your achievement progress remains visible.'
+
+const FR_OWNER_ONLY_MESSAGE =
+  'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.'
+const FR_OWNER_ONLY_DASHBOARD_MESSAGE =
+  'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les métriques de chaîne restent masquées pour les chaînes modératrices, mais la progression des succès reste visible.'
 
 function mergeTranslations(
   baseTranslations: TranslationMap,
@@ -54,12 +64,9 @@ const EN_TRANSLATIONS: TranslationMap = {
   'achievements.status.progress': '{current}/{goal}',
   'achievements.hidden.title': 'Hidden achievement',
   'achievements.hidden.description': 'Complete the objective to reveal this achievement.',
-  'achievement.ownerOnly.creator':
-    'Achievement management currently supports only the connected user channel. Moderator channels are not handled yet.',
-  'achievement.ownerOnly.channel':
-    'Achievement management currently supports only the connected user channel. Moderator channels are not handled yet.',
-  'achievement.ownerOnly.dashboard':
-    'Achievement management currently supports only the connected user channel. Channel metrics stay hidden for moderator channels, but your achievement progress remains visible.',
+  'achievement.ownerOnly.creator': EN_OWNER_ONLY_MESSAGE,
+  'achievement.ownerOnly.channel': EN_OWNER_ONLY_MESSAGE,
+  'achievement.ownerOnly.dashboard': EN_OWNER_ONLY_DASHBOARD_MESSAGE,
   'landing.connect': 'Connect with Twitch',
   'landing.getStarted': 'Get Started Free',
   'landing.heroTitle': 'Gamify Your Stream',
@@ -197,6 +204,12 @@ const EN_TRANSLATIONS: TranslationMap = {
   'overlay.public.step3': '3. Paste the public panel URL and save it.',
   'overlay.public.note':
     'This public panel currently shows the channel achievement board. Viewer-specific progress can be added later.',
+  'overlay.viewer.title': 'Viewer Progress',
+  'overlay.viewer.description':
+    'When the viewer identity is available, the panel can show personal progress for the connected Twitch user.',
+  'overlay.viewer.hint':
+    'This browser panel needs a viewer id or Twitch extension context to personalize progress.',
+  'overlay.viewer.empty': 'No viewer progress is available yet.',
 }
 
 const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
@@ -233,12 +246,9 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'achievements.status.progress': '{current}/{goal}',
   'achievements.hidden.title': 'Succès caché',
   'achievements.hidden.description': 'Complète l’objectif pour révéler ce succès.',
-  'achievement.ownerOnly.creator':
-    'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.',
-  'achievement.ownerOnly.channel':
-    'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.',
-  'achievement.ownerOnly.dashboard':
-    'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les métriques de chaîne restent masquées pour les chaînes modératrices, mais la progression des succès reste visible.',
+  'achievement.ownerOnly.creator': FR_OWNER_ONLY_MESSAGE,
+  'achievement.ownerOnly.channel': FR_OWNER_ONLY_MESSAGE,
+  'achievement.ownerOnly.dashboard': FR_OWNER_ONLY_DASHBOARD_MESSAGE,
   'landing.connect': 'Se connecter avec Twitch',
   'landing.getStarted': 'Commencer gratuitement',
   'landing.heroTitle': 'Gamifiez votre stream',
@@ -377,6 +387,12 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'overlay.public.step3': '3. Colle l’URL publique du panneau puis enregistre.',
   'overlay.public.note':
     'Ce panneau public affiche pour le moment le tableau des succès de la chaîne. La progression spécifique au viewer pourra être ajoutée ensuite.',
+  'overlay.viewer.title': 'Progression du viewer',
+  'overlay.viewer.description':
+    'Quand l’identité du viewer est disponible, le panneau peut afficher sa progression personnelle.',
+  'overlay.viewer.hint':
+    'Ce panneau a besoin d’un viewerId ou d’un contexte d’extension Twitch pour personnaliser la progression.',
+  'overlay.viewer.empty': 'Aucune progression de viewer n’est disponible pour le moment.',
 }
 
 export const TRANSLATIONS: Record<Language, TranslationMap> = {

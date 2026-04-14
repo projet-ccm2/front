@@ -1,5 +1,5 @@
 ﻿import { Copy, ExternalLink, Menu, ShieldAlert, Trophy } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { useChannelAchievements } from '../achievements/hooks/useChannelAchievements'
 import {
@@ -15,12 +15,28 @@ interface PublicTwitchPanelProps {
   onOpenSidebar?: () => void
 }
 
+interface PanelCardProps {
+  title: string
+  description: string
+  avatar: string
+  reward: number
+  isHidden: boolean
+  statusLabel?: string
+  progressLabel?: string
+  progressPercent?: number
+}
+
+interface SectionCardProps {
+  label: string
+  value: string | number
+}
+
 export function PublicTwitchPanel({
   channelId,
   viewerId = null,
   onOpenSidebar,
 }: Readonly<PublicTwitchPanelProps>) {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useChannelAchievements(channelId)
   const {
     achievements: viewerAchievements,
@@ -36,20 +52,6 @@ export function PublicTwitchPanel({
   const activeCount = achievements.filter(achievement => achievement.active).length
   const publicCount = achievements.filter(achievement => achievement.public).length
   const hiddenCount = achievements.filter(achievement => achievement.secret).length
-  const viewerTitle = language === 'fr' ? 'Progression du viewer' : 'Viewer Progress'
-  const viewerDescription =
-    language === 'fr'
-      ? 'Quand lâ€™identitÃ© du viewer est disponible, le panneau peut afficher sa progression personnelle.'
-      : 'When the viewer identity is available, the panel can show personal progress for the connected Twitch user.'
-  const viewerHint =
-    language === 'fr'
-      ? 'Ce panneau a besoin dâ€™un viewerId ou dâ€™un contexte dâ€™extension Twitch pour personnaliser la progression.'
-      : 'This browser panel needs a viewer id or Twitch extension context to personalize progress.'
-  const viewerEmpty =
-    language === 'fr'
-      ? 'Aucune progression de viewer nâ€™est disponible pour le moment.'
-      : 'No viewer progress is available yet.'
-
   const handleCopyLink = async () => {
     if (!panelUrl || !navigator.clipboard?.writeText) {
       return
@@ -96,30 +98,10 @@ export function PublicTwitchPanel({
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
-            <div className="text-sm text-gray-400 dark:text-gray-600">
-              {t('overlay.metric.achievements')}
-            </div>
-            <div className="mt-2 text-2xl text-white dark:text-gray-900">{achievements.length}</div>
-          </div>
-          <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
-            <div className="text-sm text-gray-400 dark:text-gray-600">
-              {t('marketplace.active')}
-            </div>
-            <div className="mt-2 text-2xl text-white dark:text-gray-900">{activeCount}</div>
-          </div>
-          <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
-            <div className="text-sm text-gray-400 dark:text-gray-600">
-              {t('marketplace.visible')}
-            </div>
-            <div className="mt-2 text-2xl text-white dark:text-gray-900">{publicCount}</div>
-          </div>
-          <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
-            <div className="text-sm text-gray-400 dark:text-gray-600">
-              {t('overlay.metric.hidden')}
-            </div>
-            <div className="mt-2 text-2xl text-white dark:text-gray-900">{hiddenCount}</div>
-          </div>
+          <SectionCard label={t('overlay.metric.achievements')} value={achievements.length} />
+          <SectionCard label={t('marketplace.active')} value={activeCount} />
+          <SectionCard label={t('marketplace.visible')} value={publicCount} />
+          <SectionCard label={t('overlay.metric.hidden')} value={hiddenCount} />
         </div>
 
         <div className="rounded-3xl border border-[#2d2d31] bg-[#18181b] p-4 dark:border-gray-200 dark:bg-white sm:p-6">
@@ -178,47 +160,15 @@ export function PublicTwitchPanel({
 
               <div className="space-y-3">
                 {entries.map(entry => (
-                  <div
+                  <PanelAchievementCard
                     key={entry.id}
-                    className={`rounded-2xl border p-4 ${
-                      entry.isHidden
-                        ? 'border-[#2d2d31] bg-[#0f0f12] dark:bg-gray-50'
-                        : 'border-[#9146FF]/50 bg-[#9146FF]/10'
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div
-                        className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl font-semibold ${
-                          entry.isHidden
-                            ? 'bg-[#2d2d31] text-white dark:bg-gray-200 dark:text-gray-900'
-                            : 'bg-gradient-to-br from-[#9146FF] to-[#772ce8] text-white'
-                        }`}
-                      >
-                        {entry.avatar}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="min-w-0">
-                            <h3 className="truncate text-base text-white dark:text-gray-900">
-                              {entry.title}
-                            </h3>
-                            <p className="text-sm text-gray-400 dark:text-gray-600">
-                              {entry.description}
-                            </p>
-                          </div>
-                          {entry.isHidden ? (
-                            <ShieldAlert className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
-                          ) : (
-                            <Trophy className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
-                          )}
-                        </div>
-                        <div className="mt-3 flex items-center justify-between text-xs text-gray-400 dark:text-gray-600">
-                          <span>{entry.status}</span>
-                          <span>{entry.reward} XP</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                    title={entry.title}
+                    description={entry.description}
+                    avatar={entry.avatar}
+                    reward={entry.reward}
+                    isHidden={entry.isHidden}
+                    statusLabel={entry.status}
+                  />
                 ))}
               </div>
             </div>
@@ -234,15 +184,9 @@ export function PublicTwitchPanel({
               </div>
 
               <div className="space-y-3 text-sm text-gray-300 dark:text-gray-700">
-                <div className="rounded-2xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50">
-                  {t('overlay.public.step1')}
-                </div>
-                <div className="rounded-2xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50">
-                  {t('overlay.public.step2')}
-                </div>
-                <div className="rounded-2xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50">
-                  {t('overlay.public.step3')}
-                </div>
+                <PanelNote>{t('overlay.public.step1')}</PanelNote>
+                <PanelNote>{t('overlay.public.step2')}</PanelNote>
+                <PanelNote>{t('overlay.public.step3')}</PanelNote>
               </div>
               <div className="mt-4 rounded-2xl border border-dashed border-[#2d2d31] p-4 text-xs text-gray-400 dark:border-gray-200 dark:text-gray-600">
                 {t('overlay.public.note')}
@@ -253,13 +197,17 @@ export function PublicTwitchPanel({
 
         <div className="rounded-3xl border border-[#2d2d31] bg-[#18181b] p-4 dark:border-gray-200 dark:bg-white sm:p-6">
           <div className="mb-4">
-            <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900">{viewerTitle}</h2>
-            <p className="text-sm text-gray-400 dark:text-gray-600">{viewerDescription}</p>
+            <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900">
+              {t('overlay.viewer.title')}
+            </h2>
+            <p className="text-sm text-gray-400 dark:text-gray-600">
+              {t('overlay.viewer.description')}
+            </p>
           </div>
 
           {!viewerId && (
             <div className="rounded-2xl border border-dashed border-[#2d2d31] p-4 text-sm text-gray-400 dark:border-gray-200 dark:text-gray-600">
-              {viewerHint}
+              {t('overlay.viewer.hint')}
             </div>
           )}
 
@@ -277,63 +225,112 @@ export function PublicTwitchPanel({
 
           {viewerId && !isViewerLoading && !viewerErrorMessage && viewerEntries.length === 0 && (
             <div className="rounded-2xl border border-dashed border-[#2d2d31] p-4 text-sm text-gray-400 dark:border-gray-200 dark:text-gray-600">
-              {viewerEmpty}
+              {t('overlay.viewer.empty')}
             </div>
           )}
 
           {viewerId && !isViewerLoading && !viewerErrorMessage && viewerEntries.length > 0 && (
             <div className="space-y-3">
               {viewerEntries.map(entry => (
-                <div
+                <PanelAchievementCard
                   key={entry.id}
-                  className={`rounded-2xl border p-4 ${
-                    entry.isUnlocked
-                      ? 'border-[#9146FF]/50 bg-[#9146FF]/10'
-                      : 'border-[#2d2d31] bg-[#0f0f12] dark:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl font-semibold ${
-                        entry.isHidden
-                          ? 'bg-[#2d2d31] text-white dark:bg-gray-200 dark:text-gray-900'
-                          : 'bg-gradient-to-br from-[#9146FF] to-[#772ce8] text-white'
-                      }`}
-                    >
-                      {entry.avatar}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="truncate text-base text-white dark:text-gray-900">
-                            {entry.title}
-                          </h3>
-                          <p className="text-sm text-gray-400 dark:text-gray-600">
-                            {entry.description}
-                          </p>
-                        </div>
-                        {entry.isHidden ? (
-                          <ShieldAlert className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
-                        ) : (
-                          <Trophy className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
-                        )}
-                      </div>
-                      <div className="mt-3 space-y-2">
-                        <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-600">
-                          <span>{entry.progressText}</span>
-                          <span>{entry.reward} XP</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-[#2d2d31] dark:bg-gray-200">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#9146FF] to-[#772ce8]"
-                            style={{ width: `${entry.progressPercent}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  title={entry.title}
+                  description={entry.description}
+                  avatar={entry.avatar}
+                  reward={entry.reward}
+                  isHidden={entry.isHidden}
+                  statusLabel={entry.progressText}
+                  progressLabel={entry.progressText}
+                  progressPercent={entry.progressPercent}
+                />
               ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SectionCard({ label, value }: Readonly<SectionCardProps>) {
+  return (
+    <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+      <div className="text-sm text-gray-400 dark:text-gray-600">{label}</div>
+      <div className="mt-2 text-2xl text-white dark:text-gray-900">{value}</div>
+    </div>
+  )
+}
+
+function PanelNote({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <div className="rounded-2xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50">
+      {children}
+    </div>
+  )
+}
+
+function PanelAchievementCard({
+  title,
+  description,
+  avatar,
+  reward,
+  isHidden,
+  statusLabel,
+  progressLabel,
+  progressPercent,
+}: Readonly<PanelCardProps>) {
+  const hasProgress = typeof progressPercent === 'number'
+
+  return (
+    <div
+      className={`rounded-2xl border p-4 ${
+        hasProgress
+          ? 'border-[#9146FF]/50 bg-[#9146FF]/10'
+          : isHidden
+            ? 'border-[#2d2d31] bg-[#0f0f12] dark:bg-gray-50'
+            : 'border-[#9146FF]/50 bg-[#9146FF]/10'
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        <div
+          className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl font-semibold ${
+            isHidden
+              ? 'bg-[#2d2d31] text-white dark:bg-gray-200 dark:text-gray-900'
+              : 'bg-gradient-to-br from-[#9146FF] to-[#772ce8] text-white'
+          }`}
+        >
+          {avatar}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="truncate text-base text-white dark:text-gray-900">{title}</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-600">{description}</p>
+            </div>
+            {isHidden ? (
+              <ShieldAlert className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
+            ) : (
+              <Trophy className="h-5 w-5 flex-shrink-0 text-[#ffd700]" />
+            )}
+          </div>
+
+          {hasProgress ? (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-600">
+                <span>{progressLabel}</span>
+                <span>{reward} XP</span>
+              </div>
+              <div className="h-2 rounded-full bg-[#2d2d31] dark:bg-gray-200">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#9146FF] to-[#772ce8]"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3 flex items-center justify-between text-xs text-gray-400 dark:text-gray-600">
+              <span>{statusLabel}</span>
+              <span>{reward} XP</span>
             </div>
           )}
         </div>
