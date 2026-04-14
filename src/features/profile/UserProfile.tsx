@@ -2,30 +2,15 @@ import { Trophy, Clock, TrendingUp, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { useUserAchievements } from './hooks/useUserAchievements'
-import { buildLeaderboardEntries } from '../achievements/utils/achievementLeaderboard'
 
 interface UserProfileProps {
   readonly onOpenSidebar: () => void
-}
-
-const getRankStyle = (rank: number) => {
-  switch (rank) {
-    case 1:
-      return 'bg-[#ffd700] text-black'
-    case 2:
-      return 'bg-[#c0c0c0] text-black'
-    case 3:
-      return 'bg-[#cd7f32] text-black'
-    default:
-      return 'bg-[#4d4d51] dark:bg-gray-300 text-white dark:text-gray-900'
-  }
 }
 
 export function UserProfile({ onOpenSidebar }: UserProfileProps) {
   const { user } = useAuth()
   const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useUserAchievements()
-  const leaderboard = buildLeaderboardEntries(achievements, t)
 
   const unlockedCount = achievements.filter(achievement => achievement.userState.finished).length
   const totalCount = achievements.length
@@ -213,42 +198,25 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
             <p className="mb-4 text-sm text-gray-400 dark:text-gray-600">
               {t('profile.leaderboardDescription')}
             </p>
-            <div className="space-y-3">
-              {leaderboard.map(entry => (
-                <div
-                  key={entry.rank}
-                  className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl transition-colors ${
-                    entry.isUnlocked
-                      ? 'bg-[#9146FF]/20 border-2 border-[#9146FF]'
-                      : 'bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                  }`}
-                >
-                  <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-sm ${getRankStyle(entry.rank)}`}
-                  >
-                    #{entry.rank}
+            <div className="rounded-xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50 sm:p-5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-full flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 text-white">
+                  {user?.username?.charAt(0).toUpperCase() ?? 'U'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-white dark:text-gray-900 text-sm sm:text-base truncate">
+                    {user?.username ?? t('profile.titleFallback')}
                   </div>
-
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-full flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 text-white">
-                    {entry.avatar}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white dark:text-gray-900 text-sm sm:text-base truncate">
-                      {entry.title}
-                    </div>
-                    <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                      {entry.status}
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-[#ffd700] text-sm sm:text-base">
-                      {entry.xp.toLocaleString()} XP
-                    </div>
+                  <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
+                    {t('profile.level', { level: currentLevel })} • {currentXP.toLocaleString()} XP
                   </div>
                 </div>
-              ))}
+                <div className="text-right">
+                  <div className="text-[#ffd700] text-sm sm:text-base">
+                    {t('profile.leaderboardPending')}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

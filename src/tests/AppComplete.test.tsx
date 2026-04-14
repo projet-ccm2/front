@@ -121,7 +121,7 @@ describe('App - Functional Coverage', () => {
     expect(await screen.findByText('All Achievements')).toBeInTheDocument()
 
     fireEvent.click(screen.getAllByRole('button', { name: /Profil utilisateur|User Profile/i })[0])
-    expect(await screen.findByText(/Classement|Leaderboard/)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Classement' })).toBeInTheDocument()
 
     fireEvent.click(screen.getAllByRole('button', { name: /Panneau Twitch|Twitch Panel/i })[0])
     expect(

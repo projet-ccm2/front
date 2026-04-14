@@ -4,18 +4,54 @@ import type {
   AchievementTriggerLabel,
   AchievementUpsertPayload,
 } from '../api/achievementManagement.types'
+import type { Language } from '../../../i18n/translations'
+import { resolveTranslation } from '../../../i18n/translations'
 
 export type AchievementFormValues = AchievementUpsertPayload
 
+export interface AchievementTriggerOption {
+  value: AchievementTriggerLabel
+  title: string
+  description: string
+}
+
 export const ACHIEVEMENT_PLACEHOLDER_IMAGE_URL = 'https://placehold.co/512x512/png?text=Achievement'
 
-export const achievementTriggerOptions: AchievementTriggerLabel[] = [
-  'message',
-  'message_content',
-  'channel_point_cost',
-  'redeem_channel_point',
-  'api_caller',
-]
+export function getAchievementTriggerOptions(language: Language): AchievementTriggerOption[] {
+  return [
+    {
+      value: 'message',
+      title: resolveTranslation(language, 'achievement.trigger.message.title'),
+      description: resolveTranslation(language, 'achievement.trigger.message.description'),
+    },
+    {
+      value: 'message_content',
+      title: resolveTranslation(language, 'achievement.trigger.message_content.title'),
+      description: resolveTranslation(language, 'achievement.trigger.message_content.description'),
+    },
+    {
+      value: 'channel_point_cost',
+      title: resolveTranslation(language, 'achievement.trigger.channel_point_cost.title'),
+      description: resolveTranslation(
+        language,
+        'achievement.trigger.channel_point_cost.description'
+      ),
+    },
+    {
+      value: 'redeem_channel_point',
+      title: resolveTranslation(language, 'achievement.trigger.redeem_channel_point.title'),
+      description: resolveTranslation(
+        language,
+        'achievement.trigger.redeem_channel_point.description'
+      ),
+    },
+    {
+      value: 'api_caller',
+      title: resolveTranslation(language, 'achievement.trigger.api_caller.title'),
+      description: resolveTranslation(language, 'achievement.trigger.api_caller.description'),
+    },
+  ]
+}
 
 export const defaultAchievementFormValues: AchievementFormValues = {
   title: '',

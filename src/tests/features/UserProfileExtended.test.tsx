@@ -30,10 +30,7 @@ const mockUserAchievements = [
     secret: false,
     image: null,
     channelId: 'channel-1',
-    type: {
-      label: 'message',
-      data: null,
-    },
+    type: { label: 'message', data: null },
     userState: {
       progressCount: 1,
       finished: true,
@@ -64,8 +61,7 @@ describe('UserProfile - Function Coverage', () => {
 
   it('should render user profile with correct user info', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
-    const usernameElements = screen.getAllByText('streamer')
-    expect(usernameElements.length).toBeGreaterThan(0)
+    expect(screen.getAllByText('streamer').length).toBeGreaterThan(0)
     expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
@@ -74,28 +70,25 @@ describe('UserProfile - Function Coverage', () => {
 
     await screen.findAllByText('First Steps')
     expect(screen.getByText('Temps de visionnage total')).toBeInTheDocument()
-    expect(screen.getByText('Succès débloqués')).toBeInTheDocument()
-    expect(screen.getByText('XP de succès')).toBeInTheDocument()
+    expect(screen.getByText(/Succ.*d.*bloqu.*s/i)).toBeInTheDocument()
+    expect(screen.getByText(/XP de succ.*s/i)).toBeInTheDocument()
   })
 
   it('should render badges section', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
-    expect(screen.getByText('Badges de succès')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Badges de succ.*s/i })).toBeInTheDocument()
     expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
-  it('should render leaderboard section', async () => {
+  it('should render account leaderboard section', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
     await screen.findAllByText('First Steps')
     expect(screen.getByText('Classement')).toBeInTheDocument()
-    expect(screen.getByText('Voir le classement complet')).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Les meilleurs succès classés à partir des données renvoyées par achievement-management.'
-      )
-    ).toBeInTheDocument()
-    expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: /Classement global/i })).toBeInTheDocument()
+    expect(screen.getByText(/Classement des comptes par niveau et XP/i)).toBeInTheDocument()
+    expect(screen.getAllByText('streamer').length).toBeGreaterThan(0)
+    expect(screen.getByText(/Niveau 1\s*•\s*50 XP/i)).toBeInTheDocument()
   })
 })

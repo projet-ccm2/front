@@ -1,5 +1,4 @@
-﻿
-export type Language = 'en' | 'fr'
+﻿export type Language = 'en' | 'fr'
 
 type TranslationValue = string
 
@@ -65,6 +64,25 @@ const EN_TRANSLATIONS: TranslationMap = {
   'achievements.status.progress': '{current}/{goal}',
   'achievements.hidden.title': 'Hidden achievement',
   'achievements.hidden.description': 'Complete the objective to reveal this achievement.',
+  'achievement.trigger.label': 'Unlock method',
+  'achievement.trigger.helper':
+    'Choose the rule that best matches how a viewer should unlock this achievement.',
+  'achievement.trigger.dataLabel': 'Trigger details',
+  'achievement.trigger.message.title': 'Messages sent',
+  'achievement.trigger.message.description':
+    'Unlock after the viewer sends a number of chat messages.',
+  'achievement.trigger.message_content.title': 'Message content',
+  'achievement.trigger.message_content.description':
+    'Unlock when the viewer sends a specific word or phrase in chat.',
+  'achievement.trigger.channel_point_cost.title': 'Channel point cost',
+  'achievement.trigger.channel_point_cost.description':
+    'Unlock after the viewer spends a fixed amount of channel points.',
+  'achievement.trigger.redeem_channel_point.title': 'Channel point redemption',
+  'achievement.trigger.redeem_channel_point.description':
+    'Unlock when the viewer redeems a specific channel point reward.',
+  'achievement.trigger.api_caller.title': 'API event',
+  'achievement.trigger.api_caller.description':
+    'Unlock from an external API call or automated event.',
   'achievement.ownerOnly.creator': EN_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.channel': EN_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.dashboard': EN_OWNER_ONLY_DASHBOARD_MESSAGE,
@@ -160,8 +178,9 @@ const EN_TRANSLATIONS: TranslationMap = {
   'profile.unlocked': 'Unlocked',
   'profile.leaderboard': 'Leaderboard',
   'profile.leaderboardDescription':
-    'Top achievements ranked from the data returned by achievement-management.',
-  'profile.leaderboardAction': 'View Full Rankings',
+    'Account ranking by level and XP. A global multi-account leaderboard will need a dedicated backend route.',
+  'profile.leaderboardAction': 'Global ranking coming soon',
+  'profile.leaderboardPending': 'Waiting for global leaderboard',
   'profile.leaderboardActivity': 'Your latest completed achievements',
   'profile.leaderboardActivityEmpty': 'Complete an achievement to populate this activity feed.',
   'overlay.title': 'Twitch Panel',
@@ -247,6 +266,25 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'achievements.status.progress': '{current}/{goal}',
   'achievements.hidden.title': 'Succès caché',
   'achievements.hidden.description': 'Complète l’objectif pour révéler ce succès.',
+  'achievement.trigger.label': 'Méthode de déblocage',
+  'achievement.trigger.helper':
+    'Choisis la règle qui correspond le mieux à la manière dont le viewer débloque ce succès.',
+  'achievement.trigger.dataLabel': 'Détails du déclencheur',
+  'achievement.trigger.message.title': 'Messages envoyés',
+  'achievement.trigger.message.description':
+    'Débloqué après qu’un viewer a envoyé un certain nombre de messages dans le chat.',
+  'achievement.trigger.message_content.title': 'Contenu du message',
+  'achievement.trigger.message_content.description':
+    'Débloqué quand le viewer envoie un mot ou une phrase précise dans le chat.',
+  'achievement.trigger.channel_point_cost.title': 'Coût en points de chaîne',
+  'achievement.trigger.channel_point_cost.description':
+    'Débloqué après qu’un viewer a dépensé une quantité fixe de points de chaîne.',
+  'achievement.trigger.redeem_channel_point.title': 'Récompense points de chaîne',
+  'achievement.trigger.redeem_channel_point.description':
+    'Débloqué quand le viewer échange une récompense précise de points de chaîne.',
+  'achievement.trigger.api_caller.title': 'Événement API',
+  'achievement.trigger.api_caller.description':
+    'Débloqué via un appel API externe ou un événement automatisé.',
   'achievement.ownerOnly.creator': FR_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.channel': FR_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.dashboard': FR_OWNER_ONLY_DASHBOARD_MESSAGE,
@@ -343,8 +381,9 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'profile.unlocked': 'Débloqué',
   'profile.leaderboard': 'Classement',
   'profile.leaderboardDescription':
-    'Les meilleurs succès classés à partir des données renvoyées par achievement-management.',
-  'profile.leaderboardAction': 'Voir le classement complet',
+    'Classement des comptes par niveau et XP. Un leaderboard global multi-comptes nécessitera une route backend dédiée.',
+  'profile.leaderboardAction': 'Classement global à venir',
+  'profile.leaderboardPending': 'En attente du classement global',
   'profile.leaderboardActivity': 'Vos derniers succès terminés',
   'profile.leaderboardActivityEmpty': 'Terminez un succès pour alimenter ce flux d’activité.',
   'overlay.title': 'Panneau Twitch',

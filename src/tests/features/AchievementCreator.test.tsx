@@ -157,8 +157,10 @@ describe('AchievementCreator', () => {
     expect(screen.getByLabelText('Goal')).toHaveValue(75)
     expect(screen.getByLabelText('Reward (XP / Points)')).toHaveValue(300)
     expect(screen.getByText('Simple Mode')).toBeInTheDocument()
-    expect(screen.getByLabelText('Trigger Type')).toHaveValue('message_content')
-    expect(screen.getByLabelText('Trigger Data')).toHaveValue('gg')
+    expect(screen.getByRole('option', { name: 'Messages envoyés' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Contenu du message' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('message_content')
+    expect(screen.getByLabelText(/Détails du déclencheur/i)).toHaveValue('gg')
   })
 
   it('should allow entering achievement title', () => {
@@ -186,7 +188,7 @@ describe('AchievementCreator', () => {
   it('should switch between simple mode and the API feature preview', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
     fireEvent.click(screen.getByText('Simple Mode'))
-    expect(screen.getByLabelText('Trigger Type')).toBeInTheDocument()
+    expect(screen.getByLabelText(/Méthode de déblocage/i)).toBeInTheDocument()
     fireEvent.click(screen.getByText('API'))
     expect(screen.getByText('API feature coming soon')).toBeInTheDocument()
   })
@@ -278,15 +280,15 @@ describe('AchievementCreator', () => {
   it('should render simple mode trigger fields', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(screen.getByLabelText('Trigger Type')).toBeInTheDocument()
-    expect(screen.getByLabelText('Trigger Data')).toBeInTheDocument()
+    expect(screen.getByLabelText(/Méthode de déblocage/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Détails du déclencheur/i)).toBeInTheDocument()
   })
 
   it('should allow changing trigger type and trigger data', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    const triggerSelect = screen.getByLabelText('Trigger Type')
-    const triggerDataInput = screen.getByLabelText('Trigger Data')
+    const triggerSelect = screen.getByLabelText(/Méthode de déblocage/i)
+    const triggerDataInput = screen.getByLabelText(/Détails du déclencheur/i)
 
     fireEvent.change(triggerSelect, { target: { value: 'message_content' } })
     fireEvent.change(triggerDataInput, { target: { value: 'hello world' } })
@@ -349,6 +351,16 @@ describe('AchievementCreator', () => {
     expect(
       await screen.findByText('Achievement "First 100 Messages" was published.')
     ).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/achievements'),
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"label":""'),
+        })
+      )
+    })
   })
 
   it('should send a placeholder image when no image is provided', async () => {
@@ -425,6 +437,7 @@ describe('AchievementCreator', () => {
         expect.stringContaining('/achievements/edit-1'),
         expect.objectContaining({
           method: 'PUT',
+          body: expect.stringContaining('"label":""'),
         })
       )
     })

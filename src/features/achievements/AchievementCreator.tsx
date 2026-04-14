@@ -5,9 +5,9 @@ import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { achievementManagementClient } from './api/achievementManagementClient'
 import {
-  achievementTriggerOptions,
   createFormValuesFromAchievement,
   defaultAchievementFormValues,
+  getAchievementTriggerOptions,
   mergeSuggestionIntoFormValues,
   normalizeAchievementImage,
 } from './forms/achievementFormModel'
@@ -22,12 +22,6 @@ interface AchievementCreatorProps {
   templateAchievement?: Achievement | null
   onOpenSidebar: () => void
 }
-
-const formatTriggerLabel = (label: string) =>
-  label
-    .split('_')
-    .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(' ')
 
 function getPublishValidationError(
   selectedChannel: { id: string } | null,
@@ -52,7 +46,8 @@ export function AchievementCreator({
   onOpenSidebar,
 }: Readonly<AchievementCreatorProps>) {
   const { selectedChannel } = useChannel()
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
+  const achievementTriggerOptions = getAchievementTriggerOptions(language)
   const [mode, setMode] = useState<'simple' | 'api'>('simple')
   const [formValues, setFormValues] = useState(defaultAchievementFormValues)
   const [aiPrompt, setAiPrompt] = useState(
@@ -173,7 +168,7 @@ export function AchievementCreator({
         ...formValues,
         title: formValues.title.trim(),
         description: formValues.description.trim(),
-        label: formValues.label.trim(),
+        label: '',
         image: normalizeAchievementImage(formValues.image),
       }
 
@@ -402,23 +397,6 @@ export function AchievementCreator({
                 </div>
               </div>
 
-              <div className="mb-6">
-                <label
-                  htmlFor="achievement-label"
-                  className="block text-white dark:text-gray-900 mb-3"
-                >
-                  Label
-                </label>
-                <input
-                  id="achievement-label"
-                  type="text"
-                  value={formValues.label}
-                  onChange={event => updateField('label', event.target.value)}
-                  placeholder="Optional short badge label..."
-                  className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
-                />
-              </div>
-
               <div className="mb-8 space-y-4">
                 <div className="grid sm:grid-cols-3 gap-4">
                   <button
@@ -490,7 +468,7 @@ export function AchievementCreator({
                       htmlFor="achievement-trigger-label"
                       className="block text-white dark:text-gray-900 mb-3 font-medium"
                     >
-                      Trigger Type
+                      {t('achievement.trigger.label')}
                     </label>
                     <select
                       id="achievement-trigger-label"
@@ -507,18 +485,26 @@ export function AchievementCreator({
                       className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
                     >
                       {achievementTriggerOptions.map(trigger => (
-                        <option key={trigger} value={trigger}>
-                          {formatTriggerLabel(trigger)}
+                        <option key={trigger.value} value={trigger.value}>
+                          {trigger.title}
                         </option>
                       ))}
                     </select>
+                    <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">
+                      {t('achievement.trigger.helper')}
+                    </p>
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
+                      {achievementTriggerOptions.find(
+                        trigger => trigger.value === formValues.type.label
+                      )?.description ?? ''}
+                    </p>
                   </div>
                   <div>
                     <label
                       htmlFor="achievement-trigger-data"
                       className="block text-white dark:text-gray-900 mb-3 font-medium"
                     >
-                      Trigger Data
+                      {t('achievement.trigger.dataLabel')}
                     </label>
                     <input
                       id="achievement-trigger-data"
