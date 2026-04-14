@@ -27,12 +27,12 @@ describe('Sidebar', () => {
 
   it('should render all menu items', () => {
     render(<Sidebar currentPage="dashboard" onNavigate={mockOnNavigate} isOpen={true} />)
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('Create Achievement')).toBeInTheDocument()
-    expect(screen.getByText('Manage Achievements')).toBeInTheDocument()
+    expect(screen.getByText('Tableau de bord')).toBeInTheDocument()
+    expect(screen.getByText('Créer un succès')).toBeInTheDocument()
+    expect(screen.getByText('Gérer les succès')).toBeInTheDocument()
     expect(screen.getByText('Marketplace')).toBeInTheDocument()
-    expect(screen.getByText('User Profile')).toBeInTheDocument()
-    expect(screen.getByText('Twitch Overlay')).toBeInTheDocument()
+    expect(screen.getByText('Profil utilisateur')).toBeInTheDocument()
+    expect(screen.getByText('Overlay Twitch')).toBeInTheDocument()
   })
 
   it('should show basic stream quest title', () => {
@@ -42,7 +42,7 @@ describe('Sidebar', () => {
 
   it('should call onNavigate when item clicked', () => {
     render(<Sidebar currentPage="dashboard" onNavigate={mockOnNavigate} isOpen={true} />)
-    fireEvent.click(screen.getByText('Create Achievement'))
+    fireEvent.click(screen.getByText('Créer un succès'))
     expect(mockOnNavigate).toHaveBeenCalledWith('creator')
   })
 

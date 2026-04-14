@@ -50,7 +50,7 @@ export function AchievementCreator({
   onOpenSidebar,
 }: Readonly<AchievementCreatorProps>) {
   const { selectedChannel } = useChannel()
-  const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
+  const [mode, setMode] = useState<'simple' | 'api'>('simple')
   const [formValues, setFormValues] = useState(defaultAchievementFormValues)
   const [aiPrompt, setAiPrompt] = useState(
     'Create an achievement for a user who sends 100 messages'
@@ -146,7 +146,7 @@ export function AchievementCreator({
     }
 
     setFormValues(createFormValuesFromAchievement(templateAchievement))
-    setMode('advanced')
+    setMode('simple')
     setLoadError(null)
     setSubmitError(null)
     setSubmitSuccess(null)
@@ -468,19 +468,19 @@ export function AchievementCreator({
                     Simple Mode
                   </button>
                   <button
-                    onClick={() => setMode('advanced')}
+                    onClick={() => setMode('api')}
                     className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
-                      mode === 'advanced'
+                      mode === 'api'
                         ? 'bg-[#9146FF] text-white'
                         : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
                     }`}
                   >
-                    Advanced Mode
+                    API
                   </button>
                 </div>
               </div>
 
-              {mode === 'advanced' && (
+              {mode === 'simple' && (
                 <div className="mb-8 grid sm:grid-cols-2 gap-6">
                   <div>
                     <label
@@ -536,6 +536,19 @@ export function AchievementCreator({
                       className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
                     />
                   </div>
+                </div>
+              )}
+
+              {mode === 'api' && (
+                <div className="mb-8 rounded-xl border border-[#9146FF]/30 bg-[#9146FF]/10 p-5">
+                  <div className="flex items-center gap-2 text-[#c6a8ff] mb-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="font-medium">API feature coming soon</span>
+                  </div>
+                  <p className="text-sm text-gray-300 dark:text-gray-600">
+                    This mode will connect achievements directly to the API. For now, use Simple
+                    Mode to configure the trigger fields.
+                  </p>
                 </div>
               )}
 

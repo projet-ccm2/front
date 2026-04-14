@@ -1,6 +1,7 @@
 import { Trophy, Clock, TrendingUp, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useUserAchievements } from './hooks/useUserAchievements'
+import type { UserAchievement } from '../achievements/api/achievementManagement.types'
 
 interface UserProfileProps {
   readonly onOpenSidebar: () => void
@@ -19,17 +20,56 @@ const getRankStyle = (rank: number) => {
   }
 }
 
-const leaderboard = [
-  { rank: 1, username: 'ProGamer99', level: 52, xp: 12450, avatar: 'P' },
-  { rank: 2, username: 'StreamFan42', level: 48, xp: 11280, avatar: 'S' },
-  { rank: 3, username: 'CurrentUser', level: 42, xp: 9830, avatar: 'Y', isCurrentUser: true },
-  { rank: 4, username: 'NightOwl', level: 39, xp: 8920, avatar: 'N' },
-  { rank: 5, username: 'CasualVibes', level: 35, xp: 7650, avatar: 'C' },
-]
+interface LeaderboardEntry {
+  rank: number
+  title: string
+  xp: number
+  avatar: string
+  status: string
+  isUnlocked: boolean
+}
+
+function buildLeaderboardEntries(achievements: UserAchievement[]): LeaderboardEntry[] {
+  return achievements
+    .slice()
+    .sort((left, right) => {
+      const rewardDiff = right.reward - left.reward
+      if (rewardDiff !== 0) {
+        return rewardDiff
+      }
+
+      const finishedDiff = Number(right.userState.finished) - Number(left.userState.finished)
+      if (finishedDiff !== 0) {
+        return finishedDiff
+      }
+
+      const progressDiff = right.userState.progressCount - left.userState.progressCount
+      if (progressDiff !== 0) {
+        return progressDiff
+      }
+
+      return left.title.localeCompare(right.title)
+    })
+    .slice(0, 5)
+    .map((achievement, index) => ({
+      rank: index + 1,
+      title: achievement.title,
+      xp: achievement.reward,
+      avatar:
+        achievement.label.trim().charAt(0).toUpperCase() ||
+        achievement.title.charAt(0).toUpperCase() ||
+        'A',
+      status: achievement.userState.finished
+        ? 'Unlocked'
+        : `${achievement.userState.progressCount}/${achievement.goal}`,
+      isUnlocked: achievement.userState.finished,
+    }))
+}
 
 export function UserProfile({ onOpenSidebar }: UserProfileProps) {
   const { user } = useAuth()
   const { achievements, isLoading, errorMessage } = useUserAchievements()
+  const leaderboard = buildLeaderboardEntries(achievements)
 
   const unlockedCount = achievements.filter(achievement => achievement.userState.finished).length
   const totalCount = achievements.length
@@ -208,40 +248,41 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                 View Full Rankings
               </button>
             </div>
+            <p className="mb-4 text-sm text-gray-400 dark:text-gray-600">
+              Top achievements ranked from the data returned by achievement-management.
+            </p>
             <div className="space-y-3">
-              {leaderboard.map(userEntry => (
+              {leaderboard.map(entry => (
                 <div
-                  key={userEntry.rank}
+                  key={entry.rank}
                   className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl transition-colors ${
-                    userEntry.isCurrentUser
+                    entry.isUnlocked
                       ? 'bg-[#9146FF]/20 border-2 border-[#9146FF]'
                       : 'bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
                   }`}
                 >
                   <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-sm ${getRankStyle(userEntry.rank)}`}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-sm ${getRankStyle(entry.rank)}`}
                   >
-                    #{userEntry.rank}
+                    #{entry.rank}
                   </div>
 
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-full flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 text-white">
-                    {userEntry.avatar}
+                    {entry.avatar}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="text-white dark:text-gray-900 text-sm sm:text-base truncate">
-                      {userEntry.isCurrentUser
-                        ? (user?.username ?? userEntry.username)
-                        : userEntry.username}
+                      {entry.title}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                      Level {userEntry.isCurrentUser ? currentLevel : userEntry.level}
+                      {entry.status}
                     </div>
                   </div>
 
                   <div className="text-right">
                     <div className="text-[#ffd700] text-sm sm:text-base">
-                      {(userEntry.isCurrentUser ? currentXP : userEntry.xp).toLocaleString()} XP
+                      {entry.xp.toLocaleString()} XP
                     </div>
                   </div>
                 </div>

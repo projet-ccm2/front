@@ -13,15 +13,13 @@ describe('App Component', () => {
   describe('Initial Render', () => {
     it('should render the Landing Page initially', () => {
       render(<App />)
-      expect(screen.getAllByText(/Gamify Your Stream/i).length).toBeGreaterThan(0)
-      expect(
-        screen.getAllByText(/Transform viewer engagement with achievements/i).length
-      ).toBeGreaterThan(0)
+      expect(screen.getAllByText(/Gamifiez votre stream/i).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(/Transformez l’engagement des viewers/i).length).toBeGreaterThan(0)
     })
 
-    it('should display the "Connect with Twitch" buttons', () => {
+    it('should display the connect buttons', () => {
       render(<App />)
-      const connectButtons = screen.getAllByText(/Connect with Twitch/i)
+      const connectButtons = screen.getAllByText(/Se connecter avec Twitch/i)
       expect(connectButtons.length).toBeGreaterThan(0)
     })
   })
@@ -45,7 +43,7 @@ describe('App Component', () => {
 
       await waitFor(
         () => {
-          expect(screen.getAllByText(/Manage Achievements/i).length).toBeGreaterThan(0)
+          expect(screen.getAllByText(/Gérer les succès/i).length).toBeGreaterThan(0)
         },
         { timeout: 5000 }
       )
@@ -64,11 +62,11 @@ describe('App Component', () => {
 
       // Wait for authenticated layout
       await waitFor(() => {
-        expect(screen.getAllByText(/Dashboard/i).length).toBeGreaterThan(0)
+        expect(screen.getAllByText(/Tableau de bord/i).length).toBeGreaterThan(0)
       })
 
       // Navigate to Creator using the sidebar button
-      const creatorButtons = screen.getAllByText(/Create Achievement/i)
+      const creatorButtons = screen.getAllByText(/Créer un succès/i)
       creatorButtons[0].click()
 
       await waitFor(() => {
@@ -109,7 +107,7 @@ describe('App Component', () => {
 
       await waitFor(
         () => {
-          expect(screen.getAllByText(/Manage Achievements/i).length).toBeGreaterThan(0)
+          expect(screen.getAllByText(/Gérer les succès/i).length).toBeGreaterThan(0)
         },
         { timeout: 5000 }
       )
@@ -127,7 +125,7 @@ describe('App Component', () => {
       render(<App />)
 
       // Should stay on landing page
-      expect(screen.getAllByText(/Gamify Your Stream/i).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(/Gamifiez votre stream/i).length).toBeGreaterThan(0)
 
       vi.unstubAllGlobals()
     })

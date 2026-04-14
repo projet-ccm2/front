@@ -110,12 +110,12 @@ describe('UserProfile', () => {
   it('should render user profile with username', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'streamer' })).toBeInTheDocument()
-    expect(await screen.findByText('First Steps')).toBeInTheDocument()
+    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
   it('should toggle sidebar on mobile', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     const menuBtn = screen.getByTestId('mobile-menu-btn')
     fireEvent.click(menuBtn)
     expect(mockOnOpenSidebar).toHaveBeenCalled()
@@ -129,7 +129,7 @@ describe('UserProfile', () => {
 
   it('should show stats cards', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     expect(screen.getByText('Total Watch Time')).toBeInTheDocument()
     expect(screen.getByText('--')).toBeInTheDocument()
     expect(screen.getByText('Achievements Unlocked')).toBeInTheDocument()
@@ -139,16 +139,20 @@ describe('UserProfile', () => {
   it('should display achievement badges', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'Achievement Badges' })).toBeInTheDocument()
-    expect(await screen.findByText('First Steps')).toBeInTheDocument()
-    expect(screen.getByText('Chat Master')).toBeInTheDocument()
+    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Chat Master').length).toBeGreaterThan(0)
   })
 
   it('should show leaderboard', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     expect(screen.getByRole('heading', { name: 'Leaderboard' })).toBeInTheDocument()
-    expect(screen.getByText('ProGamer99')).toBeInTheDocument()
-    expect(screen.getByText('StreamFan42')).toBeInTheDocument()
+    expect(
+      screen.getByText('Top achievements ranked from the data returned by achievement-management.')
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('Chat Master').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
+    expect(screen.getByText('250 XP')).toBeInTheDocument()
   })
 
   it('should show an empty state when no user achievements are returned', async () => {

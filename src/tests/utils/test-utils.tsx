@@ -8,14 +8,17 @@ import { StrictMode } from 'react'
 import { ThemeProvider } from '../../context/ThemeContext'
 import { ChannelProvider } from '../../context/ChannelContext'
 import { AuthProvider } from '../../context/AuthContext'
+import { LanguageProvider } from '../../context/LanguageContext'
 
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <StrictMode>
       <ThemeProvider>
-        <AuthProvider>
-          <ChannelProvider>{children}</ChannelProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <ChannelProvider>{children}</ChannelProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </StrictMode>
   )

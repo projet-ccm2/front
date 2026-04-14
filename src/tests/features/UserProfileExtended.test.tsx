@@ -66,13 +66,13 @@ describe('UserProfile - Function Coverage', () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
     const usernameElements = screen.getAllByText('streamer')
     expect(usernameElements.length).toBeGreaterThan(0)
-    expect(await screen.findByText('First Steps')).toBeInTheDocument()
+    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
   it('should render stats cards', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     expect(screen.getByText('Total Watch Time')).toBeInTheDocument()
     expect(screen.getByText('Achievements Unlocked')).toBeInTheDocument()
     expect(screen.getByText('Achievement XP')).toBeInTheDocument()
@@ -82,15 +82,18 @@ describe('UserProfile - Function Coverage', () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
     expect(screen.getByText('Achievement Badges')).toBeInTheDocument()
-    expect(await screen.findByText('First Steps')).toBeInTheDocument()
+    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
   it('should render leaderboard section', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
-    await screen.findByText('First Steps')
+    await screen.findAllByText('First Steps')
     expect(screen.getByText('Leaderboard')).toBeInTheDocument()
     expect(screen.getByText('View Full Rankings')).toBeInTheDocument()
-    expect(screen.getByText('ProGamer99')).toBeInTheDocument()
+    expect(
+      screen.getByText('Top achievements ranked from the data returned by achievement-management.')
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
   })
 })

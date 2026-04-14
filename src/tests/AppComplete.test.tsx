@@ -6,7 +6,7 @@ import React from 'react'
 describe('App - Functional Coverage', () => {
   it('should render landing page initially', () => {
     render(<App />)
-    expect(screen.getByText('Gamify Your Stream')).toBeInTheDocument()
+    expect(screen.getByText('Gamifiez votre stream')).toBeInTheDocument()
   })
 
   const setupAuthenticated = () => {
@@ -26,7 +26,7 @@ describe('App - Functional Coverage', () => {
 
   it('should render landing page initially', () => {
     render(<App />)
-    expect(screen.getByText('Gamify Your Stream')).toBeInTheDocument()
+    expect(screen.getByText('Gamifiez votre stream')).toBeInTheDocument()
   })
 
   it('should handle authenticated state and show dashboard', async () => {
