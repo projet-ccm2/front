@@ -1,4 +1,5 @@
-﻿export type Language = 'en' | 'fr'
+﻿
+export type Language = 'en' | 'fr'
 
 type TranslationValue = string
 
