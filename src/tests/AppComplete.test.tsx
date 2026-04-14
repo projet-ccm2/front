@@ -188,4 +188,13 @@ describe('App - Functional Coverage', () => {
       await screen.findByRole('heading', { name: /Create Achievement|Cr.*er un succ.*s/i })
     ).toBeInTheDocument()
   })
+
+  it('should render the Twitch extension panel route', () => {
+    window.history.pushState({}, '', '/twitch-extension/panel')
+
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: 'Extension Twitch' })).toBeInTheDocument()
+    expect(screen.getByText(/\/twitch-extension\/panel$/)).toBeInTheDocument()
+  })
 })

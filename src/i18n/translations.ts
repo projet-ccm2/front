@@ -212,6 +212,16 @@ const EN_TRANSLATIONS: TranslationMap = {
     'Paste this link into a Twitch panel to display the public achievement board.',
   'overlay.public.copy': 'Copy link',
   'overlay.public.copied': 'Link copied',
+  'overlay.extension.title': 'Twitch Extension',
+  'overlay.extension.subtitle':
+    'Use this URL in the Twitch Developer Console for your panel extension.',
+  'overlay.extension.copy': 'Copy extension URL',
+  'overlay.extension.copied': 'Extension URL copied',
+  'overlay.extension.section': 'Extension URL',
+  'overlay.extension.description':
+    'Share this URL with Twitch dev to configure the panel extension.',
+  'overlay.extension.note':
+    'If you want to preview the panel locally, append ?channelId=... and optionally &viewerId=....',
   'overlay.public.empty': 'No public achievements are available for this channel yet.',
   'overlay.public.achievements': 'Channel Achievements',
   'overlay.public.achievementsDescription':
@@ -415,6 +425,16 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
     'Colle ce lien dans un panneau Twitch pour afficher le tableau des succès.',
   'overlay.public.copy': 'Copier le lien',
   'overlay.public.copied': 'Lien copié',
+  'overlay.extension.title': 'Extension Twitch',
+  'overlay.extension.subtitle':
+    'Utilise cette URL dans la console développeur Twitch pour ton extension de panneau.',
+  'overlay.extension.copy': 'Copier l’URL de l’extension',
+  'overlay.extension.copied': 'URL de l’extension copiée',
+  'overlay.extension.section': 'URL de l’extension',
+  'overlay.extension.description':
+    'Partage cette URL avec Twitch dev pour configurer l’extension de panneau.',
+  'overlay.extension.note':
+    'Pour prévisualiser le panneau en local, ajoute ?channelId=... et éventuellement &viewerId=....',
   'overlay.public.empty': 'Aucun succès public n’est disponible pour cette chaîne pour le moment.',
   'overlay.public.achievements': 'Succès de la chaîne',
   'overlay.public.achievementsDescription':

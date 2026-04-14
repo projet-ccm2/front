@@ -8,6 +8,7 @@ import {
 } from '../achievements/utils/achievementLeaderboard'
 import { useChannel } from '../../context/ChannelContext'
 import { buildPublicPanelUrl } from './utils/publicPanelLink'
+import { buildTwitchExtensionPanelUrl } from './utils/twitchExtensionLink'
 
 interface TwitchOverlayProps {
   onOpenSidebar: () => void
@@ -29,6 +30,12 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
     selectedChannel && typeof window !== 'undefined'
       ? buildPublicPanelUrl(selectedChannel.id, window.location.origin)
       : ''
+  const extensionUrl =
+    typeof window === 'undefined'
+      ? ''
+      : buildTwitchExtensionPanelUrl(
+          globalThis._env_?.FRONT_URL || import.meta.env.FRONT_URL || window.location.origin
+        )
 
   const handleCopyLink = async () => {
     if (!panelUrl || !navigator.clipboard?.writeText) {
@@ -137,6 +144,27 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
               <div className="flex items-center gap-3 rounded-2xl border border-[#2d2d31] bg-[#0f0f12] px-4 py-3 text-sm text-gray-300 dark:border-gray-200 dark:bg-gray-50 dark:text-gray-700">
                 <ExternalLink className="h-4 w-4 flex-shrink-0 text-[#9146FF]" />
                 <span className="min-w-0 break-all">{panelUrl}</span>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white">
+              <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-xl text-white dark:text-gray-900">
+                    {t('overlay.extension.section')}
+                  </h2>
+                  <p className="text-sm text-gray-400 dark:text-gray-600">
+                    {t('overlay.extension.description')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-[#2d2d31] bg-[#0f0f12] px-4 py-3 text-sm text-gray-300 dark:border-gray-200 dark:bg-gray-50 dark:text-gray-700">
+                <ExternalLink className="h-4 w-4 flex-shrink-0 text-[#9146FF]" />
+                <span className="min-w-0 break-all">{extensionUrl}</span>
+              </div>
+              <div className="mt-3 text-xs text-gray-400 dark:text-gray-600">
+                {t('overlay.extension.note')}
               </div>
             </div>
 

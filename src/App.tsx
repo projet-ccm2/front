@@ -12,10 +12,12 @@ import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
 import { TwitchOverlay } from './features/overlay/TwitchOverlay'
 import { PublicTwitchPanel } from './features/overlay/PublicTwitchPanel'
+import { TwitchExtensionPanel } from './features/overlay/TwitchExtensionPanel'
 import {
   getPublicPanelChannelId,
   getPublicPanelViewerId,
 } from './features/overlay/utils/publicPanelLink'
+import { isTwitchExtensionPanelPath } from './features/overlay/utils/twitchExtensionLink'
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
 import { useLanguage } from './context/LanguageContext'
 
@@ -165,6 +167,16 @@ export function AppContent() {
 }
 
 function App() {
+  if (isTwitchExtensionPanelPath(globalThis.location.pathname)) {
+    return (
+      <ThemeProvider>
+        <LanguageProvider>
+          <TwitchExtensionPanel />
+        </LanguageProvider>
+      </ThemeProvider>
+    )
+  }
+
   const publicPanelChannelId = getPublicPanelChannelId(globalThis.location.pathname)
   const publicPanelViewerId = getPublicPanelViewerId(globalThis.location.search)
 
