@@ -25,6 +25,13 @@ interface AchievementCreatorProps {
   onOpenSidebar: () => void
 }
 
+let draftImageElementSequence = 0
+
+function createDraftImageElementId() {
+  draftImageElementSequence += 1
+  return `achievement-${Date.now()}-${draftImageElementSequence}`
+}
+
 function getPublishValidationError(
   selectedChannel: { id: string } | null,
   language: 'en' | 'fr',
@@ -67,10 +74,7 @@ export function AchievementCreator({
   const [imageUploadSuccess, setImageUploadSuccess] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const imageFileInputRef = useRef<HTMLInputElement | null>(null)
-  const [draftImageElementId] = useState(() => {
-    const randomId = globalThis.crypto?.randomUUID?.()
-    return `achievement-${randomId ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`}`
-  })
+  const [draftImageElementId] = useState(createDraftImageElementId)
 
   const updateField = <K extends keyof typeof formValues>(
     field: K,
