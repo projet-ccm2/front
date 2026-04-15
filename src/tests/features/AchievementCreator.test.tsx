@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { AchievementCreator } from '../../features/achievements/AchievementCreator'
-import { ACHIEVEMENT_PLACEHOLDER_IMAGE_URL } from '../../features/achievements/forms/achievementFormModel'
 import React from 'react'
 
 const marketplaceTemplate = {
@@ -40,23 +39,6 @@ describe('AchievementCreator', () => {
 
   const mockFetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
-
-    if (url.includes('/bucket/image/insert') && init?.method === 'POST') {
-      const formData = init.body as FormData
-      const elementId = String(formData.get('elementId'))
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            key: `assets/image/achievement/${elementId}.webp`,
-            message: 'Image uploaded successfully',
-            timestamp: '2026-04-15T10:00:00.000Z',
-          }),
-      })
-    }
 
     if (url.match(/\/achievements$/) && init?.method === 'POST') {
       return Promise.resolve({
@@ -145,6 +127,7 @@ describe('AchievementCreator', () => {
 
   beforeEach(() => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
+    mockFetch.mockClear()
     vi.stubGlobal('fetch', mockFetch)
   })
 
@@ -293,7 +276,9 @@ describe('AchievementCreator', () => {
     expect(screen.getByText('Clear Image')).toBeInTheDocument()
     expect(screen.getByText('Recommended: 512x512px PNG or JPG')).toBeInTheDocument()
     expect(
-      screen.getByText('No image selected yet. Upload one to use the bucket manager.')
+      screen.getByText(
+        'No image selected yet. Upload one to let achievement-management handle it on publish.'
+      )
     ).toBeInTheDocument()
   })
 
@@ -308,7 +293,7 @@ describe('AchievementCreator', () => {
     clickSpy.mockRestore()
   })
 
-  it('should upload an image to the bucket manager and store the returned key', async () => {
+  it('should prepare an image upload payload and send it through achievement-management', async () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     const fileInput = screen.getByTestId('achievement-image-input')
@@ -319,27 +304,49 @@ describe('AchievementCreator', () => {
     })
 
     expect(
-      await screen.findByText(/Image uploaded to bucket as assets\/image\/achievement\//)
+      await screen.findByText('Image "achievement.png" is ready to be uploaded.')
+    ).toBeInTheDocument()
+
+    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+      target: { value: 'First 100 Messages' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+      target: { value: 'Unlock after 100 messages.' },
+    })
+    fireEvent.click(screen.getByText('Publish Achievement'))
+
+    expect(
+      await screen.findByText('Achievement "First 100 Messages" was published.')
     ).toBeInTheDocument()
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/bucket/image/insert'),
+        expect.stringContaining('/achievements'),
         expect.objectContaining({
           method: 'POST',
-          body: expect.any(FormData),
+          body: expect.stringContaining('"image":null'),
         })
       )
     })
 
-    const bucketCall = mockFetch.mock.calls.find(([url]) =>
-      String(url).includes('/bucket/image/insert')
-    )
-    const formData = bucketCall?.[1]?.body as FormData
+    const createCall = mockFetch.mock.calls.find(([url, init]) => {
+      return String(url).endsWith('/achievements') && init?.method === 'POST'
+    })
+    const body = JSON.parse(String(createCall?.[1]?.body ?? '{}')) as {
+      image: string | null
+      imageUpload?: {
+        fileName: string
+        mimeType: string
+        contentBase64: string
+      } | null
+    }
 
-    expect(formData.get('typeImage')).toBe('achievement')
-    expect(String(formData.get('elementId'))).toMatch(/^achievement-/)
-    expect(formData.get('image')).toBeInstanceOf(File)
+    expect(body.image).toBeNull()
+    expect(body.imageUpload).toMatchObject({
+      fileName: 'achievement.png',
+      mimeType: 'image/png',
+    })
+    expect(body.imageUpload?.contentBase64).toContain('data:image/png;base64,')
   })
 
   it('should render simple mode trigger fields', () => {
@@ -426,32 +433,14 @@ describe('AchievementCreator', () => {
         })
       )
     })
-  })
 
-  it('should send a placeholder image when no image is provided', async () => {
-    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+    const createBody = String(
+      mockFetch.mock.calls.find(([url, init]) => {
+        return String(url).endsWith('/achievements') && init?.method === 'POST'
+      })?.[1]?.body ?? ''
+    )
 
-    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
-      target: { value: 'First 100 Messages' },
-    })
-    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
-      target: { value: 'Unlock after 100 messages.' },
-    })
-    fireEvent.click(screen.getByText('Publish Achievement'))
-
-    expect(
-      await screen.findByText('Achievement "First 100 Messages" was published.')
-    ).toBeInTheDocument()
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/achievements'),
-        expect.objectContaining({
-          method: 'POST',
-          body: expect.stringContaining(`"image":"${ACHIEVEMENT_PLACEHOLDER_IMAGE_URL}"`),
-        })
-      )
-    })
+    expect(createBody).toContain('"imageUpload":null')
   })
 
   it('should block publishing for synthetic moderator channel ids', async () => {
@@ -506,5 +495,13 @@ describe('AchievementCreator', () => {
         })
       )
     })
+
+    const updateBody = String(
+      mockFetch.mock.calls.find(([url, init]) => {
+        return String(url).includes('/achievements/edit-1') && init?.method === 'PUT'
+      })?.[1]?.body ?? ''
+    )
+
+    expect(updateBody).toContain('"imageUpload":null')
   })
 })

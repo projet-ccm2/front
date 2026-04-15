@@ -10,6 +10,12 @@ export interface AchievementType {
   data: string | number | boolean | Record<string, unknown> | null
 }
 
+export interface AchievementImageUpload {
+  fileName: string
+  mimeType: string
+  contentBase64: string
+}
+
 export interface Achievement {
   id: string
   title: string
@@ -45,6 +51,7 @@ export interface AchievementUpsertPayload {
   active: boolean
   secret: boolean
   image: string | null
+  imageUpload?: AchievementImageUpload | null
   type: AchievementType
 }
 

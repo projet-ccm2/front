@@ -15,7 +15,11 @@ export interface AchievementTriggerOption {
   description: string
 }
 
-export const ACHIEVEMENT_PLACEHOLDER_IMAGE_URL = 'https://placehold.co/512x512/png?text=Achievement'
+export interface AchievementImageUploadFormValue {
+  fileName: string
+  mimeType: string
+  contentBase64: string
+}
 
 export function getAchievementTriggerOptions(language: Language): AchievementTriggerOption[] {
   return [
@@ -113,5 +117,27 @@ export function createFormValuesFromAchievement(
 export function normalizeAchievementImage(image: string | null | undefined) {
   const trimmedImage = image?.trim()
 
-  return trimmedImage ? trimmedImage : ACHIEVEMENT_PLACEHOLDER_IMAGE_URL
+  return trimmedImage ? trimmedImage : null
+}
+
+export async function createImageUploadFormValue(
+  file: File
+): Promise<AchievementImageUploadFormValue> {
+  const contentBase64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      resolve(String(reader.result ?? ''))
+    }
+    reader.onerror = () => {
+      reject(new Error('Unable to read the selected image file.'))
+    }
+    reader.readAsDataURL(file)
+  })
+
+  return {
+    fileName: file.name,
+    mimeType: file.type,
+    contentBase64,
+  }
 }

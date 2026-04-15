@@ -4,9 +4,9 @@ import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Sparkles, Upload, Save, Send, Menu, X } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
-import { bucketManagerClient } from './api/bucketManagerClient'
 import { achievementManagementClient } from './api/achievementManagementClient'
 import {
+  createImageUploadFormValue,
   createFormValuesFromAchievement,
   defaultAchievementFormValues,
   getAchievementTriggerOptions,
@@ -23,13 +23,6 @@ interface AchievementCreatorProps {
   achievementId?: string | null
   templateAchievement?: Achievement | null
   onOpenSidebar: () => void
-}
-
-let draftImageElementSequence = 0
-
-function createDraftImageElementId() {
-  draftImageElementSequence += 1
-  return `achievement-${Date.now()}-${draftImageElementSequence}`
 }
 
 function getPublishValidationError(
@@ -72,9 +65,14 @@ export function AchievementCreator({
   const [templateMessage, setTemplateMessage] = useState<string | null>(null)
   const [imageUploadError, setImageUploadError] = useState<string | null>(null)
   const [imageUploadSuccess, setImageUploadSuccess] = useState<string | null>(null)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isPreparingImageUpload, setIsPreparingImageUpload] = useState(false)
+  const [selectedImageUpload, setSelectedImageUpload] = useState<{
+    fileName: string
+    mimeType: string
+    contentBase64: string
+  } | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const imageFileInputRef = useRef<HTMLInputElement | null>(null)
-  const [draftImageElementId] = useState(createDraftImageElementId)
 
   const updateField = <K extends keyof typeof formValues>(
     field: K,
@@ -91,6 +89,8 @@ export function AchievementCreator({
   }
 
   const handleImageClear = () => {
+    setSelectedImageUpload(null)
+    setImagePreviewUrl(null)
     updateField('image', null)
     setImageUploadError(null)
     setImageUploadSuccess(null)
@@ -113,22 +113,21 @@ export function AchievementCreator({
       return
     }
 
-    setIsUploadingImage(true)
+    setIsPreparingImageUpload(true)
     setImageUploadError(null)
     setImageUploadSuccess(null)
 
     try {
-      const uploadedKey = await bucketManagerClient.uploadAchievementImage(
-        file,
-        achievementId ?? draftImageElementId
-      )
+      const uploadValue = await createImageUploadFormValue(file)
 
-      updateField('image', uploadedKey)
-      setImageUploadSuccess(`Image uploaded to bucket as ${uploadedKey}.`)
+      setSelectedImageUpload(uploadValue)
+      setImagePreviewUrl(uploadValue.contentBase64)
+      updateField('image', null)
+      setImageUploadSuccess(`Image "${uploadValue.fileName}" is ready to be uploaded.`)
     } catch {
-      setImageUploadError('Unable to upload the image right now.')
+      setImageUploadError('Unable to prepare the image right now.')
     } finally {
-      setIsUploadingImage(false)
+      setIsPreparingImageUpload(false)
     }
   }
 
@@ -162,6 +161,8 @@ export function AchievementCreator({
       setSubmitSuccess(null)
       setImageUploadError(null)
       setImageUploadSuccess(null)
+      setSelectedImageUpload(null)
+      setImagePreviewUrl(null)
       return
     }
 
@@ -172,6 +173,8 @@ export function AchievementCreator({
     setSubmitSuccess(null)
     setImageUploadError(null)
     setImageUploadSuccess(null)
+    setSelectedImageUpload(null)
+    setImagePreviewUrl(null)
 
     const loadAchievement = async () => {
       try {
@@ -214,6 +217,8 @@ export function AchievementCreator({
     setSubmitSuccess(null)
     setImageUploadError(null)
     setImageUploadSuccess(null)
+    setSelectedImageUpload(null)
+    setImagePreviewUrl(null)
     setTemplateMessage(`Template "${templateAchievement.title}" loaded from the marketplace.`)
   }, [achievementId, templateAchievement])
 
@@ -235,7 +240,8 @@ export function AchievementCreator({
         title: formValues.title.trim(),
         description: formValues.description.trim(),
         label: '',
-        image: normalizeAchievementImage(formValues.image),
+        image: selectedImageUpload ? null : normalizeAchievementImage(formValues.image),
+        imageUpload: selectedImageUpload ?? null,
       }
 
       if (achievementId) {
@@ -383,7 +389,13 @@ export function AchievementCreator({
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <div className="w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden">
-                    {formValues.image ? (
+                    {imagePreviewUrl ? (
+                      <img
+                        src={imagePreviewUrl}
+                        alt="Selected achievement image preview"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : formValues.image ? (
                       <div className="flex h-full w-full items-center justify-center text-center px-3 text-xs text-gray-300 dark:text-gray-600 break-all">
                         <span>{formValues.image}</span>
                       </div>
@@ -396,20 +408,20 @@ export function AchievementCreator({
                       <button
                         type="button"
                         onClick={handleOpenImagePicker}
-                        disabled={isUploadingImage}
+                        disabled={isPreparingImageUpload}
                         className={`px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                          isUploadingImage ? 'opacity-60 cursor-not-allowed' : ''
+                          isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : ''
                         }`}
                       >
                         <Upload className="w-4 h-4" />
-                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                        {isPreparingImageUpload ? 'Preparing...' : 'Upload Image'}
                       </button>
                       <button
                         type="button"
                         onClick={handleImageClear}
-                        disabled={!formValues.image || isUploadingImage}
+                        disabled={!formValues.image && !selectedImageUpload}
                         className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                          !formValues.image || isUploadingImage
+                          !formValues.image && !selectedImageUpload
                             ? 'bg-[#2d2d31] dark:bg-gray-100 text-gray-500 cursor-not-allowed'
                             : 'bg-[#ff4444]/15 text-[#ff8080] hover:bg-[#ff4444]/25'
                         }`}
@@ -422,8 +434,8 @@ export function AchievementCreator({
                       Recommended: 512x512px PNG or JPG
                     </p>
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
-                      The uploaded file is stored in the bucket and its reference is saved on the
-                      achievement.
+                      The selected file will be converted to base64 and uploaded by
+                      achievement-management when you publish.
                     </p>
                     <input
                       ref={imageFileInputRef}
@@ -434,13 +446,23 @@ export function AchievementCreator({
                       className="hidden"
                     />
                     <div className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600">
-                      {formValues.image ? (
+                      {selectedImageUpload ? (
+                        <span className="break-all">
+                          Selected file:{' '}
+                          <span className="text-white dark:text-gray-900">
+                            {selectedImageUpload.fileName}
+                          </span>
+                        </span>
+                      ) : formValues.image ? (
                         <span className="break-all">
                           Stored image reference:{' '}
                           <span className="text-white dark:text-gray-900">{formValues.image}</span>
                         </span>
                       ) : (
-                        <span>No image selected yet. Upload one to use the bucket manager.</span>
+                        <span>
+                          No image selected yet. Upload one to let achievement-management handle it
+                          on publish.
+                        </span>
                       )}
                     </div>
                   </div>
