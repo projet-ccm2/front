@@ -237,6 +237,20 @@ const EN_TRANSLATIONS: TranslationMap = {
     'Use this URL in the Twitch Developer Console for your panel extension.',
   'overlay.extension.copy': 'Copy extension URL',
   'overlay.extension.copied': 'Extension URL copied',
+  'overlay.extension.config.baseTitle': 'Testing Base URI',
+  'overlay.extension.config.baseDescription':
+    'Root URL used by Twitch to load all extension assets.',
+  'overlay.extension.config.panelTitle': 'Viewer Panel Path',
+  'overlay.extension.config.panelDescription':
+    'Relative HTML file shown to viewers when the panel is active.',
+  'overlay.extension.config.configTitle': 'Configuration Path',
+  'overlay.extension.config.configDescription':
+    'Relative HTML file used in the extension manager for broadcaster settings.',
+  'overlay.extension.config.title': 'Twitch Extension setup',
+  'overlay.extension.config.description':
+    'Create the Twitch panel extension with the root URI below, then point the panel and configuration paths to the generated HTML files.',
+  'overlay.extension.config.note':
+    'Use the root URI as Twitch testing base URI, then set panel.html and config.html as the relative paths.',
   'overlay.extension.section': 'Extension URL',
   'overlay.extension.description':
     'Share this URL with Twitch dev to configure the panel extension.',
@@ -470,6 +484,20 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
     'Utilise cette URL dans la console développeur Twitch pour ton extension de panneau.',
   'overlay.extension.copy': 'Copier l’URL de l’extension',
   'overlay.extension.copied': 'URL de l’extension copiée',
+  'overlay.extension.config.baseTitle': 'URI racine de test',
+  'overlay.extension.config.baseDescription':
+    'URL racine utilisée par Twitch pour charger tous les assets de l’extension.',
+  'overlay.extension.config.panelTitle': 'Chemin du panneau viewers',
+  'overlay.extension.config.panelDescription':
+    'Fichier HTML relatif affiché aux viewers quand le panneau est actif.',
+  'overlay.extension.config.configTitle': 'Chemin de configuration',
+  'overlay.extension.config.configDescription':
+    'Fichier HTML relatif utilisé dans le gestionnaire d’extensions pour les réglages streamer.',
+  'overlay.extension.config.title': 'Configuration de l’extension Twitch',
+  'overlay.extension.config.description':
+    'Crée l’extension de panneau Twitch avec l’URI racine ci-dessous, puis pointe le panneau et la configuration vers les fichiers HTML générés.',
+  'overlay.extension.config.note':
+    'Utilise l’URI racine comme URI de test Twitch, puis renseigne panel.html et config.html comme chemins relatifs.',
   'overlay.extension.section': 'URL de l’extension',
   'overlay.extension.description':
     'Partage cette URL avec Twitch dev pour configurer l’extension de panneau.',
