@@ -41,6 +41,23 @@ describe('AchievementCreator', () => {
   const mockFetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
 
+    if (url.includes('/bucket/image/insert') && init?.method === 'POST') {
+      const formData = init.body as FormData
+      const elementId = String(formData.get('elementId'))
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            success: true,
+            key: `assets/image/achievement/${elementId}.webp`,
+            message: 'Image uploaded successfully',
+            timestamp: '2026-04-15T10:00:00.000Z',
+          }),
+      })
+    }
+
     if (url.match(/\/achievements$/) && init?.method === 'POST') {
       return Promise.resolve({
         ok: true,
@@ -269,12 +286,60 @@ describe('AchievementCreator', () => {
     expect(screen.getByText('This is a new achievement')).toBeInTheDocument()
   })
 
-  it('should render upload button and image input', () => {
+  it('should render upload button and image state', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByText('Upload Image')).toBeInTheDocument()
+    expect(screen.getByText('Clear Image')).toBeInTheDocument()
     expect(screen.getByText('Recommended: 512x512px PNG or JPG')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Optional image URL...')).toBeInTheDocument()
+    expect(
+      screen.getByText('No image selected yet. Upload one to use the bucket manager.')
+    ).toBeInTheDocument()
+  })
+
+  it('should open the file picker when the upload button is clicked', () => {
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
+
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload Image' }))
+
+    expect(clickSpy).toHaveBeenCalled()
+    clickSpy.mockRestore()
+  })
+
+  it('should upload an image to the bucket manager and store the returned key', async () => {
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    const fileInput = screen.getByTestId('achievement-image-input')
+    const imageFile = new File(['image-bytes'], 'achievement.png', { type: 'image/png' })
+
+    fireEvent.change(fileInput, {
+      target: { files: [imageFile] },
+    })
+
+    expect(
+      await screen.findByText(/Image uploaded to bucket as assets\/image\/achievement\//)
+    ).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/bucket/image/insert'),
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.any(FormData),
+        })
+      )
+    })
+
+    const bucketCall = mockFetch.mock.calls.find(([url]) =>
+      String(url).includes('/bucket/image/insert')
+    )
+    const formData = bucketCall?.[1]?.body as FormData
+
+    expect(formData.get('typeImage')).toBe('achievement')
+    expect(String(formData.get('elementId'))).toMatch(/^achievement-/)
+    expect(formData.get('image')).toBeInstanceOf(File)
   })
 
   it('should render simple mode trigger fields', () => {

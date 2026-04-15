@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
-import { Sparkles, Upload, Save, Send, Menu } from 'lucide-react'
+import { Sparkles, Upload, Save, Send, Menu, X } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
+import { bucketManagerClient } from './api/bucketManagerClient'
 import { achievementManagementClient } from './api/achievementManagementClient'
 import {
   createFormValuesFromAchievement,
@@ -61,6 +63,14 @@ export function AchievementCreator({
   const [isLoadingAchievement, setIsLoadingAchievement] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [templateMessage, setTemplateMessage] = useState<string | null>(null)
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null)
+  const [imageUploadSuccess, setImageUploadSuccess] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const imageFileInputRef = useRef<HTMLInputElement | null>(null)
+  const [draftImageElementId] = useState(() => {
+    const randomId = globalThis.crypto?.randomUUID?.()
+    return `achievement-${randomId ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`}`
+  })
 
   const updateField = <K extends keyof typeof formValues>(
     field: K,
@@ -70,6 +80,52 @@ export function AchievementCreator({
       ...current,
       [field]: value,
     }))
+  }
+
+  const handleOpenImagePicker = () => {
+    imageFileInputRef.current?.click()
+  }
+
+  const handleImageClear = () => {
+    updateField('image', null)
+    setImageUploadError(null)
+    setImageUploadSuccess(null)
+    if (imageFileInputRef.current) {
+      imageFileInputRef.current.value = ''
+    }
+  }
+
+  const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file) {
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setImageUploadError('Please select a valid image file.')
+      setImageUploadSuccess(null)
+      return
+    }
+
+    setIsUploadingImage(true)
+    setImageUploadError(null)
+    setImageUploadSuccess(null)
+
+    try {
+      const uploadedKey = await bucketManagerClient.uploadAchievementImage(
+        file,
+        achievementId ?? draftImageElementId
+      )
+
+      updateField('image', uploadedKey)
+      setImageUploadSuccess(`Image uploaded to bucket as ${uploadedKey}.`)
+    } catch {
+      setImageUploadError('Unable to upload the image right now.')
+    } finally {
+      setIsUploadingImage(false)
+    }
   }
 
   const handleAIGenerate = async () => {
@@ -100,6 +156,8 @@ export function AchievementCreator({
       setLoadError(null)
       setSubmitError(null)
       setSubmitSuccess(null)
+      setImageUploadError(null)
+      setImageUploadSuccess(null)
       return
     }
 
@@ -108,6 +166,8 @@ export function AchievementCreator({
     setLoadError(null)
     setSubmitError(null)
     setSubmitSuccess(null)
+    setImageUploadError(null)
+    setImageUploadSuccess(null)
 
     const loadAchievement = async () => {
       try {
@@ -148,6 +208,8 @@ export function AchievementCreator({
     setLoadError(null)
     setSubmitError(null)
     setSubmitSuccess(null)
+    setImageUploadError(null)
+    setImageUploadSuccess(null)
     setTemplateMessage(`Template "${templateAchievement.title}" loaded from the marketplace.`)
   }, [achievementId, templateAchievement])
 
@@ -299,33 +361,84 @@ export function AchievementCreator({
                 </div>
               )}
 
+              {imageUploadError && (
+                <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+                  {imageUploadError}
+                </div>
+              )}
+
+              {imageUploadSuccess && (
+                <div className="mb-6 rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00f593] dark:text-[#027a48]">
+                  {imageUploadSuccess}
+                </div>
+              )}
+
               <div className="mb-8">
                 <div className="block text-white dark:text-gray-900 mb-3 font-medium">
                   Achievement Icon
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <div className="w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors cursor-pointer flex-shrink-0">
-                    <Upload className="w-8 h-8 text-gray-500" />
+                  <div className="w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden">
+                    {formValues.image ? (
+                      <div className="flex h-full w-full items-center justify-center text-center px-3 text-xs text-gray-300 dark:text-gray-600 break-all">
+                        <span>{formValues.image}</span>
+                      </div>
+                    ) : (
+                      <Upload className="w-8 h-8 text-gray-500" />
+                    )}
                   </div>
                   <div className="flex-1 w-full text-center sm:text-left">
-                    <button className="px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors">
-                      Upload Image
-                    </button>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleOpenImagePicker}
+                        disabled={isUploadingImage}
+                        className={`px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                          isUploadingImage ? 'opacity-60 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <Upload className="w-4 h-4" />
+                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleImageClear}
+                        disabled={!formValues.image || isUploadingImage}
+                        className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                          !formValues.image || isUploadingImage
+                            ? 'bg-[#2d2d31] dark:bg-gray-100 text-gray-500 cursor-not-allowed'
+                            : 'bg-[#ff4444]/15 text-[#ff8080] hover:bg-[#ff4444]/25'
+                        }`}
+                      >
+                        <X className="w-4 h-4" />
+                        Clear Image
+                      </button>
+                    </div>
                     <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">
                       Recommended: 512x512px PNG or JPG
                     </p>
-                    <input
-                      type="text"
-                      value={formValues.image ?? ''}
-                      onChange={event =>
-                        updateField('image', event.target.value.trim() ? event.target.value : null)
-                      }
-                      placeholder="Optional image URL..."
-                      className="mt-3 w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
-                    />
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
-                      If left empty, a default placeholder image will be sent automatically.
+                      The uploaded file is stored in the bucket and its reference is saved on the
+                      achievement.
                     </p>
+                    <input
+                      ref={imageFileInputRef}
+                      data-testid="achievement-image-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <div className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600">
+                      {formValues.image ? (
+                        <span className="break-all">
+                          Stored image reference:{' '}
+                          <span className="text-white dark:text-gray-900">{formValues.image}</span>
+                        </span>
+                      ) : (
+                        <span>No image selected yet. Upload one to use the bucket manager.</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
