@@ -22,7 +22,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const summaries = buildViewerChannelSummaries(achievements)
   const primarySummary = summaries[0] ?? null
   const primaryFeaturedAchievement = primarySummary
-    ? primaryFeaturedAchievement
+    ? getFeaturedAchievement(primarySummary)
     : null
   const totalAchievements = achievements.length
   const unlockedAchievements = achievements.filter(
