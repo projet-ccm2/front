@@ -1,6 +1,6 @@
 import React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '../utils/test-utils'
+import { render, screen } from '../utils/test-utils'
 import { ViewerHub } from '../../features/viewer/ViewerHub'
 
 const authUser = {
@@ -83,14 +83,7 @@ describe('ViewerHub', () => {
     localStorage.clear()
   })
 
-  it('renders the viewer hub with grouped channels and web links', async () => {
-    Object.defineProperty(window.navigator, 'clipboard', {
-      value: {
-        writeText: vi.fn().mockResolvedValue(undefined),
-      },
-      configurable: true,
-    })
-
+  it('renders the viewer hub with grouped channels', async () => {
     render(<ViewerHub onOpenSidebar={vi.fn()} />)
 
     expect(await screen.findByRole('heading', { name: 'Hub viewer' })).toBeInTheDocument()
@@ -99,11 +92,6 @@ describe('ViewerHub', () => {
     expect(screen.getAllByText('channel-2').length).toBeGreaterThan(0)
     expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Succès caché').length).toBeGreaterThan(0)
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Copier le lien web/i })[0])
-    await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: /Lien copi.*|Link copied/i }).length).toBeGreaterThan(0)
-    })
   })
 
   it('renders a featured in-progress achievement with a real image source', async () => {

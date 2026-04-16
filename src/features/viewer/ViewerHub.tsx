@@ -1,8 +1,7 @@
 import {
   CheckCircle2,
   ChevronRight,
-  Copy,
-  ExternalLink,
+  EyeOff,
   Lock,
   Medal,
   Menu,
@@ -10,11 +9,10 @@ import {
   Trophy,
   Zap,
 } from 'lucide-react'
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
-import { buildPublicPanelUrl } from '../overlay/utils/publicPanelLink'
 import { useViewerHub } from './hooks/useViewerHub'
 import { buildViewerChannelSummaries } from './utils/viewerHub'
 import type { ViewerChannelSummary } from './utils/viewerHub'
@@ -32,10 +30,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const { achievements, isLoading, errorMessage } = useViewerHub()
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [filter, setFilter] = useState<AchievementFilter>('all')
-  const [copyState, setCopyState] = useState<string | null>(null)
-  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
   useEffect(() => { setFilter('all') }, [selectedChannelId])
 
   const summaries = buildViewerChannelSummaries(achievements)
@@ -68,19 +63,6 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
       return scoreA - scoreB
     })
   }, [channelAchievements, filter])
-
-  const handleCopyLink = async (channelId: string) => {
-    if (!user || !navigator.clipboard?.writeText || typeof window === 'undefined') return
-    const url = `${buildPublicPanelUrl(channelId, window.location.origin)}?viewerId=${encodeURIComponent(user.userId)}`
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopyState(channelId)
-      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
-      copyTimerRef.current = globalThis.setTimeout(() => setCopyState(null), 2000)
-    } catch {
-      // clipboard unavailable
-    }
-  }
 
   const getChannelName = (channelId: string) =>
     getChannelDisplayName(channelId, user?.channel)
@@ -119,7 +101,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
       </div>
 
       {/* ── Body ───────────────────────────────────── */}
-      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 pb-12 sm:px-6">
         {isLoading && (
           <div className="rounded-xl border border-[#2d2d31] bg-[#18181b] p-10 text-center text-sm text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
             {t('viewerHub.loading')}
@@ -139,6 +121,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
         )}
 
         {!isLoading && !errorMessage && achievements.length > 0 && (
+          <div className="rounded-2xl border border-[#2d2d31] bg-[#18181b]/40 p-4 dark:border-gray-200 dark:bg-white/40">
           <div className="flex gap-5 lg:items-start">
 
             {/* ── Left: channel sidebar (desktop) ── */}
@@ -293,9 +276,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                   inProgressCount={inProgressCount}
                   totalCount={achievements.length}
                   getChannelName={getChannelName}
-                  user={user}
-                  copyState={copyState}
-                  onCopyLink={handleCopyLink}
+                  onSelectChannel={setSelectedChannelId}
                   t={t}
                 />
               ) : (
@@ -306,13 +287,11 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                   filteredAchievements={filteredAchievements}
                   inProgressCount={selectedSummary.inProgressAchievements}
                   getChannelName={getChannelName}
-                  user={user}
-                  copyState={copyState}
-                  onCopyLink={handleCopyLink}
                   t={t}
                 />
               )}
             </div>
+          </div>
           </div>
         )}
       </div>
@@ -331,9 +310,7 @@ function OverviewPanel({
   inProgressCount,
   totalCount,
   getChannelName,
-  user,
-  copyState,
-  onCopyLink,
+  onSelectChannel,
   t,
 }: Readonly<{
   summaries: ViewerChannelSummary[]
@@ -344,9 +321,7 @@ function OverviewPanel({
   inProgressCount: number
   totalCount: number
   getChannelName: (id: string) => string
-  user: { userId: string; channel?: { id: string; name: string } } | null
-  copyState: string | null
-  onCopyLink: (channelId: string) => void
+  onSelectChannel: (id: string) => void
   t: (key: string, params?: Record<string, string | number>) => string
 }>) {
   const tabs: { key: AchievementFilter; label: string; count: number }[] = [
@@ -357,17 +332,16 @@ function OverviewPanel({
 
   return (
     <div className="space-y-4">
-      {/* Ranking cards */}
-      <div className="overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] dark:border-gray-200 dark:bg-white">
-        <div className="flex items-center gap-2 border-b border-[#2d2d31] px-5 py-4 dark:border-gray-200">
+      {/* Channel cards grid */}
+      <div>
+        <div className="mb-3 flex items-center gap-2">
           <Trophy className="h-4 w-4 text-[#9146FF]" />
-          <span className="font-medium text-white dark:text-gray-900">Classement des chaînes</span>
-          <span className="ml-auto rounded-full bg-[#2d2d31] px-2 py-0.5 text-xs text-gray-400 dark:bg-gray-200 dark:text-gray-600">
-            {summaries.length} chaîne{summaries.length > 1 ? 's' : ''}
+          <span className="font-medium text-white dark:text-gray-900">Chaînes suivies</span>
+          <span className="ml-1 text-sm text-gray-500">
+            — {summaries.length} chaîne{summaries.length > 1 ? 's' : ''}
           </span>
         </div>
-
-        <div className="divide-y divide-[#2d2d31] dark:divide-gray-200">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {summaries.map((summary, index) => {
             const rank = index + 1
             const name = getChannelName(summary.channelId)
@@ -375,96 +349,70 @@ function OverviewPanel({
               ? Math.round((summary.unlockedAchievements / summary.totalAchievements) * 100)
               : 0
 
-            const accentStyle =
-              rank === 1 ? { border: 'border-l-[#ffd700]', rankText: 'text-[#ffd700]', glow: 'bg-[#ffd700]/5' } :
-              rank === 2 ? { border: 'border-l-gray-500', rankText: 'text-gray-400', glow: '' } :
-              rank === 3 ? { border: 'border-l-[#cd7f32]', rankText: 'text-[#cd7f32]', glow: 'bg-[#cd7f32]/5' } :
-                           { border: 'border-l-transparent', rankText: 'text-gray-600', glow: '' }
+            const rankAccent =
+              rank === 1 ? { border: 'border-t-[#ffd700]', text: 'text-[#ffd700]' } :
+              rank === 2 ? { border: 'border-t-gray-400', text: 'text-gray-400' } :
+              rank === 3 ? { border: 'border-t-[#cd7f32]', text: 'text-[#cd7f32]' } :
+                           { border: 'border-t-[#2d2d31]', text: 'text-gray-600' }
 
             return (
-              <div
+              <button
                 key={summary.channelId}
-                className={`flex items-center gap-4 border-l-4 px-5 py-4 ${accentStyle.border} ${accentStyle.glow}`}
+                type="button"
+                onClick={() => onSelectChannel(summary.channelId)}
+                className={[
+                  'group flex flex-col overflow-hidden rounded-xl border border-t-2 bg-[#18181b] text-left transition-colors hover:bg-[#1f1f23] hover:ring-1 hover:ring-[#9146FF]/40 dark:bg-white dark:hover:bg-gray-50',
+                  rankAccent.border,
+                  'border-[#2d2d31] dark:border-gray-200',
+                ].join(' ')}
               >
-                {/* Rank number */}
-                <span className={`w-5 flex-shrink-0 text-center text-lg font-black ${accentStyle.rankText}`}>
-                  {rank}
-                </span>
-
-                {/* Avatar */}
-                <ChannelAvatar name={name} size="md" />
-
-                {/* Name + progress */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="truncate font-semibold text-white dark:text-gray-900">{name}</span>
-                    <span className="flex-shrink-0 font-medium text-[#c084fc]">{summary.xp} XP</span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#9146FF] to-[#c084fc]"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
-                    <span>
-                      {summary.unlockedAchievements} débloqués
-                      {summary.inProgressAchievements > 0 && ` · ${summary.inProgressAchievements} en cours`}
+                {/* Card header */}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <div className="relative flex-shrink-0">
+                    <ChannelAvatar name={name} size="lg" />
+                    <span className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#18181b] text-[10px] font-black ring-1 ring-[#2d2d31] dark:bg-white dark:ring-gray-200 ${rankAccent.text}`}>
+                      {rank}
                     </span>
-                    <span>{pct}%</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-semibold text-white group-hover:text-[#c084fc] dark:text-gray-900 dark:group-hover:text-[#7c3aed] transition-colors">
+                      {name}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {summary.totalAchievements} succès au total
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 flex-shrink-0 text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-[#9146FF]" />
+                </div>
+
+                {/* Progress bar */}
+                <div className="mx-4 h-2 overflow-hidden rounded-full bg-[#3a3a3f] dark:bg-gray-200">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#9146FF] to-[#c084fc]"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+
+                {/* Stats strip */}
+                <div className="mt-3 grid grid-cols-3 divide-x divide-[#2d2d31] border-t border-[#2d2d31] dark:divide-gray-200 dark:border-gray-200">
+                  <div className="flex flex-col items-center py-2.5">
+                    <span className="text-sm font-bold text-[#2dd4bf]">{summary.unlockedAchievements}</span>
+                    <span className="text-[10px] text-gray-500">{t('viewerHub.channelUnlocked')}</span>
+                  </div>
+                  <div className="flex flex-col items-center py-2.5">
+                    <span className="text-sm font-bold text-[#c084fc]">{summary.inProgressAchievements}</span>
+                    <span className="text-[10px] text-gray-500">{t('viewerHub.channelProgress')}</span>
+                  </div>
+                  <div className="flex flex-col items-center py-2.5">
+                    <span className="text-sm font-bold text-[#ffd700]">{summary.xp}</span>
+                    <span className="text-[10px] text-gray-500">XP</span>
                   </div>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
       </div>
-
-      {/* Panel share links */}
-      {summaries.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] dark:border-gray-200 dark:bg-white">
-          <div className="flex items-center gap-2 border-b border-[#2d2d31] px-5 py-3 dark:border-gray-200">
-            <ExternalLink className="h-3.5 w-3.5 text-[#9146FF]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Panels web
-            </span>
-          </div>
-          <div className="divide-y divide-[#2d2d31] dark:divide-gray-200">
-            {summaries.map(summary => {
-              const channelName = getChannelName(summary.channelId)
-              const panelUrl =
-                typeof window === 'undefined'
-                  ? ''
-                  : `${buildPublicPanelUrl(summary.channelId, window.location.origin)}?viewerId=${encodeURIComponent(user?.userId ?? '')}`
-              return (
-                <div key={summary.channelId} className="flex items-center gap-3 px-5 py-3">
-                  <ChannelAvatar name={channelName} size="sm" />
-                  <span className="min-w-0 flex-1 truncate text-sm text-gray-300 dark:text-gray-700">
-                    {channelName}
-                  </span>
-                  <div className="flex flex-shrink-0 gap-2">
-                    <a
-                      href={panelUrl}
-                      className="flex items-center gap-1 rounded-lg bg-[#9146FF] px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#772ce8]"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      {t('viewerHub.openPanel')}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => void onCopyLink(summary.channelId)}
-                      className="flex items-center gap-1 rounded-lg border border-[#2d2d31] bg-[#0f0f12] px-2.5 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-[#2d2d31] dark:border-gray-200 dark:bg-gray-50 dark:text-gray-700 dark:hover:bg-gray-100"
-                    >
-                      <Copy className="h-3 w-3" />
-                      {copyState === summary.channelId ? t('viewerHub.copied') : t('viewerHub.copyPanel')}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Filter tabs */}
       <div className="flex items-center gap-1 rounded-xl border border-[#2d2d31] bg-[#18181b] p-1 dark:border-gray-200 dark:bg-white">
@@ -482,10 +430,10 @@ function OverviewPanel({
           >
             {tab.label}
             <span className={[
-              'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+              'min-w-[1.25rem] rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums',
               filter === tab.key
-                ? 'bg-white/20 text-white'
-                : 'bg-[#2d2d31] text-gray-400 dark:bg-gray-200 dark:text-gray-600',
+                ? 'bg-white text-[#9146FF]'
+                : 'bg-[#0e0e10] text-gray-400 ring-1 ring-[#3a3a3f] dark:bg-gray-100 dark:text-gray-600 dark:ring-gray-300',
             ].join(' ')}>
               {tab.count}
             </span>
@@ -523,9 +471,6 @@ function ChannelDetailView({
   filteredAchievements,
   inProgressCount,
   getChannelName,
-  user,
-  copyState,
-  onCopyLink,
   t,
 }: Readonly<{
   summary: ViewerChannelSummary
@@ -534,20 +479,12 @@ function ChannelDetailView({
   filteredAchievements: UserAchievement[]
   inProgressCount: number
   getChannelName: (id: string) => string
-  user: { userId: string; channel?: { id: string; name: string } } | null
-  copyState: string | null
-  onCopyLink: (channelId: string) => void
   t: (key: string, params?: Record<string, string | number>) => string
 }>) {
   const channelName = getChannelName(summary.channelId)
   const pct = summary.totalAchievements > 0
     ? Math.round((summary.unlockedAchievements / summary.totalAchievements) * 100)
     : 0
-
-  const panelUrl =
-    typeof window === 'undefined'
-      ? ''
-      : `${buildPublicPanelUrl(summary.channelId, window.location.origin)}?viewerId=${encodeURIComponent(user?.userId ?? '')}`
 
   const tabs: { key: AchievementFilter; label: string; count: number }[] = [
     { key: 'all', label: 'Tous', count: summary.totalAchievements },
@@ -622,10 +559,10 @@ function ChannelDetailView({
           >
             {tab.label}
             <span className={[
-              'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+              'min-w-[1.25rem] rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums',
               filter === tab.key
-                ? 'bg-white/20 text-white'
-                : 'bg-[#2d2d31] text-gray-400 dark:bg-gray-200 dark:text-gray-600',
+                ? 'bg-white text-[#9146FF]'
+                : 'bg-[#0e0e10] text-gray-400 ring-1 ring-[#3a3a3f] dark:bg-gray-100 dark:text-gray-600 dark:ring-gray-300',
             ].join(' ')}>
               {tab.count}
             </span>
@@ -651,35 +588,6 @@ function ChannelDetailView({
         </div>
       )}
 
-      {/* Panel share */}
-      <div className="rounded-xl border border-[#2d2d31] bg-[#18181b] p-4 dark:border-gray-200 dark:bg-white">
-        <div className="mb-3 flex items-center gap-2">
-          <ExternalLink className="h-3.5 w-3.5 text-[#9146FF]" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Panel web — {channelName}
-          </span>
-        </div>
-        <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-          Partage tes succès sur cette chaîne avec un lien direct.
-        </p>
-        <div className="flex gap-2">
-          <a
-            href={panelUrl}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#9146FF] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#772ce8]"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            {t('viewerHub.openPanel')}
-          </a>
-          <button
-            type="button"
-            onClick={() => void onCopyLink(summary.channelId)}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#2d2d31] bg-[#0f0f12] px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:bg-[#2d2d31] dark:border-gray-200 dark:bg-gray-50 dark:text-gray-700 dark:hover:bg-gray-100"
-          >
-            <Copy className="h-3.5 w-3.5" />
-            {copyState === summary.channelId ? t('viewerHub.copied') : t('viewerHub.copyPanel')}
-          </button>
-        </div>
-      </div>
     </div>
   )
 }
@@ -770,15 +678,15 @@ function AchievementCard({
   const src = getAchievementVisualSource(achievement)
 
   const borderClass = isCompleted
-    ? 'border-[#1f8a70]/50'
+    ? 'border-[#1f8a70]/70'
     : isInProgress
-      ? 'border-[#9146FF]/40'
+      ? 'border-[#9146FF]/60'
       : 'border-[#2d2d31]'
 
   const bodyClass = isCompleted
-    ? 'bg-[#1f8a70]/8'
+    ? 'bg-[#1f8a70]/15'
     : isInProgress
-      ? 'bg-[#9146FF]/5'
+      ? 'bg-[#9146FF]/10'
       : 'bg-[#18181b] dark:bg-white'
 
   return (
@@ -817,7 +725,7 @@ function AchievementCard({
         <div className="mb-2 text-xs text-gray-500">{channelName}</div>
 
         {/* Progress */}
-        <div className="h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+        <div className="h-3 overflow-hidden rounded-full bg-[#3a3a3f] dark:bg-gray-200">
           <div
             className={[
               'h-full rounded-full transition-all',
@@ -828,15 +736,22 @@ function AchievementCard({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="mt-1 flex justify-between text-[10px] text-gray-500 dark:text-gray-400">
-          <span>
+        <div className="mt-1.5 flex items-center justify-between">
+          <span className="text-[10px] text-gray-500 dark:text-gray-400">
             {isCompleted
               ? t('viewerHub.achievement.unlocked')
               : hidden
                 ? t('viewerHub.achievement.locked')
                 : `${achievement.userState.progressCount} / ${achievement.goal}`}
           </span>
-          {!isCompleted && !hidden && <span>{Math.round(pct)}%</span>}
+          {!isCompleted && !hidden && (
+            <span className={`text-xs font-bold ${isInProgress ? 'text-[#c084fc]' : 'text-gray-500'}`}>
+              {Math.round(pct)}%
+            </span>
+          )}
+          {isCompleted && (
+            <span className="text-xs font-bold text-[#2dd4bf]">100%</span>
+          )}
         </div>
       </div>
     </div>
