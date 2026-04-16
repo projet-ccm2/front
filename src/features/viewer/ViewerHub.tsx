@@ -1,7 +1,6 @@
 import {
   CheckCircle2,
   ChevronRight,
-  EyeOff,
   Lock,
   Medal,
   Menu,
