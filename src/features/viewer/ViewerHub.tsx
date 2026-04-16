@@ -350,7 +350,7 @@ function OverviewPanel({
               onClick={() => onSelectChannel(summary.channelId)}
               className="group flex flex-col overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] text-left transition-colors hover:border-[#9146FF] dark:border-gray-200 dark:bg-white dark:hover:border-[#9146FF]"
             >
-              <div className="flex items-center gap-3 p-5">
+              <div className="flex items-center gap-3 px-6 py-5">
                 <div className="relative flex-shrink-0">
                   <ChannelAvatar name={name} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
                   <span className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#18181b] text-[10px] font-bold ring-1 ring-[#2d2d31] dark:bg-white dark:ring-gray-200 ${rankColor}`}>
@@ -371,7 +371,7 @@ function OverviewPanel({
                 </div>
               </div>
 
-              <div className="mx-5 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+              <div className="mx-6 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
                 <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
               </div>
 
@@ -450,7 +450,7 @@ function ChannelDetailView({
     <div className="space-y-4">
       {/* Channel header card */}
       <div className="overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] dark:border-gray-200 dark:bg-white">
-        <div className="flex items-center gap-4 p-6">
+        <div className="flex items-center gap-4 px-7 py-5">
           <ChannelAvatar name={channelName} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -472,7 +472,7 @@ function ChannelDetailView({
           </div>
         </div>
 
-        <div className="mx-6 h-2 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+        <div className="mx-7 h-2 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
           <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
         </div>
 
@@ -660,7 +660,7 @@ function ChannelAvatar({ name, size = 'md', profileImageUrl }: Readonly<{ name: 
   const sizeClass = {
     sm: 'h-5 w-5 text-[8px]',
     md: 'h-8 w-8 text-xs',
-    lg: 'h-11 w-11 text-sm',
+    lg: 'h-6 w-6 text-[9px]',
   }[size]
 
   if (profileImageUrl) {
