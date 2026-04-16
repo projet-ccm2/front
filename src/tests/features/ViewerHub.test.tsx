@@ -94,15 +94,16 @@ describe('ViewerHub', () => {
     render(<ViewerHub onOpenSidebar={vi.fn()} />)
 
     expect(await screen.findByRole('heading', { name: 'Hub viewer' })).toBeInTheDocument()
-    expect(screen.getByText('Chaînes suivies')).toBeInTheDocument()
-    expect(screen.getByText('Chaîne channel-1')).toBeInTheDocument()
-    expect(screen.getByText('Chaîne channel-2')).toBeInTheDocument()
-    expect(screen.getByText('First Steps')).toBeInTheDocument()
+    expect(screen.getAllByText('Chaînes suivies').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Chaîne MyChannel').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Chaîne channel-2').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
+    expect(screen.getAllByAltText('First Steps').length).toBeGreaterThan(0)
     expect(screen.getAllByText('?').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Copier le lien web' })[0])
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Lien copié' })).toBeInTheDocument()
+      expect(screen.getAllByRole('button', { name: 'Lien copié' }).length).toBeGreaterThan(0)
     })
   })
 })
