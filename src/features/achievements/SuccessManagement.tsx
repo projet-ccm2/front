@@ -2,9 +2,18 @@ import { useMemo, useState } from 'react'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Search, Edit, Trash2, Menu, Target, Globe, EyeOff } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { achievementManagementClient } from './api/achievementManagementClient'
 import type { Achievement } from './api/achievementManagement.types'
 import { useChannelAchievements } from './hooks/useChannelAchievements'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog'
 
 interface SuccessManagementProps {
   onNavigate: (page: string) => void
@@ -19,6 +28,14 @@ type FilterOption =
   | 'Public Only'
   | 'Secret Only'
 
+const FILTER_OPTIONS: FilterOption[] = [
+  'All Achievements',
+  'Enabled Only',
+  'Disabled Only',
+  'Public Only',
+  'Secret Only',
+]
+
 const formatTriggerLabel = (label: string) =>
   label
     .split('_')
@@ -31,12 +48,14 @@ export function SuccessManagement({
   onEditAchievement,
 }: Readonly<SuccessManagementProps>) {
   const { selectedChannel } = useChannel()
+  const { t } = useLanguage()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<FilterOption>('All Achievements')
   const [overrides, setOverrides] = useState<Record<string, Achievement>>({})
   const [deletedIds, setDeletedIds] = useState<string[]>([])
   const [pendingIds, setPendingIds] = useState<string[]>([])
   const [actionError, setActionError] = useState<string | null>(null)
+  const [achievementToDelete, setAchievementToDelete] = useState<Achievement | null>(null)
   const { achievements, isLoading, errorMessage } = useChannelAchievements(
     selectedChannel?.id ?? null
   )
@@ -108,19 +127,21 @@ export function SuccessManagement({
         ...current,
         [achievement.id]: previousAchievement,
       }))
-      setActionError(`Unable to update "${achievement.title}". Please try again.`)
+      setActionError(t('management.error.update', { title: achievement.title }))
     } finally {
       setPendingIds(current => current.filter(id => id !== achievement.id))
     }
   }
 
-  const handleDelete = async (achievement: Achievement) => {
-    const shouldDelete = globalThis.confirm(`Delete "${achievement.title}"?`)
+  const handleDelete = (achievement: Achievement) => {
+    setAchievementToDelete(achievement)
+  }
 
-    if (!shouldDelete) {
-      return
-    }
+  const confirmDelete = async () => {
+    if (!achievementToDelete) return
 
+    const achievement = achievementToDelete
+    setAchievementToDelete(null)
     setActionError(null)
     setPendingIds(current => [...current, achievement.id])
     setDeletedIds(current => [...current, achievement.id])
@@ -134,7 +155,7 @@ export function SuccessManagement({
       })
     } catch {
       setDeletedIds(current => current.filter(id => id !== achievement.id))
-      setActionError(`Unable to delete "${achievement.title}". Please try again.`)
+      setActionError(t('management.error.delete', { title: achievement.title }))
     } finally {
       setPendingIds(current => current.filter(id => id !== achievement.id))
     }
@@ -155,10 +176,10 @@ export function SuccessManagement({
               </button>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                  Manage Achievements
+                  {t('management.title')}
                 </h1>
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
-                  Enable, disable, and edit your quests
+                  {t('management.subtitle')}
                 </p>
               </div>
             </div>
@@ -171,7 +192,7 @@ export function SuccessManagement({
                 onClick={() => onNavigate('creator')}
                 className="hidden sm:block px-6 py-3 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors whitespace-nowrap"
               >
-                Create New
+                {t('management.createNew')}
               </button>
             </div>
           </div>
@@ -185,7 +206,7 @@ export function SuccessManagement({
                 type="text"
                 value={search}
                 onChange={event => setSearch(event.target.value)}
-                placeholder="Search achievements..."
+                placeholder={t('management.search')}
                 className="w-full pl-10 pr-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
               />
             </div>
@@ -194,11 +215,9 @@ export function SuccessManagement({
               onChange={event => setFilter(event.target.value as FilterOption)}
               className="px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
             >
-              <option>All Achievements</option>
-              <option>Enabled Only</option>
-              <option>Disabled Only</option>
-              <option>Public Only</option>
-              <option>Secret Only</option>
+              {FILTER_OPTIONS.map(opt => (
+                <option key={opt}>{opt}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -206,13 +225,14 @@ export function SuccessManagement({
         <div className="p-4 sm:p-8">
           {selectedChannel && (
             <div className="mb-4 text-sm text-gray-400 dark:text-gray-600">
-              Channel: <span className="text-white dark:text-gray-900">{selectedChannel.name}</span>
+              {t('management.channel')}:{' '}
+              <span className="text-white dark:text-gray-900">{selectedChannel.name}</span>
             </div>
           )}
 
           {isLoading && (
             <div className="rounded-xl border border-[#2d2d31] bg-[#18181b] p-6 text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
-              Loading channel achievements...
+              {t('management.loading')}
             </div>
           )}
 
@@ -231,10 +251,10 @@ export function SuccessManagement({
           {!isLoading && !errorMessage && filteredAchievements.length === 0 && (
             <div className="rounded-xl border border-dashed border-[#2d2d31] bg-[#18181b] p-8 text-center dark:border-gray-200 dark:bg-white">
               <h2 className="mb-2 text-xl text-white dark:text-gray-900">
-                No achievements for this channel
+                {t('management.empty.title')}
               </h2>
               <p className="text-sm text-gray-400 dark:text-gray-600">
-                Create your first achievement or adjust the current filters.
+                {t('management.empty.subtitle')}
               </p>
             </div>
           )}
@@ -272,7 +292,7 @@ export function SuccessManagement({
                           <button
                             aria-label={`Delete ${achievement.title}`}
                             disabled={pendingIds.includes(achievement.id)}
-                            onClick={() => void handleDelete(achievement)}
+                            onClick={() => handleDelete(achievement)}
                             className={`p-2 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors ${
                               pendingIds.includes(achievement.id)
                                 ? 'opacity-60 cursor-not-allowed'
@@ -286,7 +306,9 @@ export function SuccessManagement({
 
                       <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-4 text-sm">
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-400 dark:text-gray-600">Reward:</span>
+                          <span className="text-gray-400 dark:text-gray-600">
+                            {t('management.field.reward')}
+                          </span>
                           <span className="text-[#ffd700]">{achievement.reward} XP</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-400 dark:text-gray-600">
@@ -295,17 +317,25 @@ export function SuccessManagement({
                         </div>
                         <div className="flex items-center gap-2 text-gray-400 dark:text-gray-600">
                           <Globe className="w-4 h-4" />
-                          <span>{achievement.public ? 'Public' : 'Private'}</span>
+                          <span>
+                            {achievement.public
+                              ? t('management.field.public')
+                              : t('management.field.private')}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-400 dark:text-gray-600">
                           <EyeOff className="w-4 h-4" />
-                          <span>{achievement.secret ? 'Secret' : 'Visible'}</span>
+                          <span>
+                            {achievement.secret
+                              ? t('management.field.secret')
+                              : t('management.field.visible')}
+                          </span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-400 dark:text-gray-600">
-                          Trigger: {formatTriggerLabel(achievement.type.label)}
+                          {t('management.field.trigger')} {formatTriggerLabel(achievement.type.label)}
                         </div>
                         <button
                           aria-label={`${achievement.active ? 'Deactivate' : 'Activate'} ${achievement.title}`}
@@ -330,6 +360,33 @@ export function SuccessManagement({
           )}
         </div>
       </div>
+
+      <Dialog open={achievementToDelete !== null} onOpenChange={() => setAchievementToDelete(null)}>
+        <DialogContent className="bg-[#18181b] border-[#2d2d31] text-white dark:bg-white dark:border-gray-200 dark:text-gray-900">
+          <DialogHeader>
+            <DialogTitle>{t('management.delete.title')}</DialogTitle>
+            <DialogDescription className="text-gray-400 dark:text-gray-600">
+              {achievementToDelete
+                ? t('management.delete.description', { title: achievementToDelete.title })
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => setAchievementToDelete(null)}
+              className="px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-[#3d3d41] dark:hover:bg-gray-200 transition-colors"
+            >
+              {t('management.delete.cancel')}
+            </button>
+            <button
+              onClick={() => void confirmDelete()}
+              className="px-4 py-2 bg-[#ff4444] hover:bg-[#cc3333] text-white rounded-lg transition-colors"
+            >
+              {t('management.delete.confirm')}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

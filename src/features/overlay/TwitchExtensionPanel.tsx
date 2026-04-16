@@ -1,5 +1,5 @@
 import { Copy, ExternalLink, Menu, Puzzle } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { PublicTwitchPanel } from './PublicTwitchPanel'
 import { buildTwitchExtensionPanelUrl } from './utils/twitchExtensionLink'
@@ -23,6 +23,10 @@ function getPreviewViewerId(search: string) {
 export function TwitchExtensionPanel({ onOpenSidebar }: Readonly<TwitchExtensionPanelProps>) {
   const { t } = useLanguage()
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
+
   const previewChannelId = getPreviewChannelId(globalThis.location.search)
   const previewViewerId = getPreviewViewerId(globalThis.location.search)
   const extensionUrl =
@@ -37,9 +41,14 @@ export function TwitchExtensionPanel({ onOpenSidebar }: Readonly<TwitchExtension
       return
     }
 
-    await navigator.clipboard.writeText(extensionUrl)
-    setCopyState('copied')
-    globalThis.setTimeout(() => setCopyState('idle'), 2000)
+    try {
+      await navigator.clipboard.writeText(extensionUrl)
+      setCopyState('copied')
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = globalThis.setTimeout(() => setCopyState('idle'), 2000)
+    } catch {
+      // clipboard unavailable — no feedback change
+    }
   }
 
   return (

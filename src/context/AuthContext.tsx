@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
 
@@ -24,15 +24,11 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     }
     return null
   })
-  const [isLoading, setIsLoading] = useState(!user)
+  const [isLoading, setIsLoading] = useState(false)
 
   const isAuthenticated = !!user
 
-  useEffect(() => {
-    setIsLoading(false)
-  }, [])
-
-  const login = () => {
+  const login = useCallback(() => {
     const scope = encodeURIComponent(
       'openid user:read:email moderator:read:followers channel:read:subscriptions bits:read channel:read:redemptions channel:read:hype_train channel:read:polls channel:read:predictions channel:read:charity chat:read'
     )
@@ -41,15 +37,15 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     sessionStorage.setItem('twitch_auth_state', state)
     const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=${responseType}&scope=${scope}&state=${state}`
     globalThis.location.href = twitchUrl
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null)
     localStorage.removeItem('twitch_user')
     localStorage.removeItem('twitch_tokens')
-  }
+  }, [])
 
-  const completeAuth = async (tokens: {
+  const completeAuth = useCallback(async (tokens: {
     accessToken: string
     idToken: string
     tokenType: string
@@ -86,7 +82,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const value = useMemo(
     () => ({
@@ -97,7 +93,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
       logout,
       completeAuth,
     }),
-    [user, isAuthenticated, isLoading]
+    [user, isAuthenticated, isLoading, login, logout, completeAuth]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

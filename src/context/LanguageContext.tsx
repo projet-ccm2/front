@@ -21,7 +21,8 @@ function getInitialLanguage(): Language {
     return savedLanguage
   }
 
-  return 'fr'
+  const browserLang = navigator.language.slice(0, 2)
+  return browserLang === 'en' ? 'en' : 'fr'
 }
 
 export function LanguageProvider({ children }: Readonly<{ children: ReactNode }>) {

@@ -1,5 +1,5 @@
 import { Copy, ExternalLink, CircleHelp, Menu, Trophy, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { useUserAchievements } from '../profile/hooks/useUserAchievements'
 import {
@@ -23,6 +23,9 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
   const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useUserAchievements()
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
 
   const leaderboard = buildLeaderboardEntries(achievements, t)
   const panelAchievements = buildPanelAchievementEntries(achievements, t)
@@ -42,9 +45,14 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
       return
     }
 
-    await navigator.clipboard.writeText(panelUrl)
-    setCopyState('copied')
-    globalThis.setTimeout(() => setCopyState('idle'), 2000)
+    try {
+      await navigator.clipboard.writeText(panelUrl)
+      setCopyState('copied')
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = globalThis.setTimeout(() => setCopyState('idle'), 2000)
+    } catch {
+      // clipboard unavailable — no feedback change
+    }
   }
 
   const unlockedCount = achievements.filter(achievement => achievement.userState.finished).length

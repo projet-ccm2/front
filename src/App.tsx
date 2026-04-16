@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { LandingPage } from './features/landing/LandingPage'
 import { Dashboard } from './features/dashboard/Dashboard'
 import { Sidebar } from './components/layout/Sidebar'
@@ -53,6 +54,13 @@ export function AppContent() {
         const state = params.get('state') ?? ''
 
         if (accessToken && idToken) {
+          const savedState = sessionStorage.getItem('twitch_auth_state')
+          if (!savedState || savedState !== state) {
+            console.error('OAuth state mismatch — aborting auth')
+            return
+          }
+          sessionStorage.removeItem('twitch_auth_state')
+
           try {
             await completeAuth({
               accessToken,
@@ -77,16 +85,10 @@ export function AppContent() {
   }, [completeAuth])
 
   useEffect(() => {
-    const runtimeConfig = globalThis._env_ || {}
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { TWITCH_CLIENT_ID, ...safeConfig } = runtimeConfig
-    console.log('Current Runtime Config:', safeConfig)
-  }, [])
-
-  // Redirection is handled during render to avoid cascading renders
-  if (isAuthenticated && currentScreen === 'landing') {
-    setCurrentScreen('dashboard')
-  }
+    if (isAuthenticated && currentScreen === 'landing') {
+      setCurrentScreen('dashboard')
+    }
+  }, [isAuthenticated, currentScreen])
 
   const handleNavigate = (page: string) => {
     if (page !== 'creator') {
@@ -200,7 +202,9 @@ function App() {
       <LanguageProvider>
         <AuthProvider>
           <ChannelProvider>
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
           </ChannelProvider>
         </AuthProvider>
       </LanguageProvider>

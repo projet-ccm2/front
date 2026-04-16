@@ -1,5 +1,5 @@
 import { Copy, Crown, ExternalLink, Eye, Lock, Menu, Sparkles, Trophy } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { buildPublicPanelUrl } from '../overlay/utils/publicPanelLink'
@@ -15,9 +15,15 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useViewerHub()
   const [copyState, setCopyState] = useState<string | null>(null)
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
 
   const summaries = buildViewerChannelSummaries(achievements)
   const primarySummary = summaries[0] ?? null
+  const primaryFeaturedAchievement = primarySummary
+    ? primaryFeaturedAchievement
+    : null
   const totalAchievements = achievements.length
   const unlockedAchievements = achievements.filter(
     achievement => achievement.userState.finished
@@ -37,9 +43,14 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
       user.userId
     )}`
 
-    await navigator.clipboard.writeText(url)
-    setCopyState(channelId)
-    globalThis.setTimeout(() => setCopyState(null), 2000)
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopyState(channelId)
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = globalThis.setTimeout(() => setCopyState(null), 2000)
+    } catch {
+      // clipboard unavailable — no feedback change
+    }
   }
 
   return (
@@ -86,7 +97,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
               </div>
             </div>
 
-            {primarySummary && (
+            {primarySummary && primaryFeaturedAchievement && (
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
                 <section className="rounded-[2rem] border border-white/10 bg-black/20 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.35)] backdrop-blur">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
@@ -102,7 +113,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                       </div>
 
                       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)]">
-                        <AchievementArtwork achievement={getFeaturedAchievement(primarySummary)} />
+                        <AchievementArtwork achievement={primaryFeaturedAchievement} />
 
                         <div className="min-w-0 space-y-4">
                           <div>
@@ -116,16 +127,16 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                               })}
                             </div>
                             <h2 className="mt-2 text-2xl font-semibold text-white dark:text-gray-900">
-                              {getFeaturedAchievement(primarySummary).secret &&
-                              !getFeaturedAchievement(primarySummary).userState.finished
+                              {primaryFeaturedAchievement.secret &&
+                              !primaryFeaturedAchievement.userState.finished
                                 ? t('overlay.hiddenFallback')
-                                : getFeaturedAchievement(primarySummary).title}
+                                : primaryFeaturedAchievement.title}
                             </h2>
                             <p className="mt-2 text-sm leading-6 text-gray-300 dark:text-gray-600">
-                              {getFeaturedAchievement(primarySummary).secret &&
-                              !getFeaturedAchievement(primarySummary).userState.finished
+                              {primaryFeaturedAchievement.secret &&
+                              !primaryFeaturedAchievement.userState.finished
                                 ? t('overlay.hiddenDescription')
-                                : getFeaturedAchievement(primarySummary).description}
+                                : primaryFeaturedAchievement.description}
                             </p>
                           </div>
 
@@ -156,7 +167,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                               </div>
                               <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-gray-200">
                                 {getAchievementStatusLabel(
-                                  getFeaturedAchievement(primarySummary),
+                                  primaryFeaturedAchievement,
                                   t
                                 )}
                               </span>
@@ -167,7 +178,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                                 <span>{t('viewerHub.featured.progress')}</span>
                                 <span>
                                   {getAchievementProgressLabel(
-                                    getFeaturedAchievement(primarySummary),
+                                    primaryFeaturedAchievement,
                                     t
                                   )}
                                 </span>
@@ -176,7 +187,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                                 <div
                                   className="h-full rounded-full bg-gradient-to-r from-[#9146FF] to-[#c084fc]"
                                   style={{
-                                    width: `${getAchievementProgressPercent(getFeaturedAchievement(primarySummary))}%`,
+                                    width: `${getAchievementProgressPercent(primaryFeaturedAchievement)}%`,
                                   }}
                                 />
                               </div>
@@ -283,6 +294,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                           user?.userId ?? ''
                         )}`
                   const featuredAchievement = getFeaturedAchievement(summary)
+                  if (!featuredAchievement) return null
                   const channelDisplayName = getChannelDisplayName(
                     summary.channelId,
                     user?.channel,
@@ -510,6 +522,7 @@ function AchievementArtwork({
   }
   compact?: boolean
 }>) {
+  const { t } = useLanguage()
   const src = getAchievementVisualSource(achievement)
   const hidden = achievement.secret && !achievement.userState.finished
 
@@ -537,7 +550,9 @@ function AchievementArtwork({
       {!compact && (
         <div className="absolute bottom-0 left-0 right-0 p-3">
           <div className="text-xs uppercase tracking-[0.2em] text-white/70">
-            {achievement.userState.finished ? 'Unlocked' : 'Progress'}
+            {achievement.userState.finished
+              ? t('viewerHub.achievement.unlocked')
+              : t('viewerHub.achievement.inProgress')}
           </div>
         </div>
       )}
@@ -597,7 +612,17 @@ function getFeaturedAchievement(summary: {
     secret: boolean
     userState: { progressCount: number; finished: boolean }
   }>
-}) {
+}):
+  | {
+      title: string
+      description: string
+      reward: number
+      goal: number
+      image: string | null
+      secret: boolean
+      userState: { progressCount: number; finished: boolean }
+    }
+  | undefined {
   return (
     summary.achievements.find(
       achievement => !achievement.userState.finished && achievement.userState.progressCount > 0

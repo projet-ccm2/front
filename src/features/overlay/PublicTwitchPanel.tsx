@@ -1,5 +1,5 @@
 ﻿import { Copy, ExternalLink, Menu, ShieldAlert, Trophy } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { useChannelAchievements } from '../achievements/hooks/useChannelAchievements'
 import {
@@ -44,6 +44,9 @@ export function PublicTwitchPanel({
     errorMessage: viewerErrorMessage,
   } = usePublicViewerAchievements(channelId, viewerId)
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
 
   const panelUrl =
     typeof window === 'undefined' ? '' : buildPublicPanelUrl(channelId, window.location.origin)
@@ -57,9 +60,14 @@ export function PublicTwitchPanel({
       return
     }
 
-    await navigator.clipboard.writeText(panelUrl)
-    setCopyState('copied')
-    globalThis.setTimeout(() => setCopyState('idle'), 2000)
+    try {
+      await navigator.clipboard.writeText(panelUrl)
+      setCopyState('copied')
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = globalThis.setTimeout(() => setCopyState('idle'), 2000)
+    } catch {
+      // clipboard unavailable — no feedback change
+    }
   }
 
   return (

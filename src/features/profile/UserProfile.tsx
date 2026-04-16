@@ -3,6 +3,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { useUserAchievements } from './hooks/useUserAchievements'
 
+const XP_PER_LEVEL = 250
+
 interface UserProfileProps {
   readonly onOpenSidebar: () => void
 }
@@ -18,9 +20,9 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
     (total, achievement) => total + (achievement.userState.finished ? achievement.reward : 0),
     0
   )
-  const currentLevel = Math.max(1, Math.floor(currentXP / 250) + 1)
-  const previousLevelXP = (currentLevel - 1) * 250
-  const nextLevelXP = currentLevel * 250
+  const currentLevel = Math.max(1, Math.floor(currentXP / XP_PER_LEVEL) + 1)
+  const previousLevelXP = (currentLevel - 1) * XP_PER_LEVEL
+  const nextLevelXP = currentLevel * XP_PER_LEVEL
   const progress =
     nextLevelXP === previousLevelXP
       ? 0
