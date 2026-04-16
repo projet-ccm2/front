@@ -256,6 +256,6 @@ describe('App - Functional Coverage', () => {
     expect(
       await screen.findByRole('heading', { name: /Hub viewer|Viewer Hub/i })
     ).toBeInTheDocument()
-    expect(screen.getByText(/Chaînes suivies|Tracked channels/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Chaînes suivies|Tracked channels/i).length).toBeGreaterThan(0)
   })
 })

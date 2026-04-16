@@ -66,6 +66,20 @@ describe('useViewerHub', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
+  it('shows a sign-in message in English when the language is English', async () => {
+    localStorage.setItem('stream-quest_language', 'en')
+
+    const { result } = renderHook(() => useViewerHub())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.achievements).toEqual([])
+    expect(result.current.errorMessage).toBe('Sign in to load your viewer hub.')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
   it('loads viewer achievements for the connected user', async () => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
     vi.mocked(fetch).mockResolvedValue({
@@ -95,6 +109,20 @@ describe('useViewerHub', () => {
     })
 
     expect(result.current.errorMessage).toBe('La requête du hub viewer est invalide.')
+  })
+
+  it('maps a 400 error to the invalid request message in English', async () => {
+    localStorage.setItem('stream-quest_language', 'en')
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+    vi.mocked(fetch).mockImplementation(() => makeErrorResponse(400))
+
+    const { result } = renderHook(() => useViewerHub())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('The viewer hub request is invalid.')
   })
 
   it('maps a 404 error to the not found message', async () => {
