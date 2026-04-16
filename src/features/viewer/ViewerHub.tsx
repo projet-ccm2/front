@@ -66,6 +66,9 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const getChannelName = (channelId: string) =>
     getChannelDisplayName(channelId, user?.channel)
 
+  const getChannelAvatar = (channelId: string): string | undefined =>
+    channelId === user?.channel.id ? user.channel.profileImageUrl : undefined
+
   return (
     <div className="flex min-h-screen flex-col bg-[#0e0e10] dark:bg-gray-50">
       {/* Header */}
@@ -178,7 +181,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                         ].join(' ')}
                       >
                         <div className="relative flex-shrink-0">
-                          <ChannelAvatar name={name} size="md" />
+                          <ChannelAvatar name={name} size="md" profileImageUrl={getChannelAvatar(summary.channelId)} />
                           <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#18181b] text-[9px] font-bold ring-1 ring-[#2d2d31] dark:bg-white dark:ring-gray-200">
                             <RankNumber rank={index + 1} />
                           </span>
@@ -245,7 +248,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                             : 'border border-[#2d2d31] bg-[#18181b] text-gray-400 hover:text-white dark:border-gray-200 dark:bg-white dark:text-gray-600',
                         ].join(' ')}
                       >
-                        <ChannelAvatar name={name} size="sm" />
+                        <ChannelAvatar name={name} size="sm" profileImageUrl={getChannelAvatar(summary.channelId)} />
                         <span className="max-w-[120px] truncate">{name}</span>
                         {!isSelected && (
                           <span className="text-[10px] text-gray-500">#{index + 1}</span>
@@ -266,6 +269,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                   inProgressCount={inProgressCount}
                   totalCount={achievements.length}
                   getChannelName={getChannelName}
+                  getChannelAvatar={getChannelAvatar}
                   onSelectChannel={setSelectedChannelId}
                   t={t}
                 />
@@ -277,6 +281,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                   filteredAchievements={filteredAchievements}
                   inProgressCount={selectedSummary.inProgressAchievements}
                   getChannelName={getChannelName}
+                  getChannelAvatar={getChannelAvatar}
                   t={t}
                 />
               )}
@@ -299,6 +304,7 @@ function OverviewPanel({
   inProgressCount,
   totalCount,
   getChannelName,
+  getChannelAvatar,
   onSelectChannel,
   t,
 }: Readonly<{
@@ -310,6 +316,7 @@ function OverviewPanel({
   inProgressCount: number
   totalCount: number
   getChannelName: (id: string) => string
+  getChannelAvatar: (id: string) => string | undefined
   onSelectChannel: (id: string) => void
   t: (key: string, params?: Record<string, string | number>) => string
 }>) {
@@ -343,9 +350,9 @@ function OverviewPanel({
               onClick={() => onSelectChannel(summary.channelId)}
               className="group flex flex-col overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] text-left transition-colors hover:border-[#9146FF] dark:border-gray-200 dark:bg-white dark:hover:border-[#9146FF]"
             >
-              <div className="flex items-center gap-3 p-4">
+              <div className="flex items-center gap-3 p-5">
                 <div className="relative flex-shrink-0">
-                  <ChannelAvatar name={name} size="lg" />
+                  <ChannelAvatar name={name} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
                   <span className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#18181b] text-[10px] font-bold ring-1 ring-[#2d2d31] dark:bg-white dark:ring-gray-200 ${rankColor}`}>
                     {rank}
                   </span>
@@ -364,20 +371,20 @@ function OverviewPanel({
                 </div>
               </div>
 
-              <div className="mx-4 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+              <div className="mx-5 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
                 <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
               </div>
 
               <div className="mt-0 grid grid-cols-3 divide-x divide-[#2d2d31] border-t border-[#2d2d31] dark:divide-gray-200 dark:border-gray-200">
-                <div className="flex flex-col items-center py-2.5">
+                <div className="flex flex-col items-center py-3.5">
                   <span className="text-sm font-bold text-[#00f593]">{summary.unlockedAchievements}</span>
                   <span className="text-[10px] text-gray-500">{t('viewerHub.channelUnlocked')}</span>
                 </div>
-                <div className="flex flex-col items-center py-2.5">
+                <div className="flex flex-col items-center py-3.5">
                   <span className="text-sm font-bold text-[#9146FF]">{summary.inProgressAchievements}</span>
                   <span className="text-[10px] text-gray-500">{t('viewerHub.channelProgress')}</span>
                 </div>
-                <div className="flex flex-col items-center py-2.5">
+                <div className="flex flex-col items-center py-3.5">
                   <span className="text-sm font-bold text-[#ffd700]">{summary.xp}</span>
                   <span className="text-[10px] text-gray-500">XP</span>
                 </div>
@@ -416,6 +423,7 @@ function ChannelDetailView({
   filteredAchievements,
   inProgressCount,
   getChannelName,
+  getChannelAvatar,
   t,
 }: Readonly<{
   summary: ViewerChannelSummary
@@ -424,6 +432,7 @@ function ChannelDetailView({
   filteredAchievements: UserAchievement[]
   inProgressCount: number
   getChannelName: (id: string) => string
+  getChannelAvatar: (id: string) => string | undefined
   t: (key: string, params?: Record<string, string | number>) => string
 }>) {
   const channelName = getChannelName(summary.channelId)
@@ -441,8 +450,8 @@ function ChannelDetailView({
     <div className="space-y-4">
       {/* Channel header card */}
       <div className="overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] dark:border-gray-200 dark:bg-white">
-        <div className="flex items-center gap-4 p-5">
-          <ChannelAvatar name={channelName} size="lg" />
+        <div className="flex items-center gap-4 p-6">
+          <ChannelAvatar name={channelName} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               {t('viewerHub.channelLabel', { channelName })}
@@ -463,20 +472,20 @@ function ChannelDetailView({
           </div>
         </div>
 
-        <div className="mx-5 h-2 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+        <div className="mx-6 h-2 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
           <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
         </div>
 
         <div className="mt-0 grid grid-cols-3 divide-x divide-[#2d2d31] border-t border-[#2d2d31] dark:divide-gray-200 dark:border-gray-200">
-          <div className="flex flex-col items-center gap-0.5 py-3">
+          <div className="flex flex-col items-center gap-0.5 py-4">
             <div className="text-xl font-bold text-[#00f593]">{summary.unlockedAchievements}</div>
             <div className="text-[11px] text-gray-500">{t('viewerHub.channelUnlocked')}</div>
           </div>
-          <div className="flex flex-col items-center gap-0.5 py-3">
+          <div className="flex flex-col items-center gap-0.5 py-4">
             <div className="text-xl font-bold text-[#9146FF]">{inProgressCount}</div>
             <div className="text-[11px] text-gray-500">{t('viewerHub.channelProgress')}</div>
           </div>
-          <div className="flex flex-col items-center gap-0.5 py-3">
+          <div className="flex flex-col items-center gap-0.5 py-4">
             <div className="text-xl font-bold text-[#ffd700]">{summary.xp}</div>
             <div className="text-[11px] text-gray-500">XP</div>
           </div>
@@ -522,21 +531,13 @@ function FilterTabs({
           type="button"
           onClick={() => setFilter(tab.key)}
           className={[
-            'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+            'flex flex-1 items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
             filter === tab.key
               ? 'bg-[#9146FF] text-white'
               : 'text-gray-400 hover:text-white dark:hover:text-gray-900',
           ].join(' ')}
         >
-          {tab.label}
-          <span className={[
-            'min-w-[1.25rem] rounded px-1.5 py-0.5 text-[11px] font-bold tabular-nums',
-            filter === tab.key
-              ? 'bg-white/20 text-white'
-              : 'bg-[#0e0e10] text-gray-400 dark:bg-gray-100 dark:text-gray-500',
-          ].join(' ')}>
-            {tab.count}
-          </span>
+          {tab.label} — {tab.count}
         </button>
       ))}
     </div>
@@ -607,11 +608,11 @@ function AchievementRow({
   return (
     <div className={`flex items-center gap-4 rounded-xl border bg-[#18181b] p-3 transition-colors dark:bg-white ${borderClass}`}>
       {/* Thumbnail */}
-      <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-[#0e0e10] dark:bg-gray-100">
+      <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-md bg-[#0e0e10] dark:bg-gray-100">
         <img src={src} alt="" className="h-full w-full object-cover" />
         {hidden && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-            <Lock className="h-4 w-4 text-white/50" />
+            <Lock className="h-3 w-3 text-white/50" />
           </div>
         )}
       </div>
@@ -655,7 +656,23 @@ function AchievementRow({
 
 // ── Channel avatar ───────────────────────────────────────────
 
-function ChannelAvatar({ name, size = 'md' }: Readonly<{ name: string; size?: 'sm' | 'md' | 'lg' }>) {
+function ChannelAvatar({ name, size = 'md', profileImageUrl }: Readonly<{ name: string; size?: 'sm' | 'md' | 'lg'; profileImageUrl?: string }>) {
+  const sizeClass = {
+    sm: 'h-5 w-5 text-[8px]',
+    md: 'h-8 w-8 text-xs',
+    lg: 'h-11 w-11 text-sm',
+  }[size]
+
+  if (profileImageUrl) {
+    return (
+      <img
+        src={profileImageUrl}
+        alt={name}
+        className={`flex-shrink-0 rounded-full object-cover ${sizeClass}`}
+      />
+    )
+  }
+
   const initials = name
     .split(/[\s_\-./]+/)
     .filter(Boolean)
@@ -665,12 +682,6 @@ function ChannelAvatar({ name, size = 'md' }: Readonly<{ name: string; size?: 's
     .slice(0, 2) || '?'
 
   const hue = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360
-
-  const sizeClass = {
-    sm: 'h-5 w-5 text-[8px]',
-    md: 'h-8 w-8 text-xs',
-    lg: 'h-11 w-11 text-sm',
-  }[size]
 
   return (
     <div
