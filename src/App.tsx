@@ -36,7 +36,9 @@ type Screen =
 export function AppContent() {
   const { isAuthenticated, isLoading, login, completeAuth } = useAuth()
   const { t } = useLanguage()
-  const [currentScreen, setCurrentScreen] = useState<Screen>('landing')
+  const [currentScreen, setCurrentScreen] = useState<Screen>(() =>
+    isAuthenticated ? 'dashboard' : 'landing'
+  )
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
@@ -83,12 +85,6 @@ export function AppContent() {
 
     handleCallback()
   }, [completeAuth])
-
-  useEffect(() => {
-    if (isAuthenticated && currentScreen === 'landing') {
-      setCurrentScreen('dashboard')
-    }
-  }, [isAuthenticated, currentScreen])
 
   const handleNavigate = (page: string) => {
     if (page !== 'creator') {

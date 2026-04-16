@@ -137,9 +137,9 @@ describe('SuccessManagement', () => {
   it('should render the management dashboard', async () => {
     renderManagement()
 
-    expect(screen.getByRole('heading', { name: 'Manage Achievements' })).toBeInTheDocument()
-    expect(screen.getByText('Enable, disable, and edit your quests')).toBeInTheDocument()
-    expect(await screen.findByText('Channel:')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Gérer les achievements' })).toBeInTheDocument()
+    expect(screen.getByText('Activez, désactivez et modifiez vos quêtes')).toBeInTheDocument()
+    expect(await screen.findByText(/Chaîne/)).toBeInTheDocument()
   })
 
   it('should render achievement list items from the API', async () => {
@@ -148,14 +148,14 @@ describe('SuccessManagement', () => {
     expect(await screen.findByText('First Steps')).toBeInTheDocument()
     expect(screen.getByText('Watch your first stream')).toBeInTheDocument()
     expect(screen.getByText('Chat Master')).toBeInTheDocument()
-    expect(screen.getAllByText('Reward:').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Récompense :').length).toBeGreaterThan(0)
   })
 
   it('should allow navigation to create new achievement', async () => {
     renderManagement()
 
     await screen.findByText('First Steps')
-    fireEvent.click(screen.getByText('Create New'))
+    fireEvent.click(screen.getByText('Créer'))
 
     expect(mockOnNavigate).toHaveBeenCalledWith('creator')
   })
@@ -164,7 +164,7 @@ describe('SuccessManagement', () => {
     renderManagement()
 
     await screen.findByText('First Steps')
-    expect(screen.getByPlaceholderText('Search achievements...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Rechercher des achievements...')).toBeInTheDocument()
   })
 
   it('should render filter options', async () => {
@@ -187,7 +187,7 @@ describe('SuccessManagement', () => {
     renderManagement()
 
     await screen.findByText('First Steps')
-    fireEvent.change(screen.getByPlaceholderText('Search achievements...'), {
+    fireEvent.change(screen.getByPlaceholderText('Rechercher des achievements...'), {
       target: { value: 'Chat' },
     })
 
@@ -223,7 +223,7 @@ describe('SuccessManagement', () => {
 
     renderManagement()
 
-    expect(await screen.findByText('No achievements for this channel')).toBeInTheDocument()
+    expect(await screen.findByText('Aucun achievement pour cette chaîne')).toBeInTheDocument()
   })
 
   it('should render an error state when the API fails', async () => {
@@ -299,7 +299,7 @@ describe('SuccessManagement', () => {
     fireEvent.click(await screen.findByLabelText('Deactivate First Steps'))
 
     expect(
-      await screen.findByText('Unable to update "First Steps". Please try again.')
+      await screen.findByText('Impossible de mettre à jour « First Steps ». Veuillez réessayer.')
     ).toBeInTheDocument()
     expect(await screen.findByLabelText('Deactivate First Steps')).toBeInTheDocument()
   })
@@ -309,10 +309,13 @@ describe('SuccessManagement', () => {
 
     fireEvent.click(await screen.findByLabelText('Delete First Steps'))
 
+    // Dialog should appear with French confirmation text
+    expect(await screen.findByText("Supprimer l'achievement")).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Supprimer'))
+
     await waitFor(() => {
       expect(screen.queryByText('First Steps')).not.toBeInTheDocument()
     })
-    expect(confirmSpy).toHaveBeenCalledWith('Delete "First Steps"?')
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/achievements/1'),
       expect.objectContaining({ method: 'DELETE' })
@@ -355,8 +358,12 @@ describe('SuccessManagement', () => {
 
     fireEvent.click(await screen.findByLabelText('Delete First Steps'))
 
+    // Dialog appears — confirm deletion
+    expect(await screen.findByText("Supprimer l'achievement")).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Supprimer'))
+
     expect(
-      await screen.findByText('Unable to delete "First Steps". Please try again.')
+      await screen.findByText('Impossible de supprimer « First Steps ». Veuillez réessayer.')
     ).toBeInTheDocument()
     expect(await screen.findByText('First Steps')).toBeInTheDocument()
   })

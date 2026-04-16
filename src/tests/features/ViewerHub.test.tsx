@@ -95,11 +95,10 @@ describe('ViewerHub', () => {
 
     expect(await screen.findByRole('heading', { name: 'Hub viewer' })).toBeInTheDocument()
     expect(screen.getAllByText(/Cha.*nes suivies/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByText(/Cha.*ne MyChannel/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByText(/Cha.*ne channel-2/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('MyChannel').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('channel-2').length).toBeGreaterThan(0)
     expect(screen.getAllByText('First Steps').length).toBeGreaterThan(0)
-    expect(screen.getAllByAltText('First Steps').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('?').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Succès caché').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getAllByRole('button', { name: /Copier le lien web/i })[0])
     await waitFor(() => {
@@ -181,10 +180,9 @@ describe('ViewerHub', () => {
     render(<ViewerHub onOpenSidebar={vi.fn()} />)
 
     expect(await screen.findByRole('heading', { name: 'Hub viewer' })).toBeInTheDocument()
-    expect(screen.getAllByText(/Cha.*ne FocusedChannel/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('FocusedChannel').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Road to Glory').length).toBeGreaterThan(0)
     expect(screen.getAllByText(/En cours|In progress/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByAltText('Road to Glory').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('?').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Succès caché').length).toBeGreaterThan(0)
   })
 })

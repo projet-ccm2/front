@@ -6,6 +6,7 @@ import React from 'react'
 describe('App Component', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
     vi.clearAllMocks()
     vi.stubGlobal('fetch', vi.fn())
   })
@@ -75,6 +76,7 @@ describe('App Component', () => {
 
   describe('Auth Callback Handling', () => {
     it('should process hash parameters and navigate to dashboard', async () => {
+      sessionStorage.setItem('twitch_auth_state', 'st')
       vi.stubGlobal('location', {
         hash: '#access_token=at&id_token=it&token_type=bearer&expires_in=3600&state=st',
         pathname: '/',

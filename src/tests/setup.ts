@@ -2,6 +2,9 @@ import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
+// Default to French so all tests that check UI text work with the same locale
+Object.defineProperty(navigator, 'language', { value: 'fr', configurable: true })
+
 afterEach(() => {
   localStorage.clear()
   cleanup()
