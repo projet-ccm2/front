@@ -154,13 +154,13 @@ describe('AchievementCreator', () => {
     ).toBeInTheDocument()
     expect(screen.getByDisplayValue('Marketplace Template')).toBeInTheDocument()
     expect(screen.getByDisplayValue('Imported from marketplace')).toBeInTheDocument()
-    expect(screen.getByLabelText('Goal')).toHaveValue(75)
     expect(screen.getByLabelText('Reward (XP / Points)')).toHaveValue(300)
     expect(screen.getByText('Simple Mode')).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Messages envoyés' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Contenu du message' })).toBeInTheDocument()
     expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('message_content')
     expect(screen.getByLabelText(/Détails du déclencheur/i)).toHaveValue('gg')
+    expect(screen.getByLabelText('Objectif')).toHaveValue(75)
   })
 
   it('should allow entering achievement title', () => {
@@ -190,7 +190,8 @@ describe('AchievementCreator', () => {
     fireEvent.click(screen.getByText('Simple Mode'))
     expect(screen.getByLabelText(/Méthode de déblocage/i)).toBeInTheDocument()
     fireEvent.click(screen.getByText('API'))
-    expect(screen.getByText('API feature coming soon')).toBeInTheDocument()
+    expect(screen.getByLabelText('Objectif')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Méthode de déblocage/i)).not.toBeInTheDocument()
   })
 
   it('should render the default AI prompt', () => {
@@ -206,7 +207,7 @@ describe('AchievementCreator', () => {
     fireEvent.click(screen.getByText('Generate with AI'))
 
     expect(await screen.findByDisplayValue('Chat Warrior')).toBeInTheDocument()
-    expect(screen.getByLabelText('Goal')).toHaveValue(250)
+    expect(screen.getByLabelText('Combien de fois')).toHaveValue(250)
     expect(screen.getByLabelText('Reward (XP / Points)')).toHaveValue(250)
 
     await waitFor(() => {
@@ -230,7 +231,7 @@ describe('AchievementCreator', () => {
 
   it('should allow editing goal and reward', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    const goalInput = screen.getByLabelText('Goal')
+    const goalInput = screen.getByLabelText('Combien de fois')
     const rewardInput = screen.getByLabelText('Reward (XP / Points)')
 
     fireEvent.change(goalInput, { target: { value: '300' } })
@@ -246,7 +247,7 @@ describe('AchievementCreator', () => {
     expect(screen.getByText('Achievement Icon')).toBeInTheDocument()
     expect(screen.getByText('Achievement Title')).toBeInTheDocument()
     expect(screen.getByText('Description')).toBeInTheDocument()
-    expect(screen.getByText('Goal')).toBeInTheDocument()
+    expect(screen.getByText('Combien de fois')).toBeInTheDocument()
     expect(screen.getByText('Reward (XP / Points)')).toBeInTheDocument()
     expect(screen.getByText('Save Draft')).toBeInTheDocument()
     expect(screen.getByText('Publish Achievement')).toBeInTheDocument()
@@ -353,6 +354,12 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByLabelText(/Méthode de déblocage/i)).toBeInTheDocument()
+    // Trigger detail is hidden for the default "message" trigger
+    expect(screen.queryByLabelText(/Détails du déclencheur/i)).not.toBeInTheDocument()
+    // Switch to message_content to reveal the detail field
+    fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
+      target: { value: 'message_content' },
+    })
     expect(screen.getByLabelText(/Détails du déclencheur/i)).toBeInTheDocument()
   })
 
@@ -360,9 +367,10 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     const triggerSelect = screen.getByLabelText(/Méthode de déblocage/i)
-    const triggerDataInput = screen.getByLabelText(/Détails du déclencheur/i)
-
+    // Switch to message_content to show the trigger data input
     fireEvent.change(triggerSelect, { target: { value: 'message_content' } })
+
+    const triggerDataInput = screen.getByLabelText(/Détails du déclencheur/i)
     fireEvent.change(triggerDataInput, { target: { value: 'hello world' } })
 
     expect(triggerSelect).toHaveValue('message_content')

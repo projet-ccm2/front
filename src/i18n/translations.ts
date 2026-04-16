@@ -84,6 +84,10 @@ const EN_TRANSLATIONS: TranslationMap = {
   'achievement.trigger.api_caller.title': 'API event',
   'achievement.trigger.api_caller.description':
     'Unlock from an external API call or automated event.',
+  'achievement.trigger.dataLabel.redeem_channel_point': 'Channel point reward ID',
+  'achievement.goal.message': 'How many times',
+  'achievement.goal.channel_point_cost': 'Amount spent',
+  'achievement.goal.default': 'Goal',
   'achievement.ownerOnly.creator': EN_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.channel': EN_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.dashboard': EN_OWNER_ONLY_DASHBOARD_MESSAGE,
@@ -365,6 +369,10 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'achievement.trigger.api_caller.title': 'Événement API',
   'achievement.trigger.api_caller.description':
     'Débloqué via un appel API externe ou un événement automatisé.',
+  'achievement.trigger.dataLabel.redeem_channel_point': 'ID de la récompense de point de chaîne',
+  'achievement.goal.message': 'Combien de fois',
+  'achievement.goal.channel_point_cost': 'Quantité dépensée',
+  'achievement.goal.default': 'Objectif',
   'achievement.ownerOnly.creator': FR_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.channel': FR_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.dashboard': FR_OWNER_ONLY_DASHBOARD_MESSAGE,

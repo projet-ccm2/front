@@ -13,11 +13,26 @@ import {
   mergeSuggestionIntoFormValues,
   normalizeAchievementImage,
 } from './forms/achievementFormModel'
-import type { Achievement } from './api/achievementManagement.types'
+import type { Achievement, AchievementTriggerLabel } from './api/achievementManagement.types'
 import {
   getOwnerOnlyAchievementMessage,
   isOwnerAchievementChannelId,
 } from './utils/achievementManagementChannel'
+
+function getTriggerFieldConfig(label: AchievementTriggerLabel, t: (key: string) => string) {
+  const showDetail = label === 'message_content' || label === 'redeem_channel_point'
+  const detailLabel =
+    label === 'redeem_channel_point'
+      ? t('achievement.trigger.dataLabel.redeem_channel_point')
+      : t('achievement.trigger.dataLabel')
+  const goalLabel =
+    label === 'message'
+      ? t('achievement.goal.message')
+      : label === 'channel_point_cost'
+        ? t('achievement.goal.channel_point_cost')
+        : t('achievement.goal.default')
+  return { showDetail, detailLabel, goalLabel }
+}
 
 interface AchievementCreatorProps {
   achievementId?: string | null
@@ -185,6 +200,7 @@ export function AchievementCreator({
         }
 
         setFormValues(createFormValuesFromAchievement(achievement))
+        setMode(achievement.type.label === 'api_caller' ? 'api' : 'simple')
       } catch {
         if (!isMounted) {
           return
@@ -503,37 +519,20 @@ export function AchievementCreator({
                 />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label
-                    htmlFor="achievement-goal"
-                    className="block text-white dark:text-gray-900 mb-3"
-                  >
-                    Goal
-                  </label>
-                  <input
-                    id="achievement-goal"
-                    type="number"
-                    value={formValues.goal}
-                    onChange={event => updateField('goal', Number(event.target.value) || 0)}
-                    className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="achievement-reward"
-                    className="block text-white dark:text-gray-900 mb-3"
-                  >
-                    Reward (XP / Points)
-                  </label>
-                  <input
-                    id="achievement-reward"
-                    type="number"
-                    value={formValues.reward}
-                    onChange={event => updateField('reward', Number(event.target.value) || 0)}
-                    className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
-                  />
-                </div>
+              <div className="mb-6">
+                <label
+                  htmlFor="achievement-reward"
+                  className="block text-white dark:text-gray-900 mb-3"
+                >
+                  Reward (XP / Points)
+                </label>
+                <input
+                  id="achievement-reward"
+                  type="number"
+                  value={formValues.reward}
+                  onChange={event => updateField('reward', Number(event.target.value) || 0)}
+                  className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
+                />
               </div>
 
               <div className="mb-8 space-y-4">
@@ -578,7 +577,15 @@ export function AchievementCreator({
 
                 <div className="flex items-center gap-4">
                   <button
-                    onClick={() => setMode('simple')}
+                    onClick={() => {
+                      setMode('simple')
+                      if (formValues.type.label === 'api_caller') {
+                        setFormValues(current => ({
+                          ...current,
+                          type: { label: 'message', data: null },
+                        }))
+                      }
+                    }}
                     className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
                       mode === 'simple'
                         ? 'bg-[#9146FF] text-white'
@@ -588,7 +595,13 @@ export function AchievementCreator({
                     Simple Mode
                   </button>
                   <button
-                    onClick={() => setMode('api')}
+                    onClick={() => {
+                      setMode('api')
+                      setFormValues(current => ({
+                        ...current,
+                        type: { label: 'api_caller', data: null },
+                      }))
+                    }}
                     className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
                       mode === 'api'
                         ? 'bg-[#9146FF] text-white'
@@ -600,83 +613,110 @@ export function AchievementCreator({
                 </div>
               </div>
 
-              {mode === 'simple' && (
-                <div className="mb-8 grid sm:grid-cols-2 gap-6">
-                  <div>
-                    <label
-                      htmlFor="achievement-trigger-label"
-                      className="block text-white dark:text-gray-900 mb-3 font-medium"
-                    >
-                      {t('achievement.trigger.label')}
-                    </label>
-                    <select
-                      id="achievement-trigger-label"
-                      value={formValues.type.label}
-                      onChange={event =>
-                        setFormValues(current => ({
-                          ...current,
-                          type: {
-                            ...current.type,
-                            label: event.target.value as (typeof current.type)['label'],
-                          },
-                        }))
-                      }
-                      className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
-                    >
-                      {achievementTriggerOptions.map(trigger => (
-                        <option key={trigger.value} value={trigger.value}>
-                          {trigger.title}
-                        </option>
-                      ))}
-                    </select>
-                    <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">
-                      {t('achievement.trigger.helper')}
-                    </p>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
-                      {achievementTriggerOptions.find(
-                        trigger => trigger.value === formValues.type.label
-                      )?.description ?? ''}
-                    </p>
+              {mode === 'simple' && (() => {
+                const triggerConfig = getTriggerFieldConfig(formValues.type.label, t)
+                return (
+                  <div className="mb-8">
+                    <div className="mb-4">
+                      <label
+                        htmlFor="achievement-trigger-label"
+                        className="block text-white dark:text-gray-900 mb-3 font-medium"
+                      >
+                        {t('achievement.trigger.label')}
+                      </label>
+                      <select
+                        id="achievement-trigger-label"
+                        value={formValues.type.label}
+                        onChange={event =>
+                          setFormValues(current => ({
+                            ...current,
+                            type: {
+                              label: event.target.value as (typeof current.type)['label'],
+                              data: null,
+                            },
+                          }))
+                        }
+                        className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
+                      >
+                        {achievementTriggerOptions.map(trigger => (
+                          <option key={trigger.value} value={trigger.value}>
+                            {trigger.title}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">
+                        {t('achievement.trigger.helper')}
+                      </p>
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
+                        {achievementTriggerOptions.find(
+                          trigger => trigger.value === formValues.type.label
+                        )?.description ?? ''}
+                      </p>
+                    </div>
+                    <div className={`grid gap-6 ${triggerConfig.showDetail ? 'sm:grid-cols-2' : ''}`}>
+                      {triggerConfig.showDetail && (
+                        <div>
+                          <label
+                            htmlFor="achievement-trigger-data"
+                            className="block text-white dark:text-gray-900 mb-3 font-medium"
+                          >
+                            {triggerConfig.detailLabel}
+                          </label>
+                          <input
+                            id="achievement-trigger-data"
+                            type="text"
+                            value={
+                              formValues.type.data === null ? '' : String(formValues.type.data ?? '')
+                            }
+                            onChange={event =>
+                              setFormValues(current => ({
+                                ...current,
+                                type: {
+                                  ...current.type,
+                                  data: event.target.value.trim() ? event.target.value : null,
+                                },
+                              }))
+                            }
+                            placeholder="..."
+                            className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <label
+                          htmlFor="achievement-goal"
+                          className="block text-white dark:text-gray-900 mb-3 font-medium"
+                        >
+                          {triggerConfig.goalLabel}
+                        </label>
+                        <input
+                          id="achievement-goal"
+                          type="number"
+                          value={formValues.goal}
+                          onChange={event => updateField('goal', Number(event.target.value) || 0)}
+                          className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label
-                      htmlFor="achievement-trigger-data"
-                      className="block text-white dark:text-gray-900 mb-3 font-medium"
-                    >
-                      {t('achievement.trigger.dataLabel')}
-                    </label>
-                    <input
-                      id="achievement-trigger-data"
-                      type="text"
-                      value={
-                        formValues.type.data === null ? '' : String(formValues.type.data ?? '')
-                      }
-                      onChange={event =>
-                        setFormValues(current => ({
-                          ...current,
-                          type: {
-                            ...current.type,
-                            data: event.target.value.trim() ? event.target.value : null,
-                          },
-                        }))
-                      }
-                      placeholder="Optional trigger data..."
-                      className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
-                    />
-                  </div>
-                </div>
-              )}
+                )
+              })()}
 
               {mode === 'api' && (
-                <div className="mb-8 rounded-xl border border-[#9146FF]/30 bg-[#9146FF]/10 p-5">
-                  <div className="flex items-center gap-2 text-[#c6a8ff] mb-2">
-                    <Sparkles className="w-4 h-4" />
-                    <span className="font-medium">API feature coming soon</span>
-                  </div>
-                  <p className="text-sm text-gray-300 dark:text-gray-600">
-                    This mode will connect achievements directly to the API. For now, use Simple
-                    Mode to configure the trigger fields.
-                  </p>
+                <div className="mb-8">
+                  <label
+                    htmlFor="achievement-goal-api"
+                    className="block text-white dark:text-gray-900 mb-3 font-medium"
+                  >
+                    {t('achievement.goal.default')}
+                  </label>
+                  <input
+                    id="achievement-goal-api"
+                    type="number"
+                    value={formValues.goal}
+                    onChange={event => updateField('goal', Number(event.target.value) || 0)}
+                    className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
+                  />
                 </div>
               )}
 

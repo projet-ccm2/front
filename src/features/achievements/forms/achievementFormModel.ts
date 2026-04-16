@@ -49,11 +49,6 @@ export function getAchievementTriggerOptions(language: Language): AchievementTri
         'achievement.trigger.redeem_channel_point.description'
       ),
     },
-    {
-      value: 'api_caller',
-      title: resolveTranslation(language, 'achievement.trigger.api_caller.title'),
-      description: resolveTranslation(language, 'achievement.trigger.api_caller.description'),
-    },
   ]
 }
 
