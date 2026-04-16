@@ -45,44 +45,47 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     localStorage.removeItem('twitch_tokens')
   }, [])
 
-  const completeAuth = useCallback(async (tokens: {
-    accessToken: string
-    idToken: string
-    tokenType: string
-    expiresIn: number
-    scope: string[]
-    state: string
-  }) => {
-    setIsLoading(true)
-    try {
-      const response = await fetch(`${AUTH_SERVICE_URL}/auth/callback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tokens),
-      })
+  const completeAuth = useCallback(
+    async (tokens: {
+      accessToken: string
+      idToken: string
+      tokenType: string
+      expiresIn: number
+      scope: string[]
+      state: string
+    }) => {
+      setIsLoading(true)
+      try {
+        const response = await fetch(`${AUTH_SERVICE_URL}/auth/callback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(tokens),
+        })
 
-      if (!response.ok) {
-        throw new Error('Failed to authenticate with backend')
-      }
+        if (!response.ok) {
+          throw new Error('Failed to authenticate with backend')
+        }
 
-      const data = await response.json()
-      if (data.success) {
-        const fullUser = { ...data.user, userId: data.userId }
-        setUser(fullUser)
-        localStorage.setItem('twitch_user', JSON.stringify(fullUser))
-        localStorage.setItem('twitch_tokens', JSON.stringify(tokens))
-      } else {
-        throw new Error(data.error || 'Authentication failed')
+        const data = await response.json()
+        if (data.success) {
+          const fullUser = { ...data.user, userId: data.userId }
+          setUser(fullUser)
+          localStorage.setItem('twitch_user', JSON.stringify(fullUser))
+          localStorage.setItem('twitch_tokens', JSON.stringify(tokens))
+        } else {
+          throw new Error(data.error || 'Authentication failed')
+        }
+      } catch (error) {
+        console.error('Auth error:', error)
+        throw error
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Auth error:', error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+    },
+    []
+  )
 
   const value = useMemo(
     () => ({

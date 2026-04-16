@@ -125,11 +125,6 @@ describe('App - Functional Coverage', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: /Profil utilisateur|User Profile/i })[0])
     expect(await screen.findByRole('heading', { name: 'Classement' })).toBeInTheDocument()
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Panneau Twitch|Twitch Panel/i })[0])
-    expect(
-      await screen.findByRole('heading', { name: /Panneau Twitch|Twitch Panel/ })
-    ).toBeInTheDocument()
   }, 10000)
 
   it('should maintain authentication state', async () => {
@@ -190,15 +185,6 @@ describe('App - Functional Coverage', () => {
     expect(
       await screen.findByRole('heading', { name: /Create Achievement|Cr.*er un succ.*s/i })
     ).toBeInTheDocument()
-  })
-
-  it('should render the Twitch extension panel route', () => {
-    window.history.pushState({}, '', '/twitch-extension/panel')
-
-    render(<App />)
-
-    expect(screen.getByRole('heading', { name: 'Extension Twitch' })).toBeInTheDocument()
-    expect(screen.getByText(/\/twitch-extension\/panel$/)).toBeInTheDocument()
   })
 
   it('should render the viewer hub from the sidebar navigation', async () => {

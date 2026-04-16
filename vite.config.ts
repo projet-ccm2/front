@@ -25,8 +25,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
-        panel: 'panel.html',
-        config: 'config.html',
       },
     },
   },

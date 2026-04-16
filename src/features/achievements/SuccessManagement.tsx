@@ -335,7 +335,8 @@ export function SuccessManagement({
 
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-400 dark:text-gray-600">
-                          {t('management.field.trigger')} {formatTriggerLabel(achievement.type.label)}
+                          {t('management.field.trigger')}{' '}
+                          {formatTriggerLabel(achievement.type.label)}
                         </div>
                         <button
                           aria-label={`${achievement.active ? 'Deactivate' : 'Activate'} ${achievement.title}`}
