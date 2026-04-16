@@ -2,6 +2,11 @@ import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
+Object.defineProperty(navigator, 'language', {
+  value: 'fr',
+  configurable: true,
+})
+
 afterEach(() => {
   localStorage.clear()
   cleanup()

@@ -1,8 +1,6 @@
-import { Copy, Crown, ExternalLink, Eye, Lock, Menu, Sparkles, Trophy } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { Crown, Eye, Lock, Menu, Sparkles, Trophy } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
-import { buildPublicPanelUrl } from '../overlay/utils/publicPanelLink'
 import { useViewerHub } from './hooks/useViewerHub'
 import { buildViewerChannelSummaries } from './utils/viewerHub'
 
@@ -14,16 +12,10 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const { user } = useAuth()
   const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useViewerHub()
-  const [copyState, setCopyState] = useState<string | null>(null)
-  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
 
   const summaries = buildViewerChannelSummaries(achievements)
   const primarySummary = summaries[0] ?? null
-  const primaryFeaturedAchievement = primarySummary
-    ? getFeaturedAchievement(primarySummary)
-    : null
+  const primaryFeaturedAchievement = primarySummary ? getFeaturedAchievement(primarySummary) : null
   const totalAchievements = achievements.length
   const unlockedAchievements = achievements.filter(
     achievement => achievement.userState.finished
@@ -33,25 +25,6 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
     (total, achievement) => total + (achievement.userState.finished ? achievement.reward : 0),
     0
   )
-
-  const handleCopyLink = async (channelId: string) => {
-    if (!user || !navigator.clipboard?.writeText || typeof window === 'undefined') {
-      return
-    }
-
-    const url = `${buildPublicPanelUrl(channelId, window.location.origin)}?viewerId=${encodeURIComponent(
-      user.userId
-    )}`
-
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopyState(channelId)
-      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
-      copyTimerRef.current = globalThis.setTimeout(() => setCopyState(null), 2000)
-    } catch {
-      // clipboard unavailable — no feedback change
-    }
-  }
 
   return (
     <div className="flex flex-col">
@@ -129,13 +102,13 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                             <h2 className="mt-2 text-2xl font-semibold text-white dark:text-gray-900">
                               {primaryFeaturedAchievement.secret &&
                               !primaryFeaturedAchievement.userState.finished
-                                ? t('overlay.hiddenFallback')
+                                ? t('achievements.hidden.title')
                                 : primaryFeaturedAchievement.title}
                             </h2>
                             <p className="mt-2 text-sm leading-6 text-gray-300 dark:text-gray-600">
                               {primaryFeaturedAchievement.secret &&
                               !primaryFeaturedAchievement.userState.finished
-                                ? t('overlay.hiddenDescription')
+                                ? t('achievements.hidden.description')
                                 : primaryFeaturedAchievement.description}
                             </p>
                           </div>
@@ -166,10 +139,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                                 </div>
                               </div>
                               <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-gray-200">
-                                {getAchievementStatusLabel(
-                                  primaryFeaturedAchievement,
-                                  t
-                                )}
+                                {getAchievementStatusLabel(primaryFeaturedAchievement, t)}
                               </span>
                             </div>
 
@@ -177,10 +147,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                               <div className="flex items-center justify-between text-xs text-gray-400">
                                 <span>{t('viewerHub.featured.progress')}</span>
                                 <span>
-                                  {getAchievementProgressLabel(
-                                    primaryFeaturedAchievement,
-                                    t
-                                  )}
+                                  {getAchievementProgressLabel(primaryFeaturedAchievement, t)}
                                 </span>
                               </div>
                               <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/30">
@@ -194,35 +161,6 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 lg:min-w-72">
-                      <a
-                        href={
-                          typeof window === 'undefined'
-                            ? '#'
-                            : `${buildPublicPanelUrl(primarySummary.channelId, window.location.origin)}?viewerId=${encodeURIComponent(
-                                user?.userId ?? ''
-                              )}`
-                        }
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#9146FF] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#772ce8]"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        {t('viewerHub.openPanel')}
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => void handleCopyLink(primarySummary.channelId)}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
-                      >
-                        <Copy className="h-4 w-4" />
-                        {copyState === primarySummary.channelId
-                          ? t('viewerHub.copied')
-                          : t('viewerHub.copyPanel')}
-                      </button>
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-black/10 p-4 text-xs leading-5 text-gray-300">
-                        {t('viewerHub.panelHint')}
                       </div>
                     </div>
                   </div>
@@ -247,7 +185,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                       <AchievementRow
                         key={achievement.id}
                         achievement={achievement}
-                        hiddenDescription={t('overlay.hiddenDescription')}
+                        hiddenDescription={t('achievements.hidden.description')}
                       />
                     ))}
                   </div>
@@ -287,12 +225,6 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
             {!isLoading && !errorMessage && summaries.length > 0 && (
               <div className="grid gap-4">
                 {summaries.map(summary => {
-                  const panelUrl =
-                    typeof window === 'undefined'
-                      ? ''
-                      : `${buildPublicPanelUrl(summary.channelId, window.location.origin)}?viewerId=${encodeURIComponent(
-                          user?.userId ?? ''
-                        )}`
                   const featuredAchievement = getFeaturedAchievement(summary)
                   if (!featuredAchievement) return null
                   const channelDisplayName = getChannelDisplayName(
@@ -350,13 +282,13 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                                   <h3 className="mt-3 text-2xl font-semibold text-white dark:text-gray-900">
                                     {featuredAchievement.secret &&
                                     !featuredAchievement.userState.finished
-                                      ? t('overlay.hiddenFallback')
+                                      ? t('achievements.hidden.title')
                                       : featuredAchievement.title}
                                   </h3>
                                   <p className="mt-2 text-sm leading-6 text-gray-300 dark:text-gray-600">
                                     {featuredAchievement.secret &&
                                     !featuredAchievement.userState.finished
-                                      ? t('overlay.hiddenDescription')
+                                      ? t('achievements.hidden.description')
                                       : featuredAchievement.description}
                                   </p>
 
@@ -397,34 +329,11 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                                   <AchievementRow
                                     key={achievement.id}
                                     achievement={achievement}
-                                    hiddenDescription={t('overlay.hiddenDescription')}
+                                    hiddenDescription={t('achievements.hidden.description')}
                                   />
                                 ))}
                               </div>
                             </div>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3 lg:min-w-72">
-                          <a
-                            href={panelUrl}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#9146FF] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#772ce8]"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            {t('viewerHub.openPanel')}
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => void handleCopyLink(summary.channelId)}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#2d2d31] bg-[#0f0f12] px-4 py-3 text-sm font-medium text-gray-300 transition-colors hover:bg-[#18181b] dark:border-gray-200 dark:bg-gray-50 dark:text-gray-700 dark:hover:bg-gray-100"
-                          >
-                            <Copy className="h-4 w-4" />
-                            {copyState === summary.channelId
-                              ? t('viewerHub.copied')
-                              : t('viewerHub.copyPanel')}
-                          </button>
-                          <div className="rounded-2xl border border-dashed border-[#2d2d31] p-4 text-xs text-gray-400 dark:border-gray-200 dark:text-gray-600">
-                            {t('viewerHub.panelHint')}
                           </div>
                         </div>
                       </div>

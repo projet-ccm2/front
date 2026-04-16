@@ -55,7 +55,6 @@ const EN_TRANSLATIONS: TranslationMap = {
   'nav.marketplace': 'Marketplace',
   'nav.profile': 'User Profile',
   'nav.viewerHub': 'Viewer Hub',
-  'nav.overlay': 'Twitch Panel',
   'achievements.error.invalidRequest': 'The achievements request is invalid.',
   'achievements.error.noProgress': 'No achievement progress was found for this channel.',
   'achievements.error.serviceUnavailable': 'The achievement service is currently unavailable.',
@@ -218,77 +217,6 @@ const EN_TRANSLATIONS: TranslationMap = {
   'viewerHub.achievement.locked': 'Locked',
   'viewerHub.panelHint':
     'This link opens the web panel with your viewer identity so you can follow progress from the browser.',
-  'overlay.title': 'Twitch Panel',
-  'overlay.subtitle.channel': 'Live panel for {channel}',
-  'overlay.subtitle.connected': 'Live panel for the connected channel',
-  'overlay.liveBadge': 'Live panel',
-  'overlay.metric.achievements': 'Achievements',
-  'overlay.metric.hidden': 'Hidden',
-  'overlay.metric.xp': 'Achievement XP',
-  'overlay.metric.rank': 'Channel rank',
-  'overlay.status.live': 'Live',
-  'overlay.loading': 'Loading viewer achievements...',
-  'overlay.empty': 'No achievements are available for this panel yet.',
-  'overlay.section.viewerAchievements': 'Viewer Achievements',
-  'overlay.section.viewerDescription':
-    'Secret achievements stay hidden behind a question mark until they are unlocked.',
-  'overlay.totalSuffix': '{count} total',
-  'overlay.leaderboard': 'Leaderboard',
-  'overlay.leaderboardDescription':
-    'Ranked from the achievements currently available in the panel.',
-  'overlay.hiddenFallback': 'Hidden achievement',
-  'overlay.hiddenDescription': 'Complete the objective to reveal this achievement.',
-  'overlay.public.badge': 'Public Twitch Panel',
-  'overlay.public.title': 'Public panel link',
-  'overlay.public.subtitle': 'Share this URL in a Twitch panel below your live stream.',
-  'overlay.public.copyHint': 'Copy the public link',
-  'overlay.public.linkSection': 'Public URL',
-  'overlay.public.linkDescription':
-    'Paste this link into a Twitch panel to display the public achievement board.',
-  'overlay.public.copy': 'Copy link',
-  'overlay.public.copied': 'Link copied',
-  'overlay.extension.title': 'Twitch Extension',
-  'overlay.extension.subtitle':
-    'Use this URL in the Twitch Developer Console for your panel extension.',
-  'overlay.extension.copy': 'Copy extension URL',
-  'overlay.extension.copied': 'Extension URL copied',
-  'overlay.extension.config.baseTitle': 'Testing Base URI',
-  'overlay.extension.config.baseDescription':
-    'Root URL used by Twitch to load all extension assets.',
-  'overlay.extension.config.panelTitle': 'Viewer Panel Path',
-  'overlay.extension.config.panelDescription':
-    'Relative HTML file shown to viewers when the panel is active.',
-  'overlay.extension.config.configTitle': 'Configuration Path',
-  'overlay.extension.config.configDescription':
-    'Relative HTML file used in the extension manager for broadcaster settings.',
-  'overlay.extension.config.title': 'Twitch Extension setup',
-  'overlay.extension.config.description':
-    'Create the Twitch panel extension with the root URI below, then point the panel and configuration paths to the generated HTML files.',
-  'overlay.extension.config.note':
-    'Use the root URI as Twitch testing base URI, then set panel.html and config.html as the relative paths.',
-  'overlay.extension.section': 'Extension URL',
-  'overlay.extension.description':
-    'Share this URL with Twitch dev to configure the panel extension.',
-  'overlay.extension.note':
-    'If you want to preview the panel locally, append ?channelId=... and optionally &viewerId=....',
-  'overlay.public.empty': 'No public achievements are available for this channel yet.',
-  'overlay.public.achievements': 'Channel Achievements',
-  'overlay.public.achievementsDescription':
-    'Secret achievements are hidden behind a question mark until they are published.',
-  'overlay.public.howToTitle': 'How to add it to Twitch',
-  'overlay.public.howToDescription':
-    'Use the link below as a Twitch panel URL, then position it under your live player.',
-  'overlay.public.step1': '1. Open your Twitch channel settings.',
-  'overlay.public.step2': '2. Add a custom panel or iframe panel.',
-  'overlay.public.step3': '3. Paste the public panel URL and save it.',
-  'overlay.public.note':
-    'This public panel currently shows the channel achievement board. Viewer-specific progress can be added later.',
-  'overlay.viewer.title': 'Viewer Progress',
-  'overlay.viewer.description':
-    'When the viewer identity is available, the panel can show personal progress for the connected Twitch user.',
-  'overlay.viewer.hint':
-    'This browser panel needs a viewer id or Twitch extension context to personalize progress.',
-  'overlay.viewer.empty': 'No viewer progress is available yet.',
   'management.title': 'Manage Achievements',
   'management.subtitle': 'Enable, disable, and edit your quests',
   'management.createNew': 'Create New',
@@ -304,7 +232,8 @@ const EN_TRANSLATIONS: TranslationMap = {
   'management.field.visible': 'Visible',
   'management.field.trigger': 'Trigger:',
   'management.delete.title': 'Delete achievement',
-  'management.delete.description': 'Are you sure you want to delete "{title}"? This action cannot be undone.',
+  'management.delete.description':
+    'Are you sure you want to delete "{title}"? This action cannot be undone.',
   'management.delete.confirm': 'Delete',
   'management.delete.cancel': 'Cancel',
   'management.error.update': 'Unable to update "{title}". Please try again.',
@@ -322,7 +251,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'language.french': 'Français',
   'language.shortEnglish': 'EN',
   'language.shortFrench': 'FR',
-  'language.switchToEnglish': 'Passer à l’anglais',
+  'language.switchToEnglish': "Passer à l'anglais",
   'language.switchToFrench': 'Passer au français',
   'channel.owner': 'Propriétaire',
   'channel.moderator': 'Modérateur',
@@ -335,30 +264,29 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'nav.management': 'Gérer les succès',
   'nav.profile': 'Profil utilisateur',
   'nav.viewerHub': 'Hub viewer',
-  'nav.overlay': 'Panneau Twitch',
   'achievements.error.invalidRequest': 'La requête sur les succès est invalide.',
   'achievements.error.noProgress':
-    'Aucune progression de succès n’a été trouvée pour cette chaîne.',
+    "Aucune progression de succès n'a été trouvée pour cette chaîne.",
   'achievements.error.serviceUnavailable': 'Le service de succès est actuellement indisponible.',
   'achievements.error.loadFailed': 'Impossible de charger les succès.',
   'achievements.error.signInNeeded': 'Connecte-toi pour charger les succès.',
   'achievements.status.unlocked': 'Débloqué',
   'achievements.status.progress': '{current}/{goal}',
   'achievements.hidden.title': 'Succès caché',
-  'achievements.hidden.description': 'Complète l’objectif pour révéler ce succès.',
+  'achievements.hidden.description': "Complète l'objectif pour révéler ce succès.",
   'achievement.trigger.label': 'Méthode de déblocage',
   'achievement.trigger.helper':
     'Choisis la règle qui correspond le mieux à la manière dont le viewer débloque ce succès.',
   'achievement.trigger.dataLabel': 'Détails du déclencheur',
   'achievement.trigger.message.title': 'Messages envoyés',
   'achievement.trigger.message.description':
-    'Débloqué après qu’un viewer a envoyé un certain nombre de messages dans le chat.',
+    "Débloqué après qu'un viewer a envoyé un certain nombre de messages dans le chat.",
   'achievement.trigger.message_content.title': 'Contenu du message',
   'achievement.trigger.message_content.description':
     'Débloqué quand le viewer envoie un mot ou une phrase précise dans le chat.',
   'achievement.trigger.channel_point_cost.title': 'Coût en points de chaîne',
   'achievement.trigger.channel_point_cost.description':
-    'Débloqué après qu’un viewer a dépensé une quantité fixe de points de chaîne.',
+    "Débloqué après qu'un viewer a dépensé une quantité fixe de points de chaîne.",
   'achievement.trigger.redeem_channel_point.title': 'Récompense points de chaîne',
   'achievement.trigger.redeem_channel_point.description':
     'Débloqué quand le viewer échange une récompense précise de points de chaîne.',
@@ -418,7 +346,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'dashboard.chart.description': 'Vos succès débloqués sur les 7 derniers jours',
   'dashboard.activity.title': 'Activité récente',
   'dashboard.activity.description': 'Vos derniers succès terminés',
-  'dashboard.activity.empty': 'Terminez un succès pour alimenter ce flux d’activité.',
+  'dashboard.activity.empty': "Terminez un succès pour alimenter ce flux d'activité.",
   'dashboard.quick.create.title': 'Créer un succès',
   'dashboard.quick.create.description': 'Concevez une nouvelle quête personnalisée',
   'dashboard.quick.marketplace.title': 'Parcourir la marketplace',
@@ -465,7 +393,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'profile.leaderboardAction': 'Classement global à venir',
   'profile.leaderboardPending': 'En attente du classement global',
   'profile.leaderboardActivity': 'Vos derniers succès terminés',
-  'profile.leaderboardActivityEmpty': 'Terminez un succès pour alimenter ce flux d’activité.',
+  'profile.leaderboardActivityEmpty': "Terminez un succès pour alimenter ce flux d'activité.",
   'viewerHub.title': 'Hub viewer',
   'viewerHub.subtitle': 'Suivez toutes les chaînes où votre compte a des succès actifs.',
   'viewerHub.badge': 'Suivi viewer',
@@ -483,7 +411,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'viewerHub.featured.title': 'Vue en avant',
   'viewerHub.featured.subtitle': 'La chaîne et le succès actuellement mis en avant.',
   'viewerHub.featured.current': 'Succès en cours',
-  'viewerHub.featured.currentHint': 'L’objectif le plus pertinent pour cette chaîne.',
+  'viewerHub.featured.currentHint': "L'objectif le plus pertinent pour cette chaîne.",
   'viewerHub.featured.progress': 'Progression',
   'viewerHub.featured.listTitle': 'Tous les succès',
   'viewerHub.featured.listSubtitle': 'Chaque succès actif sur cette chaîne.',
@@ -500,77 +428,6 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'viewerHub.achievement.locked': 'Verrouillé',
   'viewerHub.panelHint':
     'Ce lien ouvre le panneau web avec ton identité viewer pour suivre ta progression dans le navigateur.',
-  'overlay.title': 'Panneau Twitch',
-  'overlay.subtitle.channel': 'Panneau en direct pour {channel}',
-  'overlay.subtitle.connected': 'Panneau en direct pour la chaîne connectée',
-  'overlay.liveBadge': 'Panneau en direct',
-  'overlay.metric.achievements': 'Succès',
-  'overlay.metric.hidden': 'Cachés',
-  'overlay.metric.xp': 'XP de succès',
-  'overlay.metric.rank': 'Rang de la chaîne',
-  'overlay.status.live': 'En direct',
-  'overlay.loading': 'Chargement des succès du viewer...',
-  'overlay.empty': 'Aucun succès disponible pour ce panneau pour le moment.',
-  'overlay.section.viewerAchievements': 'Succès du viewer',
-  'overlay.section.viewerDescription':
-    'Les succès secrets restent cachés derrière un point d’interrogation jusqu’à leur déblocage.',
-  'overlay.totalSuffix': '{count} au total',
-  'overlay.leaderboard': 'Classement',
-  'overlay.leaderboardDescription':
-    'Classé à partir des succès actuellement disponibles dans le panneau.',
-  'overlay.hiddenFallback': 'Succès caché',
-  'overlay.hiddenDescription': 'Complète l’objectif pour révéler ce succès.',
-  'overlay.public.badge': 'Panneau Twitch public',
-  'overlay.public.title': 'Lien public du panneau',
-  'overlay.public.subtitle': 'Partage cette URL dans un panneau Twitch sous ton live.',
-  'overlay.public.copyHint': 'Copier le lien public',
-  'overlay.public.linkSection': 'URL publique',
-  'overlay.public.linkDescription':
-    'Colle ce lien dans un panneau Twitch pour afficher le tableau des succès.',
-  'overlay.public.copy': 'Copier le lien',
-  'overlay.public.copied': 'Lien copié',
-  'overlay.extension.title': 'Extension Twitch',
-  'overlay.extension.subtitle':
-    'Utilise cette URL dans la console développeur Twitch pour ton extension de panneau.',
-  'overlay.extension.copy': 'Copier l’URL de l’extension',
-  'overlay.extension.copied': 'URL de l’extension copiée',
-  'overlay.extension.config.baseTitle': 'URI racine de test',
-  'overlay.extension.config.baseDescription':
-    'URL racine utilisée par Twitch pour charger tous les assets de l’extension.',
-  'overlay.extension.config.panelTitle': 'Chemin du panneau viewers',
-  'overlay.extension.config.panelDescription':
-    'Fichier HTML relatif affiché aux viewers quand le panneau est actif.',
-  'overlay.extension.config.configTitle': 'Chemin de configuration',
-  'overlay.extension.config.configDescription':
-    'Fichier HTML relatif utilisé dans le gestionnaire d’extensions pour les réglages streamer.',
-  'overlay.extension.config.title': 'Configuration de l’extension Twitch',
-  'overlay.extension.config.description':
-    'Crée l’extension de panneau Twitch avec l’URI racine ci-dessous, puis pointe le panneau et la configuration vers les fichiers HTML générés.',
-  'overlay.extension.config.note':
-    'Utilise l’URI racine comme URI de test Twitch, puis renseigne panel.html et config.html comme chemins relatifs.',
-  'overlay.extension.section': 'URL de l’extension',
-  'overlay.extension.description':
-    'Partage cette URL avec Twitch dev pour configurer l’extension de panneau.',
-  'overlay.extension.note':
-    'Pour prévisualiser le panneau en local, ajoute ?channelId=... et éventuellement &viewerId=....',
-  'overlay.public.empty': 'Aucun succès public n’est disponible pour cette chaîne pour le moment.',
-  'overlay.public.achievements': 'Succès de la chaîne',
-  'overlay.public.achievementsDescription':
-    'Les succès secrets restent cachés derrière un point d’interrogation jusqu’à leur publication.',
-  'overlay.public.howToTitle': 'Comment l’ajouter sur Twitch',
-  'overlay.public.howToDescription':
-    'Utilise le lien ci-dessous comme URL de panneau Twitch, puis place-le sous le lecteur du live.',
-  'overlay.public.step1': '1. Ouvre les paramètres de ta chaîne Twitch.',
-  'overlay.public.step2': '2. Ajoute un panneau personnalisé ou un panneau iframe.',
-  'overlay.public.step3': '3. Colle l’URL publique du panneau puis enregistre.',
-  'overlay.public.note':
-    'Ce panneau public affiche pour le moment le tableau des succès de la chaîne. La progression spécifique au viewer pourra être ajoutée ensuite.',
-  'overlay.viewer.title': 'Progression du viewer',
-  'overlay.viewer.description':
-    'Quand l’identité du viewer est disponible, le panneau peut afficher sa progression personnelle.',
-  'overlay.viewer.hint':
-    'Ce panneau a besoin d’un viewerId ou d’un contexte d’extension Twitch pour personnaliser la progression.',
-  'overlay.viewer.empty': 'Aucune progression de viewer n\'est disponible pour le moment.',
   'management.title': 'Gérer les achievements',
   'management.subtitle': 'Activez, désactivez et modifiez vos quêtes',
   'management.createNew': 'Créer',
@@ -585,8 +442,9 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'management.field.secret': 'Secret',
   'management.field.visible': 'Visible',
   'management.field.trigger': 'Déclencheur :',
-  'management.delete.title': 'Supprimer l\'achievement',
-  'management.delete.description': 'Êtes-vous sûr de vouloir supprimer « {title} » ? Cette action est irréversible.',
+  'management.delete.title': "Supprimer l'achievement",
+  'management.delete.description':
+    'Êtes-vous sûr de vouloir supprimer « {title} » ? Cette action est irréversible.',
   'management.delete.confirm': 'Supprimer',
   'management.delete.cancel': 'Annuler',
   'management.error.update': 'Impossible de mettre à jour « {title} ». Veuillez réessayer.',

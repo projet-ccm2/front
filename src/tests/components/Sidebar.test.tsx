@@ -12,7 +12,6 @@ vi.mock('lucide-react', () => ({
   Store: () => <div data-testid="icon-store" />,
   User: () => <div data-testid="icon-user" />,
   Eye: () => <div data-testid="icon-eye" />,
-  Tv: () => <div data-testid="icon-tv" />,
   X: () => <div data-testid="icon-x" />,
   Sun: () => <div data-testid="icon-sun" />,
   Moon: () => <div data-testid="icon-moon" />,
@@ -32,7 +31,6 @@ describe('Sidebar', () => {
     expect(screen.getByText('Marketplace')).toBeInTheDocument()
     expect(screen.getByText('Profil utilisateur')).toBeInTheDocument()
     expect(screen.getByText('Hub viewer')).toBeInTheDocument()
-    expect(screen.getByText('Panneau Twitch')).toBeInTheDocument()
   })
 
   it('should show basic stream quest title', () => {

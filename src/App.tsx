@@ -12,14 +12,6 @@ import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
 import { ViewerHub } from './features/viewer/ViewerHub'
-import { TwitchOverlay } from './features/overlay/TwitchOverlay'
-import { PublicTwitchPanel } from './features/overlay/PublicTwitchPanel'
-import { TwitchExtensionPanel } from './features/overlay/TwitchExtensionPanel'
-import {
-  getPublicPanelChannelId,
-  getPublicPanelViewerId,
-} from './features/overlay/utils/publicPanelLink'
-import { isTwitchExtensionPanelPath } from './features/overlay/utils/twitchExtensionLink'
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
 import { useLanguage } from './context/LanguageContext'
 
@@ -31,12 +23,13 @@ type Screen =
   | 'marketplace'
   | 'profile'
   | 'viewerHub'
-  | 'overlay'
 
 export function AppContent() {
   const { isAuthenticated, isLoading, login, completeAuth } = useAuth()
   const { t } = useLanguage()
-  const [currentScreen, setCurrentScreen] = useState<Screen>('landing')
+  const [currentScreen, setCurrentScreen] = useState<Screen>(
+    isAuthenticated ? 'dashboard' : 'landing'
+  )
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
@@ -83,12 +76,6 @@ export function AppContent() {
 
     handleCallback()
   }, [completeAuth])
-
-  useEffect(() => {
-    if (isAuthenticated && currentScreen === 'landing') {
-      setCurrentScreen('dashboard')
-    }
-  }, [isAuthenticated, currentScreen])
 
   const handleNavigate = (page: string) => {
     if (page !== 'creator') {
@@ -164,9 +151,6 @@ export function AppContent() {
           {currentScreen === 'viewerHub' && (
             <ViewerHub onOpenSidebar={() => setSidebarOpen(true)} />
           )}
-          {currentScreen === 'overlay' && (
-            <TwitchOverlay onOpenSidebar={() => setSidebarOpen(true)} />
-          )}
         </div>
       </main>
     </div>
@@ -174,29 +158,6 @@ export function AppContent() {
 }
 
 function App() {
-  if (isTwitchExtensionPanelPath(globalThis.location.pathname)) {
-    return (
-      <ThemeProvider>
-        <LanguageProvider>
-          <TwitchExtensionPanel />
-        </LanguageProvider>
-      </ThemeProvider>
-    )
-  }
-
-  const publicPanelChannelId = getPublicPanelChannelId(globalThis.location.pathname)
-  const publicPanelViewerId = getPublicPanelViewerId(globalThis.location.search)
-
-  if (publicPanelChannelId) {
-    return (
-      <ThemeProvider>
-        <LanguageProvider>
-          <PublicTwitchPanel channelId={publicPanelChannelId} viewerId={publicPanelViewerId} />
-        </LanguageProvider>
-      </ThemeProvider>
-    )
-  }
-
   return (
     <ThemeProvider>
       <LanguageProvider>
