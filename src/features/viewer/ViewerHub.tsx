@@ -350,32 +350,33 @@ function OverviewPanel({
               onClick={() => onSelectChannel(summary.channelId)}
               className="group flex flex-col overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] text-left transition-colors hover:border-[#9146FF] dark:border-gray-200 dark:bg-white dark:hover:border-[#9146FF]"
             >
-              <div className="flex items-center gap-3 px-6 py-5">
-                <div className="relative flex-shrink-0">
-                  <ChannelAvatar name={name} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
-                  <span className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#18181b] text-[10px] font-bold ring-1 ring-[#2d2d31] dark:bg-white dark:ring-gray-200 ${rankColor}`}>
-                    {rank}
-                  </span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium text-white transition-colors group-hover:text-[#9146FF] dark:text-gray-900">
-                    {name}
+              <div className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-shrink-0">
+                    <ChannelAvatar name={name} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
+                    <span className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#18181b] text-[10px] font-bold ring-1 ring-[#2d2d31] dark:bg-white dark:ring-gray-200 ${rankColor}`}>
+                      {rank}
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {summary.totalAchievements} succès au total
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium text-white transition-colors group-hover:text-[#9146FF] dark:text-gray-900">
+                      {name}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {summary.totalAchievements} succès au total
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <div className="text-lg font-bold text-white dark:text-gray-900">{pct}%</div>
+                    <div className="text-[11px] text-gray-500">complété</div>
                   </div>
                 </div>
-                <div className="flex-shrink-0 text-right">
-                  <div className="text-lg font-bold text-white dark:text-gray-900">{pct}%</div>
-                  <div className="text-[11px] text-gray-500">complété</div>
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+                  <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
                 </div>
               </div>
 
-              <div className="mx-6 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
-                <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
-              </div>
-
-              <div className="mt-0 grid grid-cols-3 divide-x divide-[#2d2d31] border-t border-[#2d2d31] dark:divide-gray-200 dark:border-gray-200">
+              <div className="grid grid-cols-3 divide-x divide-[#2d2d31] border-t border-[#2d2d31] dark:divide-gray-200 dark:border-gray-200">
                 <div className="flex flex-col items-center py-3.5">
                   <span className="text-sm font-bold text-[#00f593]">{summary.unlockedAchievements}</span>
                   <span className="text-[10px] text-gray-500">{t('viewerHub.channelUnlocked')}</span>
@@ -450,33 +451,34 @@ function ChannelDetailView({
     <div className="space-y-4">
       {/* Channel header card */}
       <div className="overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] dark:border-gray-200 dark:bg-white">
-        <div className="flex items-center gap-4 px-7 py-5">
-          <ChannelAvatar name={channelName} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              {t('viewerHub.channelLabel', { channelName })}
-            </p>
-            <h2 className="truncate text-xl font-bold text-white dark:text-gray-900">
-              {channelName}
-            </h2>
-            <p className="mt-0.5 text-sm text-gray-400 dark:text-gray-600">
-              {t('viewerHub.channelDescription', {
-                unlocked: summary.unlockedAchievements,
-                total: summary.totalAchievements,
-              })}
-            </p>
+        <div className="p-6">
+          <div className="flex items-center gap-4">
+            <ChannelAvatar name={channelName} size="lg" profileImageUrl={getChannelAvatar(summary.channelId)} />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                {t('viewerHub.channelLabel', { channelName })}
+              </p>
+              <h2 className="truncate text-xl font-bold text-white dark:text-gray-900">
+                {channelName}
+              </h2>
+              <p className="mt-0.5 text-sm text-gray-400 dark:text-gray-600">
+                {t('viewerHub.channelDescription', {
+                  unlocked: summary.unlockedAchievements,
+                  total: summary.totalAchievements,
+                })}
+              </p>
+            </div>
+            <div className="flex-shrink-0 text-right">
+              <div className="text-3xl font-bold text-[#9146FF]">{pct}%</div>
+              <div className="text-xs text-gray-500">complété</div>
+            </div>
           </div>
-          <div className="flex-shrink-0 text-right">
-            <div className="text-3xl font-bold text-[#9146FF]">{pct}%</div>
-            <div className="text-xs text-gray-500">complété</div>
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+            <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
           </div>
         </div>
 
-        <div className="mx-7 h-2 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
-          <div className="h-full rounded-full bg-[#9146FF]" style={{ width: `${pct}%` }} />
-        </div>
-
-        <div className="mt-0 grid grid-cols-3 divide-x divide-[#2d2d31] border-t border-[#2d2d31] dark:divide-gray-200 dark:border-gray-200">
+        <div className="grid grid-cols-3 divide-x divide-[#2d2d31] border-t border-[#2d2d31] dark:divide-gray-200 dark:border-gray-200">
           <div className="flex flex-col items-center gap-0.5 py-4">
             <div className="text-xl font-bold text-[#00f593]">{summary.unlockedAchievements}</div>
             <div className="text-[11px] text-gray-500">{t('viewerHub.channelUnlocked')}</div>
