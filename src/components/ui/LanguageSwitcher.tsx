@@ -28,7 +28,7 @@ export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
 
       <div className="relative h-6 w-12 rounded-full bg-[#9146FF] shadow-[0_0_8px_rgba(145,70,255,0.4)]">
         <div
-          className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
+          className={`absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
             isFr ? 'translate-x-0' : 'translate-x-6'
           }`}
         />
