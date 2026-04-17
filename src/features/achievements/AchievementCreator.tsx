@@ -41,10 +41,15 @@ interface AchievementCreatorProps {
   onOpenSidebar: () => void
 }
 
+const TRIGGER_TYPES_REQUIRING_DATA: AchievementTriggerLabel[] = [
+  'message_content',
+  'redeem_channel_point',
+]
+
 function getPublishValidationError(
   selectedChannel: { id: string } | null,
   language: 'en' | 'fr',
-  formValues: { title: string; description: string }
+  formValues: { title: string; description: string; type: { label: AchievementTriggerLabel; data: unknown } }
 ): string | null {
   if (!selectedChannel) {
     return 'Select a channel before publishing an achievement.'
@@ -54,6 +59,9 @@ function getPublishValidationError(
   }
   if (!formValues.title.trim() || !formValues.description.trim()) {
     return 'Title and description are required before publishing.'
+  }
+  if (TRIGGER_TYPES_REQUIRING_DATA.includes(formValues.type.label) && !formValues.type.data) {
+    return 'A detail value is required for this trigger type.'
   }
   return null
 }
@@ -246,7 +254,7 @@ export function AchievementCreator({
         ...formValues,
         title: formValues.title.trim(),
         description: formValues.description.trim(),
-        label: formValues.label.trim() || 'dummy label',
+        label: formValues.type.data !== null ? String(formValues.type.data) : 'dummy label',
         image: selectedImageUpload ? null : normalizeAchievementImage(formValues.image),
         imageUpload: selectedImageUpload ?? null,
       }

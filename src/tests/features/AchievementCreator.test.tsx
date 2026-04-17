@@ -387,6 +387,29 @@ describe('AchievementCreator', () => {
     expect(triggerDataInput).toHaveValue('hello world')
   })
 
+  it('should block publishing when trigger type requires data but data is empty', async () => {
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+      target: { value: 'Test Achievement' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+      target: { value: 'Test description' },
+    })
+    fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
+      target: { value: 'message_content' },
+    })
+    // Leave trigger data empty
+    fireEvent.click(screen.getByText('Publish Achievement'))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'A detail value is required for this trigger type.'
+      )
+    })
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
   it('should show an error when the AI prompt is empty', async () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
@@ -509,7 +532,7 @@ describe('AchievementCreator', () => {
         expect.stringContaining('/achievements/edit-1'),
         expect.objectContaining({
           method: 'PUT',
-          body: expect.stringContaining('"label":"EA"'),
+          body: expect.stringContaining('"label":"dummy label"'),
         })
       )
     })
