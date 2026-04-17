@@ -123,7 +123,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
             <span>{t('common.settings')}</span>
           </button>
           <div className="pt-1">
-            <LanguageSwitcher />
+            <LanguageSwitcher className="w-full" />
           </div>
           <button
             onClick={handleLogout}

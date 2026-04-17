@@ -1,6 +1,10 @@
 import { useLanguage } from '../../context/LanguageContext'
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  className?: string
+}
+
+export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
   const { language, toggleLanguage, t } = useLanguage()
   const isFr = language === 'fr'
 
@@ -12,7 +16,7 @@ export function LanguageSwitcher() {
       aria-checked={isFr}
       aria-label={isFr ? t('language.switchToEnglish') : t('language.switchToFrench')}
       title={isFr ? t('language.switchToEnglish') : t('language.switchToFrench')}
-      className="flex items-center gap-2.5 rounded-lg border border-[#2d2d31] bg-[#18181b] px-3 py-2 transition-colors hover:bg-[#2d2d31] dark:border-gray-200 dark:bg-white dark:hover:bg-gray-100"
+      className={`flex items-center justify-center gap-2.5 rounded-lg border border-[#2d2d31] bg-[#18181b] px-3 py-2 transition-colors hover:bg-[#2d2d31] dark:border-gray-200 dark:bg-white dark:hover:bg-gray-100 ${className}`}
     >
       <span
         className={`text-sm font-semibold transition-colors duration-200 ${
