@@ -1,7 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { AchievementCreator } from '../../features/achievements/AchievementCreator'
+import { toast } from 'sonner'
 import React from 'react'
+
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+  }),
+}))
 
 const marketplaceTemplate = {
   id: 'template-1',
@@ -128,6 +136,8 @@ describe('AchievementCreator', () => {
   beforeEach(() => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
     mockFetch.mockClear()
+    vi.mocked(toast.success).mockClear()
+    vi.mocked(toast.error).mockClear()
     vi.stubGlobal('fetch', mockFetch)
   })
 
@@ -316,9 +326,9 @@ describe('AchievementCreator', () => {
     })
     fireEvent.click(screen.getByText('Publish Achievement'))
 
-    expect(
-      await screen.findByText('Achievement "First 100 Messages" was published.')
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Achievement "First 100 Messages" was published.')
+    })
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -419,7 +429,7 @@ describe('AchievementCreator', () => {
     fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
       target: { value: 'Unlock after 100 messages.' },
     })
-    fireEvent.change(screen.getByLabelText('Goal'), {
+    fireEvent.change(screen.getByLabelText('Combien de fois'), {
       target: { value: '100' },
     })
     fireEvent.change(screen.getByLabelText('Reward (XP / Points)'), {
@@ -428,9 +438,9 @@ describe('AchievementCreator', () => {
 
     fireEvent.click(screen.getByText('Publish Achievement'))
 
-    expect(
-      await screen.findByText('Achievement "First 100 Messages" was published.')
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Achievement "First 100 Messages" was published.')
+    })
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -466,18 +476,18 @@ describe('AchievementCreator', () => {
     fireEvent.click(screen.getByText('ModChannel'))
     fireEvent.click(screen.getByText('Publish Achievement'))
 
-    expect(
-      await screen.findByText(
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
         'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.'
       )
-    ).toBeInTheDocument()
+    })
   })
 
   it('should load an existing achievement in edit mode', async () => {
     render(<AchievementCreator achievementId="edit-1" onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(await screen.findByDisplayValue('Existing Achievement')).toBeInTheDocument()
-    expect(screen.getByLabelText('Goal')).toHaveValue(300)
+    expect(screen.getByLabelText('Combien de fois')).toHaveValue(300)
     expect(screen.getByText('Edit Achievement')).toBeInTheDocument()
   })
 
@@ -490,9 +500,9 @@ describe('AchievementCreator', () => {
     })
     fireEvent.click(screen.getByText('Update Achievement'))
 
-    expect(
-      await screen.findByText('Achievement "Updated Achievement" was updated.')
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Achievement "Updated Achievement" was updated.')
+    })
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(

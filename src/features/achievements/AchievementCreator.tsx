@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
+import { toast } from 'sonner'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Sparkles, Upload, Save, Send, Menu, X } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
@@ -72,8 +73,6 @@ export function AchievementCreator({
   )
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingAchievement, setIsLoadingAchievement] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -173,8 +172,6 @@ export function AchievementCreator({
       setFormValues(defaultAchievementFormValues)
       setIsLoadingAchievement(false)
       setLoadError(null)
-      setSubmitError(null)
-      setSubmitSuccess(null)
       setImageUploadError(null)
       setImageUploadSuccess(null)
       setSelectedImageUpload(null)
@@ -185,8 +182,6 @@ export function AchievementCreator({
     let isMounted = true
     setIsLoadingAchievement(true)
     setLoadError(null)
-    setSubmitError(null)
-    setSubmitSuccess(null)
     setImageUploadError(null)
     setImageUploadSuccess(null)
     setSelectedImageUpload(null)
@@ -230,8 +225,6 @@ export function AchievementCreator({
     setFormValues(createFormValuesFromAchievement(templateAchievement))
     setMode('simple')
     setLoadError(null)
-    setSubmitError(null)
-    setSubmitSuccess(null)
     setImageUploadError(null)
     setImageUploadSuccess(null)
     setSelectedImageUpload(null)
@@ -242,14 +235,11 @@ export function AchievementCreator({
   const handlePublish = async () => {
     const validationError = getPublishValidationError(selectedChannel, language, formValues)
     if (validationError) {
-      setSubmitError(validationError)
-      setSubmitSuccess(null)
+      toast.error(validationError)
       return
     }
 
     setIsSubmitting(true)
-    setSubmitError(null)
-    setSubmitSuccess(null)
 
     try {
       const normalizedPayload = {
@@ -271,7 +261,7 @@ export function AchievementCreator({
         setImagePreviewUrl(null)
         setImageUploadSuccess(null)
         setImageUploadError(null)
-        setSubmitSuccess(`Achievement "${normalizedPayload.title}" was updated.`)
+        toast.success(`Achievement "${normalizedPayload.title}" was updated.`)
       } else {
         await achievementManagementClient.createAchievement({
           ...normalizedPayload,
@@ -283,10 +273,10 @@ export function AchievementCreator({
         setImagePreviewUrl(null)
         setImageUploadSuccess(null)
         setImageUploadError(null)
-        setSubmitSuccess(`Achievement "${normalizedPayload.title}" was published.`)
+        toast.success(`Achievement "${normalizedPayload.title}" was published.`)
       }
     } catch {
-      setSubmitError(
+      toast.error(
         achievementId
           ? 'Unable to update this achievement right now.'
           : 'Unable to publish this achievement right now.'
@@ -381,18 +371,6 @@ export function AchievementCreator({
               {loadError && (
                 <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
                   {loadError}
-                </div>
-              )}
-
-              {submitError && (
-                <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
-                  {submitError}
-                </div>
-              )}
-
-              {submitSuccess && (
-                <div className="mb-6 rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00f593] dark:text-[#027a48]">
-                  {submitSuccess}
                 </div>
               )}
 

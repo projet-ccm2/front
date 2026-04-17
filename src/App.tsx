@@ -22,6 +22,7 @@ import {
 import { isTwitchExtensionPanelPath } from './features/overlay/utils/twitchExtensionLink'
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
 import { useLanguage } from './context/LanguageContext'
+import { Toaster } from './components/ui/sonner'
 
 type Screen =
   | 'landing'
@@ -122,6 +123,7 @@ export function AppContent() {
   }
 
   return (
+    <>
     <div className="flex h-screen bg-[#0e0e10] text-[#efeff1] dark:bg-gray-50 dark:text-gray-900 overflow-hidden">
       <Sidebar
         currentPage={currentScreen}
@@ -166,6 +168,8 @@ export function AppContent() {
         </div>
       </main>
     </div>
+    <Toaster />
+    </>
   )
 }
 
