@@ -250,7 +250,7 @@ export function AchievementCreator({
     setIsSubmitting(true)
 
     try {
-      const normalizedTypeData = formValues.type.data !== null ? formValues.type.data : 'dummy label'
+      const normalizedTypeData = formValues.type.data ?? 'dummy label'
       const normalizedPayload = {
         ...formValues,
         title: formValues.title.trim(),
