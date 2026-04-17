@@ -10,26 +10,14 @@ describe('LanguageSwitcher', () => {
   it('should render the default French state', () => {
     render(<LanguageSwitcher />)
 
-    expect(screen.getByRole('button', { name: /anglais/i })).toHaveAttribute(
-      'aria-pressed',
-      'false'
-    )
-    expect(screen.getByRole('button', { name: /fran/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true')
   })
 
-  it('should switch language when a button is clicked', () => {
+  it('should switch language when clicked', () => {
     render(<LanguageSwitcher />)
 
-    const [englishButton] = screen.getAllByRole('button')
-    fireEvent.click(englishButton)
+    fireEvent.click(screen.getByRole('switch'))
 
-    expect(screen.getByRole('button', { name: /switch to english/i })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    )
-    expect(screen.getByRole('button', { name: /switch to french/i })).toHaveAttribute(
-      'aria-pressed',
-      'false'
-    )
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false')
   })
 })
