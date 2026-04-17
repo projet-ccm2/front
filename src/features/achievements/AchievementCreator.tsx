@@ -250,11 +250,13 @@ export function AchievementCreator({
     setIsSubmitting(true)
 
     try {
+      const normalizedTypeData = formValues.type.data !== null ? formValues.type.data : 'dummy label'
       const normalizedPayload = {
         ...formValues,
         title: formValues.title.trim(),
         description: formValues.description.trim(),
-        label: formValues.type.data !== null ? String(formValues.type.data) : 'dummy label',
+        label: String(normalizedTypeData),
+        type: { ...formValues.type, data: normalizedTypeData },
         image: selectedImageUpload ? null : normalizeAchievementImage(formValues.image),
         imageUpload: selectedImageUpload ?? null,
       }
