@@ -447,7 +447,7 @@ describe('AchievementCreator', () => {
         expect.stringContaining('/achievements'),
         expect.objectContaining({
           method: 'POST',
-          body: expect.stringContaining('"label":""'),
+          body: expect.stringContaining('"label":"dummy label"'),
         })
       )
     })
@@ -509,7 +509,7 @@ describe('AchievementCreator', () => {
         expect.stringContaining('/achievements/edit-1'),
         expect.objectContaining({
           method: 'PUT',
-          body: expect.stringContaining('"label":""'),
+          body: expect.stringContaining('"label":"EA"'),
         })
       )
     })

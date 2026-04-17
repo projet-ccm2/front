@@ -246,7 +246,7 @@ export function AchievementCreator({
         ...formValues,
         title: formValues.title.trim(),
         description: formValues.description.trim(),
-        label: '',
+        label: formValues.label.trim() || 'dummy label',
         image: selectedImageUpload ? null : normalizeAchievementImage(formValues.image),
         imageUpload: selectedImageUpload ?? null,
       }
