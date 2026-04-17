@@ -171,6 +171,7 @@ export function AchievementCreator({
   useEffect(() => {
     if (!achievementId) {
       setFormValues(defaultAchievementFormValues)
+      setIsLoadingAchievement(false)
       setLoadError(null)
       setSubmitError(null)
       setSubmitSuccess(null)
@@ -261,13 +262,27 @@ export function AchievementCreator({
       }
 
       if (achievementId) {
-        await achievementManagementClient.updateAchievement(achievementId, normalizedPayload)
+        const updatedAchievement = await achievementManagementClient.updateAchievement(
+          achievementId,
+          normalizedPayload
+        )
+        setFormValues(createFormValuesFromAchievement(updatedAchievement))
+        setSelectedImageUpload(null)
+        setImagePreviewUrl(null)
+        setImageUploadSuccess(null)
+        setImageUploadError(null)
         setSubmitSuccess(`Achievement "${normalizedPayload.title}" was updated.`)
       } else {
         await achievementManagementClient.createAchievement({
           ...normalizedPayload,
           channelId: selectedChannel!.id,
         })
+        setFormValues(defaultAchievementFormValues)
+        setMode('simple')
+        setSelectedImageUpload(null)
+        setImagePreviewUrl(null)
+        setImageUploadSuccess(null)
+        setImageUploadError(null)
         setSubmitSuccess(`Achievement "${normalizedPayload.title}" was published.`)
       }
     } catch {
