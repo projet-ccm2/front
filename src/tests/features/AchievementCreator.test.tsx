@@ -410,6 +410,37 @@ describe('AchievementCreator', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
+  it('should show the cost input for channel_point_cost trigger type', () => {
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
+      target: { value: 'channel_point_cost' },
+    })
+
+    expect(screen.getByLabelText('Coût minimum en points')).toBeInTheDocument()
+    expect(screen.getByLabelText('Coût minimum en points')).toHaveAttribute('type', 'number')
+  })
+
+  it('should block publishing when channel_point_cost data is not a positive integer', async () => {
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+      target: { value: 'Test Achievement' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+      target: { value: 'Test description' },
+    })
+    fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
+      target: { value: 'channel_point_cost' },
+    })
+    fireEvent.click(screen.getByText('Publish Achievement'))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Channel point cost must be a positive integer.')
+    })
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
   it('should show an error when the AI prompt is empty', async () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 

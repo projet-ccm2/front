@@ -21,18 +21,24 @@ import {
 } from './utils/achievementManagementChannel'
 
 function getTriggerFieldConfig(label: AchievementTriggerLabel, t: (key: string) => string) {
-  const showDetail = label === 'message_content' || label === 'redeem_channel_point'
+  const showDetail =
+    label === 'message_content' ||
+    label === 'redeem_channel_point' ||
+    label === 'channel_point_cost'
   const detailLabel =
     label === 'redeem_channel_point'
       ? t('achievement.trigger.dataLabel.redeem_channel_point')
-      : t('achievement.trigger.dataLabel')
+      : label === 'channel_point_cost'
+        ? t('achievement.trigger.dataLabel.channel_point_cost')
+        : t('achievement.trigger.dataLabel')
+  const detailInputType = label === 'channel_point_cost' ? 'number' : 'text'
   const goalLabel =
     label === 'message'
       ? t('achievement.goal.message')
       : label === 'channel_point_cost'
         ? t('achievement.goal.channel_point_cost')
         : t('achievement.goal.default')
-  return { showDetail, detailLabel, goalLabel }
+  return { showDetail, detailLabel, detailInputType, goalLabel }
 }
 
 interface AchievementCreatorProps {
@@ -62,6 +68,12 @@ function getPublishValidationError(
   }
   if (TRIGGER_TYPES_REQUIRING_DATA.includes(formValues.type.label) && !formValues.type.data) {
     return 'A detail value is required for this trigger type.'
+  }
+  if (formValues.type.label === 'channel_point_cost') {
+    const cost = Number(formValues.type.data)
+    if (!Number.isInteger(cost) || cost <= 0) {
+      return 'Channel point cost must be a positive integer.'
+    }
   }
   return null
 }
@@ -667,7 +679,7 @@ export function AchievementCreator({
                           </label>
                           <input
                             id="achievement-trigger-data"
-                            type="text"
+                            type={triggerConfig.detailInputType}
                             value={
                               formValues.type.data === null ? '' : String(formValues.type.data ?? '')
                             }

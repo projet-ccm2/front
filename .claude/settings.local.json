@@ -1,14 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx prettier:*)",
-      "Bash(npx eslint:*)",
-      "Bash(grep -v \"^$\")",
-      "Bash(npx vitest:*)",
-      "Bash(git -C /c/Users/maxim/OneDrive/Bureau/front/front stash)",
-      "Bash(git -C /c/Users/maxim/OneDrive/Bureau/front/front stash pop)",
       "Bash(rtk vitest:*)",
-      "Bash(rtk npm:*)"
+      "Bash(rtk tsc:*)",
+      "Bash(rtk lint:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }

@@ -85,6 +85,7 @@ const EN_TRANSLATIONS: TranslationMap = {
   'achievement.trigger.api_caller.description':
     'Unlock from an external API call or automated event.',
   'achievement.trigger.dataLabel.redeem_channel_point': 'Channel point reward ID',
+  'achievement.trigger.dataLabel.channel_point_cost': 'Minimum point cost',
   'achievement.goal.message': 'How many times',
   'achievement.goal.channel_point_cost': 'Amount spent',
   'achievement.goal.default': 'Goal',
@@ -370,6 +371,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'achievement.trigger.api_caller.description':
     'Débloqué via un appel API externe ou un événement automatisé.',
   'achievement.trigger.dataLabel.redeem_channel_point': 'ID de la récompense de point de chaîne',
+  'achievement.trigger.dataLabel.channel_point_cost': 'Coût minimum en points',
   'achievement.goal.message': 'Combien de fois',
   'achievement.goal.channel_point_cost': 'Quantité dépensée',
   'achievement.goal.default': 'Objectif',
