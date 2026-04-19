@@ -142,8 +142,16 @@ export function AchievementCreator({
       return
     }
 
-    if (!file.type.startsWith('image/')) {
-      setImageUploadError('Please select a valid image file.')
+    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+    const MAX_FILE_SIZE = 10 * 1024 * 1024
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      setImageUploadError('Only JPEG, PNG, and WebP images are accepted.')
+      setImageUploadSuccess(null)
+      return
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setImageUploadError('Image must be smaller than 10 MB.')
       setImageUploadSuccess(null)
       return
     }
@@ -420,7 +428,10 @@ export function AchievementCreator({
                   Achievement Icon
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <div className="w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden">
+                  <div
+                    onClick={() => !isPreparingImageUpload && handleOpenImagePicker()}
+                    className="w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden cursor-pointer"
+                  >
                     {imagePreviewUrl ? (
                       <img
                         src={imagePreviewUrl}
@@ -482,7 +493,7 @@ export function AchievementCreator({
                       ref={imageFileInputRef}
                       data-testid="achievement-image-input"
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       onChange={handleImageChange}
                       className="hidden"
                     />
@@ -779,6 +790,14 @@ export function AchievementCreator({
                       : 'Publish Achievement'}
                 </button>
               </div>
+              {isSubmitting && (
+                <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
+                  <div
+                    className="h-full w-2/5 rounded-full bg-gradient-to-r from-[#9146FF] to-[#772ce8]"
+                    style={{ animation: 'publishSlide 1.5s ease-in-out infinite' }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
