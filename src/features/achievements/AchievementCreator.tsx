@@ -15,6 +15,7 @@ import {
   normalizeAchievementImage,
 } from './forms/achievementFormModel'
 import type { Achievement, AchievementTriggerLabel } from './api/achievementManagement.types'
+import { isRenderableImageSource } from './utils/achievementImage'
 import {
   getOwnerOnlyAchievementMessage,
   isOwnerAchievementChannelId,
@@ -425,6 +426,15 @@ export function AchievementCreator({
                         src={imagePreviewUrl}
                         alt="Selected achievement image preview"
                         className="h-full w-full object-cover"
+                      />
+                    ) : formValues.image && isRenderableImageSource(formValues.image.trim()) ? (
+                      <img
+                        src={formValues.image.trim()}
+                        alt="Current achievement image"
+                        className="h-full w-full object-cover"
+                        onError={e => {
+                          ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+                        }}
                       />
                     ) : formValues.image ? (
                       <div className="flex h-full w-full items-center justify-center text-center px-3 text-xs text-gray-300 dark:text-gray-600 break-all">

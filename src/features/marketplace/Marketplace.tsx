@@ -4,6 +4,7 @@ import { Search, Download, Filter, Menu, X, Plus, Eye, Target } from 'lucide-rea
 import { usePublicAchievements } from './hooks/usePublicAchievements'
 import { useLanguage } from '../../context/LanguageContext'
 import type { Achievement } from '../achievements/api/achievementManagement.types'
+import { AchievementThumbnail } from '../achievements/components/AchievementThumbnail'
 
 interface MarketplaceProps {
   readonly onUseTemplate: (achievement: Achievement) => void
@@ -261,9 +262,11 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                   >
                     <div className="p-4 sm:p-6 border-b border-[#2d2d31] dark:border-gray-200">
                       <div className="flex items-start justify-between mb-4 gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-xl flex items-center justify-center text-xl text-white text-center px-2">
-                          {achievement.label || achievement.title.slice(0, 2).toUpperCase()}
-                        </div>
+                        <AchievementThumbnail
+                          title={achievement.title}
+                          image={achievement.image}
+                          className="w-16 h-16 px-2 text-center"
+                        />
                         <div
                           className={`px-3 py-1 rounded-full text-xs ${getVisibilityBadgeClassName(
                             achievement.secret

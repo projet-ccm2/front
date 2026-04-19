@@ -17,6 +17,7 @@ export interface PanelAchievementEntry {
   title: string
   description: string
   avatar: string
+  image: string | null
   progressText: string
   progressPercent: number
   reward: number
@@ -29,6 +30,7 @@ export interface PublicPanelAchievementEntry {
   title: string
   description: string
   avatar: string
+  image: string | null
   status: string
   reward: number
   isHidden: boolean
@@ -107,6 +109,7 @@ export function buildPanelAchievementEntries(
             current: achievement.userState.progressCount,
             goal: achievement.goal,
           }),
+      image: isHidden ? null : (achievement.image ?? null),
       progressPercent,
       reward: achievement.reward,
       isUnlocked: achievement.userState.finished,
@@ -151,6 +154,7 @@ export function buildPublicPanelEntries(
           : achievement.label.trim().charAt(0).toUpperCase() ||
             achievement.title.charAt(0).toUpperCase() ||
             'A',
+        image: isHidden ? null : (achievement.image ?? null),
         status: achievement.active ? t('marketplace.active') : t('marketplace.inactive'),
         reward: achievement.reward,
         isHidden,

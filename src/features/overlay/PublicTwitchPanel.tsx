@@ -7,6 +7,7 @@ import {
   buildPublicPanelEntries,
 } from '../achievements/utils/achievementLeaderboard'
 import { buildPublicPanelUrl } from './utils/publicPanelLink'
+import { AchievementThumbnail } from '../achievements/components/AchievementThumbnail'
 import { usePublicViewerAchievements } from './hooks/usePublicViewerAchievements'
 
 interface PublicTwitchPanelProps {
@@ -19,6 +20,7 @@ interface PanelCardProps {
   title: string
   description: string
   avatar: string
+  image?: string | null
   reward: number
   isHidden: boolean
   statusLabel?: string
@@ -173,6 +175,7 @@ export function PublicTwitchPanel({
                     title={entry.title}
                     description={entry.description}
                     avatar={entry.avatar}
+                    image={entry.image}
                     reward={entry.reward}
                     isHidden={entry.isHidden}
                     statusLabel={entry.status}
@@ -245,6 +248,7 @@ export function PublicTwitchPanel({
                   title={entry.title}
                   description={entry.description}
                   avatar={entry.avatar}
+                  image={entry.image}
                   reward={entry.reward}
                   isHidden={entry.isHidden}
                   statusLabel={entry.progressText}
@@ -281,6 +285,7 @@ function PanelAchievementCard({
   title,
   description,
   avatar,
+  image,
   reward,
   isHidden,
   statusLabel,
@@ -300,15 +305,13 @@ function PanelAchievementCard({
       }`}
     >
       <div className="flex items-start gap-4">
-        <div
-          className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl font-semibold ${
-            isHidden
-              ? 'bg-[#2d2d31] text-white dark:bg-gray-200 dark:text-gray-900'
-              : 'bg-gradient-to-br from-[#9146FF] to-[#772ce8] text-white'
-          }`}
-        >
-          {avatar}
-        </div>
+        {isHidden ? (
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl font-semibold bg-[#2d2d31] text-white dark:bg-gray-200 dark:text-gray-900">
+            {avatar}
+          </div>
+        ) : (
+          <AchievementThumbnail title={title} image={image} className="h-12 w-12" />
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">

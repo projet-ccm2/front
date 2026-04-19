@@ -6,6 +6,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { achievementManagementClient } from './api/achievementManagementClient'
 import type { Achievement } from './api/achievementManagement.types'
 import { useChannelAchievements } from './hooks/useChannelAchievements'
+import { AchievementThumbnail } from './components/AchievementThumbnail'
 import {
   Dialog,
   DialogContent,
@@ -267,9 +268,11 @@ export function SuccessManagement({
                   className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6 hover:border-[#9146FF] transition-colors"
                 >
                   <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-xl flex items-center justify-center text-xl text-white flex-shrink-0 px-2 text-center">
-                      {achievement.label || achievement.title.slice(0, 2).toUpperCase()}
-                    </div>
+                    <AchievementThumbnail
+                      title={achievement.title}
+                      image={achievement.image}
+                      className="w-16 h-16 px-2 text-center"
+                    />
 
                     <div className="flex-1 min-w-0 w-full">
                       <div className="flex flex-col sm:flex-row items-start justify-between mb-3 gap-3">
