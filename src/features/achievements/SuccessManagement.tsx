@@ -271,7 +271,7 @@ export function SuccessManagement({
                     <AchievementThumbnail
                       title={achievement.title}
                       image={achievement.image}
-                      className="w-16 h-16 px-2 text-center"
+                      className="w-16 h-16"
                     />
 
                     <div className="flex-1 min-w-0 w-full">

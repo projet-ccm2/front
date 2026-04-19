@@ -132,40 +132,38 @@ export function AppContent() {
         onClose={() => setSidebarOpen(false)}
       />
       <main className="flex-1 overflow-y-auto relative bg-[#0e0e10] dark:bg-white">
-        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-          {currentScreen === 'dashboard' && (
-            <Dashboard onNavigate={handleNavigate} onOpenSidebar={() => setSidebarOpen(true)} />
-          )}
-          {currentScreen === 'creator' && (
-            <AchievementCreator
-              achievementId={editingAchievementId}
-              templateAchievement={templateAchievement}
-              onOpenSidebar={() => setSidebarOpen(true)}
-            />
-          )}
-          {currentScreen === 'management' && (
-            <SuccessManagement
-              onEditAchievement={handleEditAchievement}
-              onNavigate={handleNavigate}
-              onOpenSidebar={() => setSidebarOpen(true)}
-            />
-          )}
-          {currentScreen === 'marketplace' && (
-            <Marketplace
-              onOpenSidebar={() => setSidebarOpen(true)}
-              onUseTemplate={handleUseAchievementTemplate}
-            />
-          )}
-          {currentScreen === 'profile' && (
-            <UserProfile onOpenSidebar={() => setSidebarOpen(true)} />
-          )}
-          {currentScreen === 'viewerHub' && (
-            <ViewerHub onOpenSidebar={() => setSidebarOpen(true)} />
-          )}
-          {currentScreen === 'overlay' && (
-            <TwitchOverlay onOpenSidebar={() => setSidebarOpen(true)} />
-          )}
-        </div>
+        {currentScreen === 'dashboard' && (
+          <Dashboard onNavigate={handleNavigate} onOpenSidebar={() => setSidebarOpen(true)} />
+        )}
+        {currentScreen === 'creator' && (
+          <AchievementCreator
+            achievementId={editingAchievementId}
+            templateAchievement={templateAchievement}
+            onOpenSidebar={() => setSidebarOpen(true)}
+          />
+        )}
+        {currentScreen === 'management' && (
+          <SuccessManagement
+            onEditAchievement={handleEditAchievement}
+            onNavigate={handleNavigate}
+            onOpenSidebar={() => setSidebarOpen(true)}
+          />
+        )}
+        {currentScreen === 'marketplace' && (
+          <Marketplace
+            onOpenSidebar={() => setSidebarOpen(true)}
+            onUseTemplate={handleUseAchievementTemplate}
+          />
+        )}
+        {currentScreen === 'profile' && (
+          <UserProfile onOpenSidebar={() => setSidebarOpen(true)} />
+        )}
+        {currentScreen === 'viewerHub' && (
+          <ViewerHub onOpenSidebar={() => setSidebarOpen(true)} />
+        )}
+        {currentScreen === 'overlay' && (
+          <TwitchOverlay onOpenSidebar={() => setSidebarOpen(true)} />
+        )}
       </main>
     </div>
     <Toaster />

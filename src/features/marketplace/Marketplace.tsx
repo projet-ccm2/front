@@ -265,7 +265,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                         <AchievementThumbnail
                           title={achievement.title}
                           image={achievement.image}
-                          className="w-16 h-16 px-2 text-center"
+                          className="w-16 h-16"
                         />
                         <div
                           className={`px-3 py-1 rounded-full text-xs ${getVisibilityBadgeClassName(
