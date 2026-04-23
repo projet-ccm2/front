@@ -17,7 +17,6 @@ import {
 import type { Achievement, AchievementTriggerLabel } from './api/achievementManagement.types'
 import { isRenderableImageSource } from './utils/achievementImage'
 import {
-  getOwnerOnlyAchievementMessage,
   isOwnerAchievementChannelId,
 } from './utils/achievementManagementChannel'
 
@@ -55,25 +54,25 @@ const TRIGGER_TYPES_REQUIRING_DATA: AchievementTriggerLabel[] = [
 
 function getPublishValidationError(
   selectedChannel: { id: string } | null,
-  language: 'en' | 'fr',
+  t: (key: string) => string,
   formValues: { title: string; description: string; type: { label: AchievementTriggerLabel; data: unknown } }
 ): string | null {
   if (!selectedChannel) {
-    return 'Select a channel before publishing an achievement.'
+    return t('creator.validation.noChannel')
   }
   if (!isOwnerAchievementChannelId(selectedChannel.id)) {
-    return getOwnerOnlyAchievementMessage(language, 'creator')
+    return t('achievement.ownerOnly.creator')
   }
   if (!formValues.title.trim() || !formValues.description.trim()) {
-    return 'Title and description are required before publishing.'
+    return t('creator.validation.missingFields')
   }
   if (TRIGGER_TYPES_REQUIRING_DATA.includes(formValues.type.label) && !formValues.type.data) {
-    return 'A detail value is required for this trigger type.'
+    return t('creator.validation.missingDetail')
   }
   if (formValues.type.label === 'channel_point_cost') {
     const cost = Number(formValues.type.data)
     if (!Number.isInteger(cost) || cost <= 0) {
-      return 'Channel point cost must be a positive integer.'
+      return t('creator.validation.invalidCost')
     }
   }
   return null
@@ -89,9 +88,7 @@ export function AchievementCreator({
   const achievementTriggerOptions = getAchievementTriggerOptions(language)
   const [mode, setMode] = useState<'simple' | 'api'>('simple')
   const [formValues, setFormValues] = useState(defaultAchievementFormValues)
-  const [aiPrompt, setAiPrompt] = useState(
-    'Create an achievement for a user who sends 100 messages'
-  )
+  const [aiPrompt, setAiPrompt] = useState(() => t('creator.ai.defaultPrompt'))
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -146,12 +143,12 @@ export function AchievementCreator({
     const MAX_FILE_SIZE = 10 * 1024 * 1024
 
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      setImageUploadError('Only JPEG, PNG, and WebP images are accepted.')
+      setImageUploadError(t('creator.image.error.type'))
       setImageUploadSuccess(null)
       return
     }
     if (file.size > MAX_FILE_SIZE) {
-      setImageUploadError('Image must be smaller than 10 MB.')
+      setImageUploadError(t('creator.image.error.size'))
       setImageUploadSuccess(null)
       return
     }
@@ -166,9 +163,9 @@ export function AchievementCreator({
       setSelectedImageUpload(uploadValue)
       setImagePreviewUrl(uploadValue.contentBase64)
       updateField('image', null)
-      setImageUploadSuccess(`Image "${uploadValue.fileName}" is ready to be uploaded.`)
+      setImageUploadSuccess(t('creator.image.ready', { name: uploadValue.fileName }))
     } catch {
-      setImageUploadError('Unable to prepare the image right now.')
+      setImageUploadError(t('creator.image.error.prepare'))
     } finally {
       setIsPreparingImageUpload(false)
     }
@@ -176,7 +173,7 @@ export function AchievementCreator({
 
   const handleAIGenerate = async () => {
     if (!aiPrompt.trim()) {
-      setAiError('Enter an AI prompt before requesting a suggestion.')
+      setAiError(t('creator.ai.error.empty'))
       return
     }
 
@@ -190,7 +187,7 @@ export function AchievementCreator({
 
       setFormValues(current => mergeSuggestionIntoFormValues(current, suggestion))
     } catch {
-      setAiError('Unable to generate an AI suggestion right now.')
+      setAiError(t('creator.ai.error.failed'))
     } finally {
       setIsGenerating(false)
     }
@@ -231,7 +228,7 @@ export function AchievementCreator({
           return
         }
 
-        setLoadError('Unable to load this achievement for editing.')
+        setLoadError(t('creator.error.load'))
       } finally {
         if (isMounted) {
           setIsLoadingAchievement(false)
@@ -258,11 +255,11 @@ export function AchievementCreator({
     setImageUploadSuccess(null)
     setSelectedImageUpload(null)
     setImagePreviewUrl(null)
-    setTemplateMessage(`Template "${templateAchievement.title}" loaded from the marketplace.`)
+    setTemplateMessage(t('creator.template.loaded', { title: templateAchievement.title }))
   }, [achievementId, templateAchievement])
 
   const handlePublish = async () => {
-    const validationError = getPublishValidationError(selectedChannel, language, formValues)
+    const validationError = getPublishValidationError(selectedChannel, t, formValues)
     if (validationError) {
       toast.error(validationError)
       return
@@ -292,7 +289,7 @@ export function AchievementCreator({
         setImagePreviewUrl(null)
         setImageUploadSuccess(null)
         setImageUploadError(null)
-        toast.success(`Achievement "${normalizedPayload.title}" was updated.`)
+        toast.success(t('creator.toast.updated', { title: normalizedPayload.title }))
       } else {
         await achievementManagementClient.createAchievement({
           ...normalizedPayload,
@@ -304,13 +301,13 @@ export function AchievementCreator({
         setImagePreviewUrl(null)
         setImageUploadSuccess(null)
         setImageUploadError(null)
-        toast.success(`Achievement "${normalizedPayload.title}" was published.`)
+        toast.success(t('creator.toast.published', { title: normalizedPayload.title }))
       }
     } catch {
       toast.error(
         achievementId
-          ? 'Unable to update this achievement right now.'
-          : 'Unable to publish this achievement right now.'
+          ? t('creator.toast.error.update')
+          : t('creator.toast.error.publish')
       )
     } finally {
       setIsSubmitting(false)
@@ -332,12 +329,12 @@ export function AchievementCreator({
               </button>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                  {achievementId ? 'Edit Achievement' : 'Create Achievement'}
+                  {achievementId ? t('creator.title.edit') : t('creator.title.create')}
                 </h1>
                 <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
                   {achievementId
-                    ? 'Update an existing quest for your community'
-                    : 'Design a new quest for your community'}
+                    ? t('creator.subtitle.edit')
+                    : t('creator.subtitle.create')}
                 </p>
               </div>
             </div>
@@ -357,9 +354,9 @@ export function AchievementCreator({
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="text-white dark:text-gray-900">AI-Powered Generation</div>
+                    <div className="text-white dark:text-gray-900">{t('creator.ai.title')}</div>
                     <div className="text-sm text-gray-400 dark:text-gray-600">
-                      Let AI create an achievement based on your channel context
+                      {t('creator.ai.description')}
                     </div>
                   </div>
                 </div>
@@ -371,7 +368,7 @@ export function AchievementCreator({
                     id="ai-prompt"
                     value={aiPrompt}
                     onChange={event => setAiPrompt(event.target.value)}
-                    placeholder="Describe the achievement you want AI to draft..."
+                    placeholder={t('creator.ai.placeholder')}
                     rows={2}
                     className="mb-3 w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors resize-none placeholder:text-gray-500"
                   />
@@ -383,7 +380,7 @@ export function AchievementCreator({
                     }`}
                   >
                     <Sparkles className="w-4 h-4" />
-                    {isGenerating ? 'Generating...' : 'Generate with AI'}
+                    {isGenerating ? t('creator.ai.generating') : t('creator.ai.generate')}
                   </button>
                 </div>
               </div>
@@ -395,7 +392,7 @@ export function AchievementCreator({
             <div className="p-4 sm:p-8">
               {isLoadingAchievement && (
                 <div className="mb-6 rounded-xl border border-[#2d2d31] bg-[#2d2d31] p-4 text-sm text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600">
-                  Loading achievement data...
+                  {t('creator.loading')}
                 </div>
               )}
 
@@ -425,7 +422,7 @@ export function AchievementCreator({
 
               <div className="mb-8">
                 <div className="block text-white dark:text-gray-900 mb-3 font-medium">
-                  Achievement Icon
+                  {t('creator.image.label')}
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <div
@@ -466,7 +463,7 @@ export function AchievementCreator({
                         }`}
                       >
                         <Upload className="w-4 h-4" />
-                        {isPreparingImageUpload ? 'Preparing...' : 'Upload Image'}
+                        {isPreparingImageUpload ? t('creator.image.preparing') : t('creator.image.upload')}
                       </button>
                       <button
                         type="button"
@@ -479,15 +476,14 @@ export function AchievementCreator({
                         }`}
                       >
                         <X className="w-4 h-4" />
-                        Clear Image
+                        {t('creator.image.clear')}
                       </button>
                     </div>
                     <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">
-                      Recommended: 512x512px PNG or JPG
+                      {t('creator.image.hint')}
                     </p>
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
-                      The selected file will be converted to base64 and uploaded by
-                      achievement-management when you publish.
+                      {t('creator.image.note')}
                     </p>
                     <input
                       ref={imageFileInputRef}
@@ -500,20 +496,19 @@ export function AchievementCreator({
                     <div className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600">
                       {selectedImageUpload ? (
                         <span className="break-all">
-                          Selected file:{' '}
+                          {t('creator.image.selected')}{' '}
                           <span className="text-white dark:text-gray-900">
                             {selectedImageUpload.fileName}
                           </span>
                         </span>
                       ) : formValues.image ? (
                         <span className="break-all">
-                          Stored image reference:{' '}
+                          {t('creator.image.stored')}{' '}
                           <span className="text-white dark:text-gray-900">{formValues.image}</span>
                         </span>
                       ) : (
                         <span>
-                          No image selected yet. Upload one to let achievement-management handle it
-                          on publish.
+                          {t('creator.image.empty')}
                         </span>
                       )}
                     </div>
@@ -526,14 +521,14 @@ export function AchievementCreator({
                   htmlFor="achievement-title"
                   className="block text-white dark:text-gray-900 mb-3"
                 >
-                  Achievement Title
+                  {t('creator.field.title')}
                 </label>
                 <input
                   id="achievement-title"
                   type="text"
                   value={formValues.title}
                   onChange={event => updateField('title', event.target.value)}
-                  placeholder="Enter achievement name..."
+                  placeholder={t('creator.field.title.placeholder')}
                   className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
                 />
               </div>
@@ -543,13 +538,13 @@ export function AchievementCreator({
                   htmlFor="achievement-description"
                   className="block text-white dark:text-gray-900 mb-3"
                 >
-                  Description
+                  {t('creator.field.description')}
                 </label>
                 <textarea
                   id="achievement-description"
                   value={formValues.description}
                   onChange={event => updateField('description', event.target.value)}
-                  placeholder="Describe how to unlock this achievement..."
+                  placeholder={t('creator.field.description.placeholder')}
                   rows={4}
                   className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors resize-none placeholder:text-gray-500"
                 />
@@ -560,7 +555,7 @@ export function AchievementCreator({
                   htmlFor="achievement-reward"
                   className="block text-white dark:text-gray-900 mb-3"
                 >
-                  Reward (XP / Points)
+                  {t('creator.field.reward')}
                 </label>
                 <input
                   id="achievement-reward"
@@ -582,8 +577,8 @@ export function AchievementCreator({
                         : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
                     }`}
                   >
-                    <div className="font-medium">Public Template</div>
-                    <div className="mt-1 text-sm">Allow marketplace reuse.</div>
+                    <div className="font-medium">{t('creator.toggle.public.title')}</div>
+                    <div className="mt-1 text-sm">{t('creator.toggle.public.description')}</div>
                   </button>
                   <button
                     type="button"
@@ -594,8 +589,8 @@ export function AchievementCreator({
                         : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
                     }`}
                   >
-                    <div className="font-medium">Active</div>
-                    <div className="mt-1 text-sm">Achievement available immediately.</div>
+                    <div className="font-medium">{t('creator.toggle.active.title')}</div>
+                    <div className="mt-1 text-sm">{t('creator.toggle.active.description')}</div>
                   </button>
                   <button
                     type="button"
@@ -606,8 +601,8 @@ export function AchievementCreator({
                         : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
                     }`}
                   >
-                    <div className="font-medium">Secret Achievement</div>
-                    <div className="mt-1 text-sm">Hidden until unlocked.</div>
+                    <div className="font-medium">{t('creator.toggle.secret.title')}</div>
+                    <div className="mt-1 text-sm">{t('creator.toggle.secret.description')}</div>
                   </button>
                 </div>
 
@@ -628,7 +623,7 @@ export function AchievementCreator({
                         : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
                     }`}
                   >
-                    Simple Mode
+                    {t('creator.mode.simple')}
                   </button>
                   <button
                     onClick={() => {
@@ -644,7 +639,7 @@ export function AchievementCreator({
                         : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
                     }`}
                   >
-                    API
+                    {t('creator.mode.api')}
                   </button>
                 </div>
               </div>
@@ -759,17 +754,17 @@ export function AchievementCreator({
               <div className="mb-8 p-4 bg-[#2d2d31] dark:bg-gray-100 rounded-lg border-l-4 border-[#00f593]">
                 <div className="flex items-center gap-2 text-[#00f593] mb-1">
                   <div className="w-2 h-2 bg-[#00f593] rounded-full" />
-                  <span>Version 1.0</span>
+                  <span>{t('creator.version')}</span>
                 </div>
                 <div className="text-sm text-gray-400 dark:text-gray-600">
-                  This is a new achievement
+                  {t('creator.new')}
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4">
                 <button className="px-6 py-3 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors flex items-center justify-center gap-2">
                   <Save className="w-4 h-4" />
-                  {achievementId ? 'Save Changes' : 'Save Draft'}
+                  {achievementId ? t('creator.action.saveChanges') : t('creator.action.saveDraft')}
                 </button>
                 <button
                   onClick={() => void handlePublish()}
@@ -783,11 +778,11 @@ export function AchievementCreator({
                   <Send className="w-4 h-4" />
                   {isSubmitting
                     ? achievementId
-                      ? 'Saving...'
-                      : 'Publishing...'
+                      ? t('creator.action.saving')
+                      : t('creator.action.publishing')
                     : achievementId
-                      ? 'Update Achievement'
-                      : 'Publish Achievement'}
+                      ? t('creator.action.update')
+                      : t('creator.action.publish')}
                 </button>
               </div>
               {isSubmitting && (
