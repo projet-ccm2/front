@@ -10,11 +10,13 @@ import {
   Sun,
   Moon,
   LogOut,
+  Download,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { LanguageSwitcher } from '../ui/LanguageSwitcher'
+import { useApkDownload } from '../../features/apk/hooks/useApkDownload'
 
 interface SidebarProps {
   readonly currentPage: string
@@ -27,6 +29,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
   const { theme, toggleTheme } = useTheme()
   const { logout } = useAuth()
   const { t } = useLanguage()
+  const { triggerDownload, isDownloading } = useApkDownload()
   const menuItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { id: 'creator', label: t('nav.creator'), icon: Plus },
@@ -106,6 +109,24 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
                 </button>
               )
             })}
+          </div>
+
+          <div className="mt-2 pt-2 border-t border-[#2d2d31] dark:border-gray-200">
+            <button
+              onClick={() =>
+                triggerDownload({
+                  auth: t('apk.download.error.auth'),
+                  service: t('apk.download.error.service'),
+                })
+              }
+              disabled={isDownloading}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900 disabled:opacity-50"
+            >
+              <Download className="w-5 h-5" />
+              <span className="text-left">
+                {isDownloading ? t('apk.download.downloading') : t('nav.downloadApk')}
+              </span>
+            </button>
           </div>
         </nav>
 
