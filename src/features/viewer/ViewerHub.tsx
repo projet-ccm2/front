@@ -155,7 +155,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                     'flex-1 truncate text-sm font-medium',
                     selectedChannelId === null ? 'text-[#9146FF]' : 'text-gray-300 dark:text-gray-700',
                   ].join(' ')}>
-                    Vue d'ensemble
+                    {t('viewerHub.overview')}
                   </span>
                   {selectedChannelId === null && (
                     <ChevronRight className="h-3.5 w-3.5 text-[#9146FF]" />
@@ -231,7 +231,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                     ].join(' ')}
                   >
                     <Trophy className="h-3.5 w-3.5" />
-                    Vue d'ensemble
+                    {t('viewerHub.overview')}
                   </button>
                   {summaries.map((summary, index) => {
                     const name = getChannelName(summary.channelId)

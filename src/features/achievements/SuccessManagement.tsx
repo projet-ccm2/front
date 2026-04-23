@@ -22,20 +22,17 @@ interface SuccessManagementProps {
   onEditAchievement: (achievementId: string) => void
 }
 
-type FilterOption =
-  | 'All Achievements'
-  | 'Enabled Only'
-  | 'Disabled Only'
-  | 'Public Only'
-  | 'Secret Only'
+type FilterOption = 'all' | 'enabled' | 'disabled' | 'public' | 'secret'
 
-const FILTER_OPTIONS: FilterOption[] = [
-  'All Achievements',
-  'Enabled Only',
-  'Disabled Only',
-  'Public Only',
-  'Secret Only',
-]
+const FILTER_OPTIONS: FilterOption[] = ['all', 'enabled', 'disabled', 'public', 'secret']
+
+const FILTER_OPTION_KEYS: Record<FilterOption, string> = {
+  all: 'management.filter.all',
+  enabled: 'management.filter.enabled',
+  disabled: 'management.filter.disabled',
+  public: 'management.filter.public',
+  secret: 'management.filter.secret',
+}
 
 const formatTriggerLabel = (label: string) =>
   label
@@ -51,7 +48,7 @@ export function SuccessManagement({
   const { selectedChannel } = useChannel()
   const { t } = useLanguage()
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<FilterOption>('All Achievements')
+  const [filter, setFilter] = useState<FilterOption>('all')
   const [overrides, setOverrides] = useState<Record<string, Achievement>>({})
   const [deletedIds, setDeletedIds] = useState<string[]>([])
   const [pendingIds, setPendingIds] = useState<string[]>([])
@@ -85,15 +82,15 @@ export function SuccessManagement({
       })
       .filter(achievement => {
         switch (filter) {
-          case 'Enabled Only':
+          case 'enabled':
             return achievement.active
-          case 'Disabled Only':
+          case 'disabled':
             return !achievement.active
-          case 'Public Only':
+          case 'public':
             return achievement.public
-          case 'Secret Only':
+          case 'secret':
             return achievement.secret
-          case 'All Achievements':
+          case 'all':
           default:
             return true
         }
@@ -217,7 +214,7 @@ export function SuccessManagement({
               className="px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
             >
               {FILTER_OPTIONS.map(opt => (
-                <option key={opt}>{opt}</option>
+                <option key={opt} value={opt}>{t(FILTER_OPTION_KEYS[opt])}</option>
               ))}
             </select>
           </div>
@@ -286,14 +283,14 @@ export function SuccessManagement({
                         </div>
                         <div className="flex items-center gap-3">
                           <button
-                            aria-label={`Edit ${achievement.title}`}
+                            aria-label={t('management.aria.edit', { title: achievement.title })}
                             onClick={() => onEditAchievement(achievement.id)}
                             className="p-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            aria-label={`Delete ${achievement.title}`}
+                            aria-label={t('management.aria.delete', { title: achievement.title })}
                             disabled={pendingIds.includes(achievement.id)}
                             onClick={() => handleDelete(achievement)}
                             className={`p-2 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors ${
@@ -342,7 +339,7 @@ export function SuccessManagement({
                           {formatTriggerLabel(achievement.type.label)}
                         </div>
                         <button
-                          aria-label={`${achievement.active ? 'Deactivate' : 'Activate'} ${achievement.title}`}
+                          aria-label={t(achievement.active ? 'management.aria.deactivate' : 'management.aria.activate', { title: achievement.title })}
                           disabled={pendingIds.includes(achievement.id)}
                           onClick={() => void handleToggleActive(achievement)}
                           className={`w-12 h-6 rounded-full transition-colors relative ${

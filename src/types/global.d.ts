@@ -7,6 +7,7 @@ declare global {
       ACHIEVEMENT_MANAGEMENT_SERVICE_URL?: string
       TWITCH_CLIENT_ID?: string
       FRONT_URL?: string
+      USER_MANAGEMENT_URL?: string
     }
   }
 
@@ -16,6 +17,7 @@ declare global {
         ACHIEVEMENT_MANAGEMENT_SERVICE_URL?: string
         TWITCH_CLIENT_ID?: string
         FRONT_URL?: string
+        USER_MANAGEMENT_URL?: string
       }
     | undefined
 }

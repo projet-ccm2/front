@@ -12,6 +12,7 @@ import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
 import { ViewerHub } from './features/viewer/ViewerHub'
+import { DiscordWebhookScreen } from './features/discord/DiscordWebhookScreen'
 import { TwitchOverlay } from './features/overlay/TwitchOverlay'
 import { PublicTwitchPanel } from './features/overlay/PublicTwitchPanel'
 import { TwitchExtensionPanel } from './features/overlay/TwitchExtensionPanel'
@@ -33,6 +34,7 @@ type Screen =
   | 'profile'
   | 'viewerHub'
   | 'overlay'
+  | 'discord'
 
 export function AppContent() {
   const { isAuthenticated, isLoading, login, completeAuth } = useAuth()
@@ -163,6 +165,9 @@ export function AppContent() {
         )}
         {currentScreen === 'overlay' && (
           <TwitchOverlay onOpenSidebar={() => setSidebarOpen(true)} />
+        )}
+        {currentScreen === 'discord' && (
+          <DiscordWebhookScreen onOpenSidebar={() => setSidebarOpen(true)} />
         )}
       </main>
     </div>
