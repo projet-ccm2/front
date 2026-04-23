@@ -11,6 +11,7 @@ import {
   Moon,
   LogOut,
   Download,
+  MessageSquare,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
@@ -37,6 +38,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
     { id: 'marketplace', label: t('nav.marketplace'), icon: Store },
     { id: 'profile', label: t('nav.profile'), icon: User },
     { id: 'viewerHub', label: t('nav.viewerHub'), icon: Eye },
+    { id: 'discord', label: t('nav.discord'), icon: MessageSquare },
   ]
 
   const handleNavigation = (page: string) => {
