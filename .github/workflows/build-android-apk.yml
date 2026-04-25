@@ -139,21 +139,8 @@ jobs:
       - name: Setup GCS variables
         id: gcs
         run: |
-          echo "BUCKET_NAME=front-apk-dev" >> $GITHUB_OUTPUT
+          echo "BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}" >> $GITHUB_OUTPUT
           echo "PROJECT_ID=${{ secrets.DEV_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
-
-      - name: Check and create GCS bucket if needed
-        run: |
-          BUCKET_NAME="${{ steps.gcs.outputs.BUCKET_NAME }}"
-          PROJECT_ID="${{ steps.gcs.outputs.PROJECT_ID }}"
-
-          if ! gsutil ls -b "gs://${BUCKET_NAME}" 2>/dev/null; then
-            echo "Bucket ${BUCKET_NAME} does not exist, creating it..."
-            gsutil mb -p "${PROJECT_ID}" -l europe-west1 "gs://${BUCKET_NAME}"
-            echo "Bucket ${BUCKET_NAME} created successfully"
-          else
-            echo "Bucket ${BUCKET_NAME} already exists"
-          fi
 
       - name: Upload Debug APK to GCS
         id: upload-debug

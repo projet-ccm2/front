@@ -1,33 +1,28 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { apkClient, ApkError } from '../api/apkClient'
+import { apkClient } from '../api/apkClient'
 
 function getAccessToken(): string | null {
-  try {
-    const raw = localStorage.getItem('twitch_tokens')
-    if (!raw) return null
-    return (JSON.parse(raw) as { accessToken: string }).accessToken ?? null
-  } catch {
-    return null
-  }
+  const raw = localStorage.getItem('twitch_tokens')
+  if (!raw) return null
+  return (JSON.parse(raw) as { accessToken: string }).accessToken ?? null
 }
 
 export function useApkDownload() {
   const [isDownloading, setIsDownloading] = useState(false)
 
-  const triggerDownload = async (errorMessages: { auth: string; service: string }) => {
-    const token = getAccessToken()
-    if (!token) return
+  const triggerDownload = async (errorMessages: { service: string }) => {
+    const accessToken = getAccessToken()
+    if (!accessToken) {
+      toast.error(errorMessages.service)
+      return
+    }
     setIsDownloading(true)
     try {
-      const url = await apkClient.getDownloadUrl(token)
+      const url = await apkClient.getDownloadUrl(accessToken)
       globalThis.open(url, '_blank')
-    } catch (err) {
-      toast.error(
-        err instanceof ApkError && err.status === 401
-          ? errorMessages.auth
-          : errorMessages.service
-      )
+    } catch {
+      toast.error(errorMessages.service)
     } finally {
       setIsDownloading(false)
     }

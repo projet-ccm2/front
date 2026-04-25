@@ -403,9 +403,7 @@ describe('AchievementCreator', () => {
     fireEvent.click(screen.getByText('Publish Achievement'))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        'A detail value is required for this trigger type.'
-      )
+      expect(toast.error).toHaveBeenCalledWith('A detail value is required for this trigger type.')
     })
     expect(mockFetch).not.toHaveBeenCalled()
   })

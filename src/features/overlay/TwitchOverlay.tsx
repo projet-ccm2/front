@@ -25,7 +25,12 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
+  useEffect(
+    () => () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+    },
+    []
+  )
 
   const leaderboard = buildLeaderboardEntries(achievements, t)
   const panelAchievements = buildPanelAchievementEntries(achievements, t)

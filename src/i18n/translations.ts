@@ -65,7 +65,8 @@ const EN_TRANSLATIONS: TranslationMap = {
   'discord.webhook.description': 'Send achievement notifications to your Discord server.',
   'discord.webhook.label': 'Webhook URL',
   'discord.webhook.placeholder': 'https://discord.com/api/webhooks/...',
-  'discord.webhook.hint': 'Create a webhook in your Discord server settings and paste the URL here.',
+  'discord.webhook.hint':
+    'Create a webhook in your Discord server settings and paste the URL here.',
   'discord.webhook.save': 'Save',
   'discord.webhook.saving': 'Saving…',
   'discord.webhook.remove': 'Remove webhook',
@@ -328,7 +329,8 @@ const EN_TRANSLATIONS: TranslationMap = {
   'management.field.visible': 'Visible',
   'management.field.trigger': 'Trigger:',
   'management.delete.title': 'Delete achievement',
-  'management.delete.description': 'Are you sure you want to delete "{title}"? This action cannot be undone.',
+  'management.delete.description':
+    'Are you sure you want to delete "{title}"? This action cannot be undone.',
   'management.delete.confirm': 'Delete',
   'management.delete.cancel': 'Cancel',
   'management.error.update': 'Unable to update "{title}". Please try again.',
@@ -363,10 +365,12 @@ const EN_TRANSLATIONS: TranslationMap = {
   'creator.image.upload': 'Upload Image',
   'creator.image.clear': 'Clear Image',
   'creator.image.hint': 'Recommended: 512x512px PNG or JPG',
-  'creator.image.note': 'The selected file will be converted to base64 and uploaded by achievement-management when you publish.',
+  'creator.image.note':
+    'The selected file will be converted to base64 and uploaded by achievement-management when you publish.',
   'creator.image.selected': 'Selected file:',
   'creator.image.stored': 'Stored image reference:',
-  'creator.image.empty': 'No image selected yet. Upload one to let achievement-management handle it on publish.',
+  'creator.image.empty':
+    'No image selected yet. Upload one to let achievement-management handle it on publish.',
   'creator.image.error.type': 'Only JPEG, PNG, and WebP images are accepted.',
   'creator.image.error.size': 'Image must be smaller than 10 MB.',
   'creator.image.ready': 'Image "{name}" is ready to be uploaded.',
@@ -430,13 +434,15 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'nav.downloadApk': "Télécharger l'APK mobile",
   'apk.download.downloading': 'Préparation du téléchargement…',
   'apk.download.error.auth': 'Authentification échouée. Veuillez vous reconnecter.',
-  'apk.download.error.service': 'Service de téléchargement indisponible. Veuillez réessayer plus tard.',
+  'apk.download.error.service':
+    'Service de téléchargement indisponible. Veuillez réessayer plus tard.',
   'nav.discord': 'Notifications Discord',
   'discord.webhook.title': 'Notifications Discord',
   'discord.webhook.description': 'Envoyez des notifications de succès sur votre serveur Discord.',
   'discord.webhook.label': 'URL du webhook',
   'discord.webhook.placeholder': 'https://discord.com/api/webhooks/...',
-  'discord.webhook.hint': "Créez un webhook dans les paramètres de votre serveur Discord et collez l'URL ici.",
+  'discord.webhook.hint':
+    "Créez un webhook dans les paramètres de votre serveur Discord et collez l'URL ici.",
   'discord.webhook.save': 'Enregistrer',
   'discord.webhook.saving': 'Enregistrement…',
   'discord.webhook.remove': 'Supprimer le webhook',
@@ -685,7 +691,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
     'Quand l’identité du viewer est disponible, le panneau peut afficher sa progression personnelle.',
   'overlay.viewer.hint':
     'Ce panneau a besoin d’un viewerId ou d’un contexte d’extension Twitch pour personnaliser la progression.',
-  'overlay.viewer.empty': 'Aucune progression de viewer n\'est disponible pour le moment.',
+  'overlay.viewer.empty': "Aucune progression de viewer n'est disponible pour le moment.",
   'management.title': 'Gérer les succès',
   'management.subtitle': 'Activez, désactivez et modifiez vos quêtes',
   'management.createNew': 'Créer',
@@ -701,7 +707,8 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'management.field.visible': 'Visible',
   'management.field.trigger': 'Déclencheur :',
   'management.delete.title': 'Supprimer le succès',
-  'management.delete.description': 'Êtes-vous sûr de vouloir supprimer « {title} » ? Cette action est irréversible.',
+  'management.delete.description':
+    'Êtes-vous sûr de vouloir supprimer « {title} » ? Cette action est irréversible.',
   'management.delete.confirm': 'Supprimer',
   'management.delete.cancel': 'Annuler',
   'management.error.update': 'Impossible de mettre à jour « {title} ». Veuillez réessayer.',
@@ -736,10 +743,12 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'creator.image.upload': 'Télécharger une image',
   'creator.image.clear': "Effacer l'image",
   'creator.image.hint': 'Recommandé : 512×512px PNG ou JPG',
-  'creator.image.note': "Le fichier sélectionné sera converti en base64 et uploadé lors de la publication.",
+  'creator.image.note':
+    'Le fichier sélectionné sera converti en base64 et uploadé lors de la publication.',
   'creator.image.selected': 'Fichier sélectionné :',
   'creator.image.stored': "Référence d'image stockée :",
-  'creator.image.empty': "Aucune image sélectionnée. Téléchargez-en une pour qu'elle soit gérée lors de la publication.",
+  'creator.image.empty':
+    "Aucune image sélectionnée. Téléchargez-en une pour qu'elle soit gérée lors de la publication.",
   'creator.image.error.type': 'Seules les images JPEG, PNG et WebP sont acceptées.',
   'creator.image.error.size': "L'image doit faire moins de 10 Mo.",
   'creator.image.ready': 'Image « {name} » prête à être uploadée.',
@@ -768,7 +777,8 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'creator.toast.error.publish': 'Impossible de publier ce succès pour le moment.',
   'creator.validation.noChannel': 'Sélectionnez une chaîne avant de publier un succès.',
   'creator.validation.missingFields': 'Le titre et la description sont requis avant de publier.',
-  'creator.validation.missingDetail': 'Une valeur de détail est requise pour ce type de déclencheur.',
+  'creator.validation.missingDetail':
+    'Une valeur de détail est requise pour ce type de déclencheur.',
   'creator.validation.invalidCost': 'Le coût en points de chaîne doit être un entier positif.',
 }
 

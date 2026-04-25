@@ -1,7 +1,7 @@
 const USER_MANAGEMENT_URL =
-  globalThis._env_?.USER_MANAGEMENT_URL ||
-  import.meta.env.VITE_USER_MANAGEMENT_URL ||
-  'http://localhost:3002'
+  globalThis._env_?.AUTH_SERVICE_URL ||
+  import.meta.env.VITE_AUTH_SERVICE_URL ||
+  'http://localhost:3000'
 
 export class DiscordWebhookError extends Error {
   readonly status: number
