@@ -214,7 +214,9 @@ export function SuccessManagement({
               className="px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
             >
               {FILTER_OPTIONS.map(opt => (
-                <option key={opt} value={opt}>{t(FILTER_OPTION_KEYS[opt])}</option>
+                <option key={opt} value={opt}>
+                  {t(FILTER_OPTION_KEYS[opt])}
+                </option>
               ))}
             </select>
           </div>
@@ -339,7 +341,12 @@ export function SuccessManagement({
                           {formatTriggerLabel(achievement.type.label)}
                         </div>
                         <button
-                          aria-label={t(achievement.active ? 'management.aria.deactivate' : 'management.aria.activate', { title: achievement.title })}
+                          aria-label={t(
+                            achievement.active
+                              ? 'management.aria.deactivate'
+                              : 'management.aria.activate',
+                            { title: achievement.title }
+                          )}
                           disabled={pendingIds.includes(achievement.id)}
                           onClick={() => void handleToggleActive(achievement)}
                           className={`w-12 h-6 rounded-full transition-colors relative ${

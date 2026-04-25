@@ -1,7 +1,7 @@
 const USER_MANAGEMENT_URL =
-  globalThis._env_?.USER_MANAGEMENT_URL ||
-  import.meta.env.VITE_USER_MANAGEMENT_URL ||
-  'http://localhost:3002'
+  globalThis._env_?.AUTH_SERVICE_URL ||
+  import.meta.env.VITE_AUTH_SERVICE_URL ||
+  'http://localhost:3000'
 
 export class ApkError extends Error {
   readonly status: number
@@ -18,7 +18,9 @@ export class ApkError extends Error {
 export const apkClient = {
   async getDownloadUrl(accessToken: string): Promise<string> {
     const response = await fetch(`${USER_MANAGEMENT_URL}/apk/download`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     })
 
     if (!response.ok) {

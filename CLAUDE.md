@@ -84,31 +84,31 @@ Client : `src/features/achievements/api/achievementManagementClient.ts`
 
 ### Endpoints utilisés
 
-| Méthode | Route | Usage |
-|---|---|---|
-| `GET` | `/achievements/:id` | Charger un achievement existant |
-| `GET` | `/achievements/channel/:channelId` | Lister les achievements d'un channel |
-| `GET` | `/achievements/public` | Marketplace |
-| `GET` | `/achievements/user/:userId` | Achievements débloqués par un user |
-| `GET` | `/achievements/user/:userId/channel/:channelId` | Achievements user filtrés par channel |
-| `POST` | `/achievements` | Créer un achievement (owner uniquement) |
-| `PUT` | `/achievements/:id` | Mettre à jour un achievement |
-| `DELETE` | `/achievements/:id` | Supprimer |
-| `PATCH` | `/achievements/:id/activate` | Activer |
-| `PATCH` | `/achievements/:id/deactivate` | Désactiver |
-| `POST` | `/achievements/ai-suggestion` | Suggestion IA |
+| Méthode  | Route                                           | Usage                                   |
+| -------- | ----------------------------------------------- | --------------------------------------- |
+| `GET`    | `/achievements/:id`                             | Charger un achievement existant         |
+| `GET`    | `/achievements/channel/:channelId`              | Lister les achievements d'un channel    |
+| `GET`    | `/achievements/public`                          | Marketplace                             |
+| `GET`    | `/achievements/user/:userId`                    | Achievements débloqués par un user      |
+| `GET`    | `/achievements/user/:userId/channel/:channelId` | Achievements user filtrés par channel   |
+| `POST`   | `/achievements`                                 | Créer un achievement (owner uniquement) |
+| `PUT`    | `/achievements/:id`                             | Mettre à jour un achievement            |
+| `DELETE` | `/achievements/:id`                             | Supprimer                               |
+| `PATCH`  | `/achievements/:id/activate`                    | Activer                                 |
+| `PATCH`  | `/achievements/:id/deactivate`                  | Désactiver                              |
+| `POST`   | `/achievements/ai-suggestion`                   | Suggestion IA                           |
 
 ### Payload `type` — mapping et règles `type.data`
 
 Achievement-management normalise `type.label` avant d'appeler DB-gateway.
 
-| Frontend `type.label` | Normalisé (AM) | `type.data` requis | Contrainte |
-|---|---|---|---|
-| `message` | `countMessage` | Non (ignoré par AM) | ⚠️ Bug : AM envoie `data: ''` à DB-gateway → crash. Fix côté AM requis. |
-| `message_content` | `contentMessage` | Oui | string non-vide (contenu à matcher) |
-| `channel_point_cost` | `countCostChannelPoint` | Oui | entier positif (coût minimum en points) |
-| `redeem_channel_point` | `countRedeemChannelPoint` | Oui | string non-vide (nom de la récompense) |
-| `api_caller` | `apicaller` | Oui | string non-vide |
+| Frontend `type.label`  | Normalisé (AM)            | `type.data` requis  | Contrainte                                                              |
+| ---------------------- | ------------------------- | ------------------- | ----------------------------------------------------------------------- |
+| `message`              | `countMessage`            | Non (ignoré par AM) | ⚠️ Bug : AM envoie `data: ''` à DB-gateway → crash. Fix côté AM requis. |
+| `message_content`      | `contentMessage`          | Oui                 | string non-vide (contenu à matcher)                                     |
+| `channel_point_cost`   | `countCostChannelPoint`   | Oui                 | entier positif (coût minimum en points)                                 |
+| `redeem_channel_point` | `countRedeemChannelPoint` | Oui                 | string non-vide (nom de la récompense)                                  |
+| `api_caller`           | `apicaller`               | Oui                 | string non-vide                                                         |
 
 ### Chaîne d'appel
 
@@ -131,6 +131,7 @@ Même logique pour `type.data` envoyé : `formValues.type.data ?? 'dummy label'`
 ### Upload d'image
 
 Le flow est piloté par `selectedImageUpload` dans `AchievementCreator` :
+
 - L'utilisateur sélectionne un fichier → converti en base64 via `createImageUploadFormValue()` (`achievementFormModel.ts`)
 - Au publish : `image: null` + `imageUpload: { fileName, mimeType, contentBase64 }` → AM gère l'upload et stocke l'URL
 - Si pas de nouveau fichier : `image: <url existante>` + `imageUpload: null`
@@ -142,7 +143,11 @@ Seul le channel **owner** peut créer/modifier des achievements. Les channels mo
 ### Erreur DB-gateway
 
 ```json
-{ "code": "db_service_validation_error", "message": "DB service validation failed for achievement type", "details": { "error": "label and data required" } }
+{
+  "code": "db_service_validation_error",
+  "message": "DB service validation failed for achievement type",
+  "details": { "error": "label and data required" }
+}
 ```
 
 Cause : `type.data` vide ou null envoyé à DB-gateway.

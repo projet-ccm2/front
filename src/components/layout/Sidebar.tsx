@@ -117,7 +117,6 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
             <button
               onClick={() =>
                 triggerDownload({
-                  auth: t('apk.download.error.auth'),
                   service: t('apk.download.error.service'),
                 })
               }

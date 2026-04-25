@@ -48,7 +48,12 @@ export function PublicTwitchPanel({
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
+  useEffect(
+    () => () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+    },
+    []
+  )
 
   const panelUrl =
     typeof window === 'undefined' ? '' : buildPublicPanelUrl(channelId, window.location.origin)

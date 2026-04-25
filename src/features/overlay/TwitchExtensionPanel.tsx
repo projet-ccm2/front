@@ -25,7 +25,12 @@ export function TwitchExtensionPanel({ onOpenSidebar }: Readonly<TwitchExtension
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
+  useEffect(
+    () => () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+    },
+    []
+  )
 
   const previewChannelId = getPreviewChannelId(globalThis.location.search)
   const previewViewerId = getPreviewViewerId(globalThis.location.search)
