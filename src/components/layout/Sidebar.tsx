@@ -13,11 +13,15 @@ import {
   Download,
   MessageSquare,
 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
+import { useChannel } from '../../context/ChannelContext'
 import { LanguageSwitcher } from '../ui/LanguageSwitcher'
 import { useApkDownload } from '../../features/apk/hooks/useApkDownload'
+
+const MODERATOR_HIDDEN_PAGES = ['profile', 'viewerHub', 'discord']
 
 interface SidebarProps {
   readonly currentPage: string
@@ -30,7 +34,16 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
   const { theme, toggleTheme } = useTheme()
   const { logout } = useAuth()
   const { t } = useLanguage()
+  const { selectedChannel } = useChannel()
   const { triggerDownload, isDownloading } = useApkDownload()
+  const isModerator = selectedChannel?.role === 'Moderator'
+
+  useEffect(() => {
+    if (isModerator && MODERATOR_HIDDEN_PAGES.includes(currentPage)) {
+      onNavigate('dashboard')
+    }
+  }, [isModerator, currentPage, onNavigate])
+
   const menuItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { id: 'creator', label: t('nav.creator'), icon: Plus },
@@ -40,6 +53,10 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
     { id: 'viewerHub', label: t('nav.viewerHub'), icon: Eye },
     { id: 'discord', label: t('nav.discord'), icon: MessageSquare },
   ]
+
+  const visibleMenuItems = isModerator
+    ? menuItems.filter(item => !MODERATOR_HIDDEN_PAGES.includes(item.id))
+    : menuItems
 
   const handleNavigation = (page: string) => {
     onNavigate(page)
@@ -92,7 +109,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <div className="space-y-2">
-            {menuItems.map(item => {
+            {visibleMenuItems.map(item => {
               const Icon = item.icon
               const isActive = currentPage === item.id
 
