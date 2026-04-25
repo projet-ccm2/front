@@ -16,14 +16,14 @@ export class DiscordWebhookError extends Error {
 }
 
 export const discordWebhookClient = {
-  async register(accessToken: string, webhookUrl: string | null): Promise<void> {
+  async register(accessToken: string, channelId: string, webhookUrl: string | null): Promise<void> {
     const response = await fetch(`${USER_MANAGEMENT_URL}/channels/me/discord-webhook`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ discordWebhookUrl: webhookUrl }),
+      body: JSON.stringify({ channelId, discordWebhookUrl: webhookUrl }),
     })
 
     if (!response.ok) {

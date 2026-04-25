@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - develop
+  pull_request:
+    branches:
+      - develop
   workflow_dispatch:
     inputs:
       image-tag:
@@ -39,7 +42,11 @@ jobs:
     uses: projet-ccm2/shared-workflows/.github/workflows/nodejs-cd.yml@main
     with:
       docker-image-name: front-dev
+<<<<<<< HEAD
       docker-tag: ${{ needs.prepare.outputs.docker-tag }}
+=======
+      docker-tag: ${{ github.event.inputs.image-tag || (github.event_name == 'pull_request' && format('pr-{0}-{1}', github.event.number, github.sha)) || format('dev-{0}', github.sha) }}
+>>>>>>> aadde7e (fix mod channel)
       artifact-registry-repository: 'front-docker-dev'
       environment: development
       cloud-run-service-name: front-dev
