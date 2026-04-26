@@ -77,7 +77,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
           localStorage.setItem('twitch_tokens', JSON.stringify(tokens))
 
           // Automatically add the IRC bot as moderator — silent, non-blocking
-          addBotAsModerator(data.userId, data.user.login, tokens.accessToken).catch((err) => {
+          addBotAsModerator(data.userId, tokens.accessToken).catch((err) => {
             console.warn('Could not add bot as moderator:', err)
           })
         } else {
