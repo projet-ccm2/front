@@ -30,7 +30,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
 
   const login = useCallback(() => {
     const scope = encodeURIComponent(
-      'openid user:read:email moderator:read:followers channel:read:subscriptions bits:read channel:read:redemptions channel:read:hype_train channel:read:polls channel:read:predictions channel:read:charity chat:read user:read:moderated_channels moderation:read'
+      'openid user:read:email moderator:read:followers channel:read:subscriptions bits:read channel:read:redemptions channel:read:hype_train channel:read:polls channel:read:predictions channel:read:charity chat:read user:read:moderated_channels moderation:read channel:manage:moderators'
     )
     const responseType = 'token id_token'
     const state = crypto.randomUUID()
