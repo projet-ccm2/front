@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { toast } from 'sonner'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
-import { Sparkles, Upload, Save, Send, Menu, X } from 'lucide-react'
+import { Sparkles, Upload, Save, Send, Menu, X, Lock } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { achievementManagementClient } from './api/achievementManagementClient'
@@ -88,6 +88,7 @@ export function AchievementCreator({
 }: Readonly<AchievementCreatorProps>) {
   const { selectedChannel } = useChannel()
   const { language, t } = useLanguage()
+  const isReadOnly = selectedChannel ? !isOwnerAchievementChannelId(selectedChannel.id) : false
   const achievementTriggerOptions = getAchievementTriggerOptions(language)
   const [mode, setMode] = useState<'simple' | 'api'>('simple')
   const [formValues, setFormValues] = useState(defaultAchievementFormValues)
@@ -350,6 +351,13 @@ export function AchievementCreator({
             </div>
           </div>
         </div>
+
+        {isReadOnly && (
+          <div className="mx-4 sm:mx-8 mt-4 flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 dark:text-amber-700">
+            <Lock className="w-4 h-4 flex-shrink-0" />
+            {t('creator.readOnly.banner')}
+          </div>
+        )}
 
         <div className="max-w-4xl mx-auto p-4 sm:p-8">
           <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl overflow-hidden">
@@ -782,9 +790,9 @@ export function AchievementCreator({
                 </button>
                 <button
                   onClick={() => void handlePublish()}
-                  disabled={isSubmitting || isLoadingAchievement || Boolean(loadError)}
+                  disabled={isReadOnly || isSubmitting || isLoadingAchievement || Boolean(loadError)}
                   className={`px-6 py-3 bg-gradient-to-r from-[#9146FF] to-[#772ce8] hover:from-[#772ce8] hover:to-[#9146FF] text-white rounded-lg transition-all flex items-center justify-center gap-2 ${
-                    isSubmitting || isLoadingAchievement || loadError
+                    isReadOnly || isSubmitting || isLoadingAchievement || loadError
                       ? 'opacity-60 cursor-not-allowed'
                       : ''
                   }`}

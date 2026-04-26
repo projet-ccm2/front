@@ -7,7 +7,7 @@ import {
 } from '../api/achievementManagementClient'
 import type { Achievement } from '../api/achievementManagement.types'
 import {
-  getOwnerOnlyAchievementMessage,
+  getRealChannelId,
   isOwnerAchievementChannelId,
 } from '../utils/achievementManagementChannel'
 
@@ -15,6 +15,7 @@ interface UseChannelAchievementsResult {
   achievements: Achievement[]
   isLoading: boolean
   errorMessage: string | null
+  isReadOnly: boolean
 }
 
 function getErrorMessage(error: unknown, language: Language) {
@@ -62,19 +63,14 @@ export function useChannelAchievements(channelId: string | null): UseChannelAchi
       return
     }
 
-    if (!isOwnerAchievementChannelId(channelId)) {
-      setAchievements([])
-      setErrorMessage(getOwnerOnlyAchievementMessage(language, 'channel'))
-      setIsLoading(false)
-      return
-    }
-
     let isMounted = true
     setIsLoading(true)
 
     const loadAchievements = async () => {
       try {
-        const data = await achievementManagementClient.getChannelAchievements(channelId)
+        const data = await achievementManagementClient.getChannelAchievements(
+          getRealChannelId(channelId)
+        )
 
         if (!isMounted) {
           return
@@ -107,5 +103,6 @@ export function useChannelAchievements(channelId: string | null): UseChannelAchi
     achievements,
     isLoading,
     errorMessage,
+    isReadOnly: channelId !== null && !isOwnerAchievementChannelId(channelId),
   }
 }

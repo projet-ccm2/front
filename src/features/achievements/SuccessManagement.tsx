@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
-import { Search, Edit, Trash2, Menu, Target, Globe, EyeOff } from 'lucide-react'
+import { Search, Edit, Trash2, Menu, Target, Globe, EyeOff, Lock } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { achievementManagementClient } from './api/achievementManagementClient'
@@ -54,7 +54,7 @@ export function SuccessManagement({
   const [pendingIds, setPendingIds] = useState<string[]>([])
   const [actionError, setActionError] = useState<string | null>(null)
   const [achievementToDelete, setAchievementToDelete] = useState<Achievement | null>(null)
-  const { achievements, isLoading, errorMessage } = useChannelAchievements(
+  const { achievements, isLoading, errorMessage, isReadOnly } = useChannelAchievements(
     selectedChannel?.id ?? null
   )
 
@@ -186,15 +186,24 @@ export function SuccessManagement({
               <div className="hidden sm:block">
                 <ChannelSelector />
               </div>
-              <button
-                onClick={() => onNavigate('creator')}
-                className="hidden sm:block px-6 py-3 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors whitespace-nowrap"
-              >
-                {t('management.createNew')}
-              </button>
+              {!isReadOnly && (
+                <button
+                  onClick={() => onNavigate('creator')}
+                  className="hidden sm:block px-6 py-3 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors whitespace-nowrap"
+                >
+                  {t('management.createNew')}
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        {isReadOnly && (
+          <div className="mx-4 sm:mx-8 mt-4 flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 dark:text-amber-700">
+            <Lock className="w-4 h-4 flex-shrink-0" />
+            {t('management.readOnly.banner')}
+          </div>
+        )}
 
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
@@ -283,27 +292,29 @@ export function SuccessManagement({
                             {achievement.description}
                           </p>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            aria-label={t('management.aria.edit', { title: achievement.title })}
-                            onClick={() => onEditAchievement(achievement.id)}
-                            className="p-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            aria-label={t('management.aria.delete', { title: achievement.title })}
-                            disabled={pendingIds.includes(achievement.id)}
-                            onClick={() => handleDelete(achievement)}
-                            className={`p-2 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors ${
-                              pendingIds.includes(achievement.id)
-                                ? 'opacity-60 cursor-not-allowed'
-                                : ''
-                            }`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        {!isReadOnly && (
+                          <div className="flex items-center gap-3">
+                            <button
+                              aria-label={t('management.aria.edit', { title: achievement.title })}
+                              onClick={() => onEditAchievement(achievement.id)}
+                              className="p-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              aria-label={t('management.aria.delete', { title: achievement.title })}
+                              disabled={pendingIds.includes(achievement.id)}
+                              onClick={() => handleDelete(achievement)}
+                              className={`p-2 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors ${
+                                pendingIds.includes(achievement.id)
+                                  ? 'opacity-60 cursor-not-allowed'
+                                  : ''
+                              }`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-4 text-sm">
@@ -340,25 +351,27 @@ export function SuccessManagement({
                           {t('management.field.trigger')}{' '}
                           {formatTriggerLabel(achievement.type.label)}
                         </div>
-                        <button
-                          aria-label={t(
-                            achievement.active
-                              ? 'management.aria.deactivate'
-                              : 'management.aria.activate',
-                            { title: achievement.title }
-                          )}
-                          disabled={pendingIds.includes(achievement.id)}
-                          onClick={() => void handleToggleActive(achievement)}
-                          className={`w-12 h-6 rounded-full transition-colors relative ${
-                            achievement.active ? 'bg-[#9146FF]' : 'bg-[#4d4d51]'
-                          } ${pendingIds.includes(achievement.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
-                        >
-                          <div
-                            className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-                              achievement.active ? 'translate-x-6' : 'translate-x-0.5'
-                            }`}
-                          />
-                        </button>
+                        {!isReadOnly && (
+                          <button
+                            aria-label={t(
+                              achievement.active
+                                ? 'management.aria.deactivate'
+                                : 'management.aria.activate',
+                              { title: achievement.title }
+                            )}
+                            disabled={pendingIds.includes(achievement.id)}
+                            onClick={() => void handleToggleActive(achievement)}
+                            className={`w-12 h-6 rounded-full transition-colors relative ${
+                              achievement.active ? 'bg-[#9146FF]' : 'bg-[#4d4d51]'
+                            } ${pendingIds.includes(achievement.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          >
+                            <div
+                              className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
+                                achievement.active ? 'translate-x-6' : 'translate-x-0.5'
+                              }`}
+                            />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

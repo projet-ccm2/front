@@ -581,7 +581,7 @@ describe('AchievementCreator', () => {
     expect(createBody).toContain('"imageUpload":null')
   })
 
-  it('should block publishing for synthetic moderator channel ids', async () => {
+  it('should show a read-only banner and disable publish for synthetic moderator channel ids', async () => {
     localStorage.setItem(
       'twitch_user',
       JSON.stringify({
@@ -594,13 +594,14 @@ describe('AchievementCreator', () => {
 
     fireEvent.click(screen.getByText('MyChannel'))
     fireEvent.click(screen.getByText('ModChannel'))
-    fireEvent.click(screen.getByText('Publier le succès'))
 
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.'
+    expect(
+      await screen.findByText(
+        'Vue modérateur — vous pouvez consulter les succès mais pas les créer ou les modifier.'
       )
-    })
+    ).toBeInTheDocument()
+
+    expect(screen.getByText('Publier le succès')).toBeDisabled()
   })
 
   it('should load an existing achievement in edit mode', async () => {

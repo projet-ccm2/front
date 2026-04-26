@@ -7,6 +7,12 @@ export function isOwnerAchievementChannelId(channelId: string) {
   return !channelId.startsWith(SYNTHETIC_MODERATOR_CHANNEL_PREFIX)
 }
 
+export function getRealChannelId(channelId: string): string {
+  return channelId.startsWith(SYNTHETIC_MODERATOR_CHANNEL_PREFIX)
+    ? channelId.slice(SYNTHETIC_MODERATOR_CHANNEL_PREFIX.length)
+    : channelId
+}
+
 export function getOwnerOnlyAchievementMessage(
   language: Language,
   context: 'creator' | 'channel' | 'dashboard'

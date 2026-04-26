@@ -5,12 +5,12 @@ type TranslationValue = string
 type TranslationMap = Record<string, TranslationValue>
 
 const EN_OWNER_ONLY_MESSAGE =
-  'Achievement management currently supports only the connected user channel. Moderator channels are not handled yet.'
+  'Only the channel owner can publish or edit achievements.'
 const EN_OWNER_ONLY_DASHBOARD_MESSAGE =
   'Achievement management currently supports only the connected user channel. Channel metrics stay hidden for moderator channels, but your achievement progress remains visible.'
 
 const FR_OWNER_ONLY_MESSAGE =
-  'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.'
+  'Seul le propriétaire de la chaîne peut publier ou modifier des succès.'
 const FR_OWNER_ONLY_DASHBOARD_MESSAGE =
   'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les métriques de chaîne restent masquées pour les chaînes modératrices, mais la progression des succès reste visible.'
 
@@ -404,6 +404,10 @@ const EN_TRANSLATIONS: TranslationMap = {
   'creator.validation.missingFields': 'Title and description are required before publishing.',
   'creator.validation.missingDetail': 'A detail value is required for this trigger type.',
   'creator.validation.invalidCost': 'Channel point cost must be a positive integer.',
+  'management.readOnly.banner':
+    'Moderator view — achievements are read-only for this channel.',
+  'creator.readOnly.banner':
+    'Moderator view — you can browse achievements but cannot create or modify them.',
 }
 
 const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
@@ -780,6 +784,10 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'creator.validation.missingDetail':
     'Une valeur de détail est requise pour ce type de déclencheur.',
   'creator.validation.invalidCost': 'Le coût en points de chaîne doit être un entier positif.',
+  'management.readOnly.banner':
+    'Vue modérateur — les succès sont en lecture seule pour cette chaîne.',
+  'creator.readOnly.banner':
+    'Vue modérateur — vous pouvez consulter les succès mais pas les créer ou les modifier.',
 }
 
 export const TRANSLATIONS: Record<Language, TranslationMap> = {

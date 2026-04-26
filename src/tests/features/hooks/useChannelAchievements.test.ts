@@ -42,18 +42,26 @@ describe('useChannelAchievements', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
-  it('should block synthetic moderator channel ids before issuing a request', async () => {
+  it('should load achievements for synthetic moderator channel ids using the real channel id', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockAchievements),
+    } as Response)
+
     const { result } = renderHook(() => useChannelAchievements('mod-0'))
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.achievements).toEqual([])
-    expect(result.current.errorMessage).toBe(
-      'La gestion des succès ne prend actuellement en charge que la chaîne du compte connecté. Les chaînes modératrices ne sont pas encore gérées.'
+    expect(result.current.achievements).toEqual(mockAchievements)
+    expect(result.current.errorMessage).toBeNull()
+    expect(result.current.isReadOnly).toBe(true)
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/achievements/channel/0'),
+      expect.any(Object)
     )
-    expect(fetch).not.toHaveBeenCalled()
   })
 
   it('should load channel achievements when the channel id is valid', async () => {
@@ -71,6 +79,7 @@ describe('useChannelAchievements', () => {
 
     expect(result.current.achievements).toEqual(mockAchievements)
     expect(result.current.errorMessage).toBeNull()
+    expect(result.current.isReadOnly).toBe(false)
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('/achievements/channel/channel-1'),
       expect.any(Object)

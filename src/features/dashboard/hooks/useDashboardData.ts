@@ -12,6 +12,7 @@ import type {
   UserAchievement,
 } from '../../achievements/api/achievementManagement.types'
 import {
+  getRealChannelId,
   getOwnerOnlyAchievementMessage,
   isOwnerAchievementChannelId,
 } from '../../achievements/utils/achievementManagementChannel'
@@ -230,18 +231,18 @@ export function useDashboardData(): DashboardDataResult {
 
     const loadDashboardData = async () => {
       try {
-        const userAchievementsPromise =
-          selectedChannel && isOwnerAchievementChannelId(selectedChannel.id)
-            ? achievementManagementClient.getUserChannelAchievements(
-                user.userId,
-                selectedChannel.id
-              )
-            : achievementManagementClient.getUserAchievements(user.userId)
+        const userAchievementsPromise = selectedChannel
+          ? achievementManagementClient.getUserChannelAchievements(
+              user.userId,
+              getRealChannelId(selectedChannel.id)
+            )
+          : achievementManagementClient.getUserAchievements(user.userId)
 
-        const channelAchievementsPromise =
-          selectedChannel && isOwnerAchievementChannelId(selectedChannel.id)
-            ? achievementManagementClient.getChannelAchievements(selectedChannel.id)
-            : Promise.resolve<Achievement[]>([])
+        const channelAchievementsPromise = selectedChannel
+          ? achievementManagementClient.getChannelAchievements(
+              getRealChannelId(selectedChannel.id)
+            )
+          : Promise.resolve<Achievement[]>([])
 
         const [channelAchievements, userAchievements] = await Promise.all([
           channelAchievementsPromise,
