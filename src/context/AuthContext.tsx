@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
+import { addBotAsModerator } from '../features/chat/api/chatClient'
 
 const AUTH_SERVICE_URL =
   globalThis._env_?.AUTH_SERVICE_URL || import.meta.env.AUTH_SERVICE_URL || 'http://localhost:3000'
@@ -74,6 +75,11 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
           setUser(fullUser)
           localStorage.setItem('twitch_user', JSON.stringify(fullUser))
           localStorage.setItem('twitch_tokens', JSON.stringify(tokens))
+
+          // Automatically add the IRC bot as moderator — silent, non-blocking
+          addBotAsModerator(data.userId, data.user.login, tokens.accessToken).catch((err) => {
+            console.warn('Could not add bot as moderator:', err)
+          })
         } else {
           throw new Error(data.error || 'Authentication failed')
         }
