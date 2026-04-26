@@ -435,7 +435,7 @@ export function AchievementCreator({
                     type="button"
                     onClick={handleOpenImagePicker}
                     disabled={isPreparingImageUpload}
-                    aria-label={t('creator.image.upload')}
+                    aria-label={`${t('creator.image.upload')} ${t('creator.image.preview')}`}
                     className={`w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden ${
                       isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
                     }`}
