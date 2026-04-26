@@ -28,9 +28,9 @@ async function fetchTwitchUsers(
   return ((await res.json()) as { data: TwitchHelixUser[] }).data
 }
 
-async function fetchModeratedChannels(accessToken: string): Promise<string[]> {
+async function fetchModeratedChannels(accessToken: string, userId: string): Promise<string[]> {
   try {
-    const res = await fetch(`${AUTH_SERVICE_URL}/channels/me/moderated`, {
+    const res = await fetch(`${AUTH_SERVICE_URL}/channels/me/moderated?userId=${encodeURIComponent(userId)}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
     if (!res.ok) return []
@@ -94,7 +94,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
         return
       }
 
-      const modChannelIds = await fetchModeratedChannels(accessToken)
+      const modChannelIds = await fetchModeratedChannels(accessToken, user.userId)
       if (cancelled || !modChannelIds.length) return
 
       const initialModChannels: Channel[] = modChannelIds.map(channelId => ({
