@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { discordWebhookClient, DiscordWebhookError } from '../api/discordWebhookClient'
+import { useChannel } from '../../../context/ChannelContext'
 
 function getAccessToken(): string | null {
   try {
@@ -12,18 +13,19 @@ function getAccessToken(): string | null {
 }
 
 export function useDiscordWebhook() {
+  const { selectedChannel } = useChannel()
   const [isSaving, setIsSaving] = useState(false)
   const [successKey, setSuccessKey] = useState<string | null>(null)
   const [errorKey, setErrorKey] = useState<string | null>(null)
 
   const register = async (webhookUrl: string | null) => {
     const token = getAccessToken()
-    if (!token) return
+    if (!token || !selectedChannel) return
     setIsSaving(true)
     setSuccessKey(null)
     setErrorKey(null)
     try {
-      await discordWebhookClient.register(token, webhookUrl)
+      await discordWebhookClient.register(token, selectedChannel.id, webhookUrl)
       setSuccessKey(webhookUrl === null ? 'discord.webhook.removed' : 'discord.webhook.saved')
     } catch (err) {
       if (err instanceof DiscordWebhookError) {

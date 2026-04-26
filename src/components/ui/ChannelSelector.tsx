@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Check, Plus } from 'lucide-react'
+import { ChevronDown, Check } from 'lucide-react'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 
@@ -107,12 +107,6 @@ export function ChannelSelector() {
             ))}
           </div>
 
-          <div className="border-t border-[#2d2d31] p-2 dark:border-gray-200">
-            <button className="flex w-full items-center gap-2 rounded-lg px-4 py-3 text-left text-sm text-[#9146FF] transition-colors hover:bg-[#2d2d31] dark:hover:bg-gray-50">
-              <Plus className="h-4 w-4" />
-              {t('channel.addChannel')}
-            </button>
-          </div>
         </div>
       )}
     </div>

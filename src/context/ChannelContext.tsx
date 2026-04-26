@@ -5,6 +5,8 @@ import { useAuth } from './AuthContext'
 import type { Channel } from '../types/twitch'
 
 const TWITCH_CLIENT_ID = globalThis._env_?.TWITCH_CLIENT_ID || import.meta.env.TWITCH_CLIENT_ID
+const AUTH_SERVICE_URL =
+  globalThis._env_?.AUTH_SERVICE_URL || import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:3000'
 
 interface TwitchHelixUser {
   id: string
@@ -24,6 +26,19 @@ async function fetchTwitchUsers(
   })
   if (!res.ok) return []
   return ((await res.json()) as { data: TwitchHelixUser[] }).data
+}
+
+async function fetchModeratedChannels(accessToken: string): Promise<string[]> {
+  try {
+    const res = await fetch(`${AUTH_SERVICE_URL}/channels/me/moderated`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    if (!res.ok) return []
+    const data = (await res.json()) as { moderatedChannels: string[] }
+    return data.moderatedChannels ?? []
+  } catch {
+    return []
+  }
 }
 
 function buildInitialChannels(user: ReturnType<typeof useAuth>['user']): Channel[] {
@@ -66,10 +81,10 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
   }, [user])
 
   useEffect(() => {
-    if (!user || !user.channelsWhichIsMod.length) return
+    if (!user) return
     let cancelled = false
 
-    const enrich = async () => {
+    const fetchAndEnrichModChannels = async () => {
       const stored = localStorage.getItem('twitch_tokens')
       if (!stored || !TWITCH_CLIENT_ID) return
       let accessToken: string
@@ -79,7 +94,19 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
         return
       }
 
-      const helixUsers = await fetchTwitchUsers(user.channelsWhichIsMod, accessToken, TWITCH_CLIENT_ID)
+      const modChannelIds = await fetchModeratedChannels(accessToken)
+      if (cancelled || !modChannelIds.length) return
+
+      const initialModChannels: Channel[] = modChannelIds.map(channelId => ({
+        id: `mod-${channelId}`,
+        name: channelId,
+        avatar: channelId.charAt(0).toUpperCase(),
+        role: 'Moderator' as const,
+        followers: 0,
+      }))
+      setAvailableChannels(prev => [...prev.filter(c => c.role !== 'Moderator'), ...initialModChannels])
+
+      const helixUsers = await fetchTwitchUsers(modChannelIds, accessToken, TWITCH_CLIENT_ID)
       if (cancelled || !helixUsers.length) return
 
       const byId = new Map(helixUsers.map(u => [u.id, u]))
@@ -94,7 +121,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
       )
     }
 
-    void enrich()
+    void fetchAndEnrichModChannels()
     return () => {
       cancelled = true
     }
