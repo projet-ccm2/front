@@ -138,12 +138,9 @@ describe('PublicTwitchPanel', () => {
   })
 
   it('does nothing when the clipboard API is unavailable', () => {
-    vi.stubGlobal(
-      'navigator',
-      {
-        language: 'fr-FR',
-      } as unknown as Navigator
-    )
+    vi.stubGlobal('navigator', {
+      language: 'fr-FR',
+    } as unknown as Navigator)
 
     render(<PublicTwitchPanel channelId="channel-1" />)
 

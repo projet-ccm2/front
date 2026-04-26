@@ -46,7 +46,10 @@ async function fetchModeratedChannels(accessToken: string, userId: string): Prom
   }
 }
 
-function buildInitialChannels(user: ReturnType<typeof useAuth>['user'], moderatedIds: string[]): Channel[] {
+function buildInitialChannels(
+  user: ReturnType<typeof useAuth>['user'],
+  moderatedIds: string[]
+): Channel[] {
   if (!user) return []
 
   const userChannel: Channel = {

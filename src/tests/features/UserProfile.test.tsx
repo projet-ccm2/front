@@ -201,5 +201,4 @@ describe('UserProfile', () => {
       'https://example.com/profile.png'
     )
   })
-
 })

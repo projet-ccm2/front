@@ -431,9 +431,14 @@ export function AchievementCreator({
                   {t('creator.image.label')}
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <div
-                    onClick={() => !isPreparingImageUpload && handleOpenImagePicker()}
-                    className="w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden cursor-pointer"
+                  <button
+                    type="button"
+                    onClick={handleOpenImagePicker}
+                    disabled={isPreparingImageUpload}
+                    aria-label={t('creator.image.upload')}
+                    className={`w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden ${
+                      isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+                    }`}
                   >
                     {imagePreviewUrl ? (
                       <img
@@ -457,7 +462,7 @@ export function AchievementCreator({
                     ) : (
                       <Upload className="w-8 h-8 text-gray-500" />
                     )}
-                  </div>
+                  </button>
                   <div className="flex-1 w-full text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <button

@@ -47,7 +47,7 @@ export function normalizeAchievementTriggerLabel(
   const trimmedLabel = label?.trim()
 
   if (!trimmedLabel) {
-    return 'message'
+    return 'countMessage'
   }
 
   if (trimmedLabel in TRIGGER_LABEL_ALIASES) {
@@ -64,7 +64,7 @@ export function normalizeAchievementTriggerLabel(
     return trimmedLabel
   }
 
-  return 'message'
+  return 'countMessage'
 }
 
 export function getAchievementTriggerOptions(language: Language): AchievementTriggerOption[] {

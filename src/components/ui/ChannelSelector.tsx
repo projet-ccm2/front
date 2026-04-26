@@ -106,7 +106,6 @@ export function ChannelSelector() {
               </button>
             ))}
           </div>
-
         </div>
       )}
     </div>

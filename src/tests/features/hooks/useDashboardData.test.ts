@@ -213,11 +213,14 @@ describe('useDashboardData', () => {
   it('should load dashboard achievement data from the backend routes', async () => {
     const { result } = renderHook(() => useDashboardData())
 
-    await waitFor(() => {
-      expect(result.current.stats.totalAchievements).toBe(2)
-      expect(result.current.stats.completedAchievements).toBe(1)
-      expect(result.current.errorMessage).toBeNull()
-    }, { timeout: 5000 })
+    await waitFor(
+      () => {
+        expect(result.current.stats.totalAchievements).toBe(2)
+        expect(result.current.stats.completedAchievements).toBe(1)
+        expect(result.current.errorMessage).toBeNull()
+      },
+      { timeout: 5000 }
+    )
 
     expect(result.current.stats).toEqual({
       activeAchievements: 1,

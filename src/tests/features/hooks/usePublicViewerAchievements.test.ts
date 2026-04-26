@@ -88,7 +88,9 @@ describe('usePublicViewerAchievements', () => {
       pending as never
     )
 
-    const { result, unmount } = renderHook(() => usePublicViewerAchievements('channel-1', 'viewer-1'))
+    const { result, unmount } = renderHook(() =>
+      usePublicViewerAchievements('channel-1', 'viewer-1')
+    )
     unmount()
 
     resolveAchievements(mockAchievements)
