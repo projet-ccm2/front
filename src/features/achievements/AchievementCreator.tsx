@@ -353,7 +353,7 @@ export function AchievementCreator({
         </div>
 
         {isReadOnly && (
-          <div className="mx-4 sm:mx-8 mt-4 flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 dark:text-amber-700">
+          <div className="mx-4 sm:mx-8 mt-4 flex items-center gap-3 rounded-xl border border-[#ffd700]/40 bg-[#ffd700]/10 px-4 py-3 text-sm text-[#ffd700] dark:text-[#a16200]">
             <Lock className="w-4 h-4 flex-shrink-0" />
             {t('creator.readOnly.banner')}
           </div>
