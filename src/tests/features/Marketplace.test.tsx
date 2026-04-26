@@ -72,6 +72,22 @@ describe('Marketplace', () => {
     expect(await screen.findByText('Speed Runner')).toBeInTheDocument()
   })
 
+  it('should show a loading state while public achievements are being fetched', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>(() => {
+            // Keep the request pending so the loading branch stays visible.
+          })
+      )
+    )
+
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    expect(screen.getByText('Chargement des succès publics...')).toBeInTheDocument()
+  })
+
   it('should display achievement cards from the API', async () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
@@ -132,6 +148,20 @@ describe('Marketplace', () => {
 
     fireEvent.click(screen.getByLabelText('Secrets uniquement'))
     expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
+  })
+
+  it('should sort by newest availability and active state', async () => {
+    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
+
+    await screen.findByText('Speed Runner')
+    fireEvent.click(screen.getByTestId('mobile-filter-btn'))
+    fireEvent.change(screen.getByRole('combobox'), {
+      target: { value: 'newestAvailable' },
+    })
+    fireEvent.click(screen.getByLabelText('Actifs uniquement'))
+
+    expect(screen.getByText('Speed Runner')).toBeInTheDocument()
+    expect(screen.queryByText('Hype Train Conductor')).not.toBeInTheDocument()
   })
 
   it('should toggle mobile filters sidebar', async () => {

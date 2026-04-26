@@ -13,6 +13,7 @@ import {
   getAchievementTriggerOptions,
   mergeSuggestionIntoFormValues,
   normalizeAchievementImage,
+  normalizeAchievementTriggerLabel,
 } from './forms/achievementFormModel'
 import type { Achievement, AchievementTriggerLabel } from './api/achievementManagement.types'
 import { isRenderableImageSource } from './utils/achievementImage'
@@ -20,21 +21,21 @@ import { isOwnerAchievementChannelId } from './utils/achievementManagementChanne
 
 function getTriggerFieldConfig(label: AchievementTriggerLabel, t: (key: string) => string) {
   const showDetail =
-    label === 'message_content' ||
-    label === 'redeem_channel_point' ||
-    label === 'channel_point_cost'
+    label === 'contentMessage' ||
+    label === 'countRedeemChannelPoint' ||
+    label === 'countCostChannelPoint'
   const detailLabel =
-    label === 'redeem_channel_point'
-      ? t('achievement.trigger.dataLabel.redeem_channel_point')
-      : label === 'channel_point_cost'
-        ? t('achievement.trigger.dataLabel.channel_point_cost')
+    label === 'countRedeemChannelPoint'
+      ? t('achievement.trigger.dataLabel.countRedeemChannelPoint')
+      : label === 'countCostChannelPoint'
+        ? t('achievement.trigger.dataLabel.countCostChannelPoint')
         : t('achievement.trigger.dataLabel')
-  const detailInputType = label === 'channel_point_cost' ? 'number' : 'text'
+  const detailInputType = label === 'countCostChannelPoint' ? 'number' : 'text'
   const goalLabel =
-    label === 'message'
-      ? t('achievement.goal.message')
-      : label === 'channel_point_cost'
-        ? t('achievement.goal.channel_point_cost')
+    label === 'countMessage'
+      ? t('achievement.goal.countMessage')
+      : label === 'countCostChannelPoint'
+        ? t('achievement.goal.countCostChannelPoint')
         : t('achievement.goal.default')
   return { showDetail, detailLabel, detailInputType, goalLabel }
 }
@@ -46,8 +47,8 @@ interface AchievementCreatorProps {
 }
 
 const TRIGGER_TYPES_REQUIRING_DATA: AchievementTriggerLabel[] = [
-  'message_content',
-  'redeem_channel_point',
+  'contentMessage',
+  'countRedeemChannelPoint',
 ]
 
 function getPublishValidationError(
@@ -71,7 +72,7 @@ function getPublishValidationError(
   if (TRIGGER_TYPES_REQUIRING_DATA.includes(formValues.type.label) && !formValues.type.data) {
     return t('creator.validation.missingDetail')
   }
-  if (formValues.type.label === 'channel_point_cost') {
+  if (formValues.type.label === 'countCostChannelPoint') {
     const cost = Number(formValues.type.data)
     if (!Number.isInteger(cost) || cost <= 0) {
       return t('creator.validation.invalidCost')
@@ -186,8 +187,15 @@ export function AchievementCreator({
       const suggestion = await achievementManagementClient.getAiSuggestion({
         prompt: aiPrompt.trim(),
       })
+      const suggestedTriggerLabel = normalizeAchievementTriggerLabel(
+        suggestion.type?.label ??
+          suggestion.method ??
+          suggestion.unlockingMethod ??
+          suggestion.triggerType
+      )
 
       setFormValues(current => mergeSuggestionIntoFormValues(current, suggestion))
+      setMode(suggestedTriggerLabel === 'apicaller' ? 'api' : 'simple')
     } catch {
       setAiError(t('creator.ai.error.failed'))
     } finally {
@@ -224,7 +232,7 @@ export function AchievementCreator({
         }
 
         setFormValues(createFormValuesFromAchievement(achievement))
-        setMode(achievement.type.label === 'api_caller' ? 'api' : 'simple')
+        setMode(achievement.type.label === 'apicaller' ? 'api' : 'simple')
       } catch {
         if (!isMounted) {
           return
@@ -243,7 +251,7 @@ export function AchievementCreator({
     return () => {
       isMounted = false
     }
-  }, [achievementId])
+  }, [achievementId, t])
 
   useEffect(() => {
     if (achievementId || !templateAchievement) {
@@ -258,7 +266,7 @@ export function AchievementCreator({
     setSelectedImageUpload(null)
     setImagePreviewUrl(null)
     setTemplateMessage(t('creator.template.loaded', { title: templateAchievement.title }))
-  }, [achievementId, templateAchievement])
+  }, [achievementId, templateAchievement, t])
 
   const handlePublish = async () => {
     const validationError = getPublishValidationError(selectedChannel, t, formValues)
@@ -608,10 +616,10 @@ export function AchievementCreator({
                   <button
                     onClick={() => {
                       setMode('simple')
-                      if (formValues.type.label === 'api_caller') {
+                      if (formValues.type.label === 'apicaller') {
                         setFormValues(current => ({
                           ...current,
-                          type: { label: 'message', data: null },
+                          type: { label: 'countMessage', data: null },
                         }))
                       }
                     }}
@@ -628,7 +636,7 @@ export function AchievementCreator({
                       setMode('api')
                       setFormValues(current => ({
                         ...current,
-                        type: { label: 'api_caller', data: null },
+                        type: { label: 'apicaller', data: null },
                       }))
                     }}
                     className={`flex-1 px-4 py-3 rounded-lg transition-colors ${

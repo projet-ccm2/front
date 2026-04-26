@@ -1,6 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, waitFor } from '../../utils/test-utils'
+import { renderHook, waitFor, act } from '../../utils/test-utils'
 import { useDashboardData } from '../../../features/dashboard/hooks/useDashboardData'
+
+const mockChannelState = {
+  selectedChannel: {
+    id: 'channel-1',
+    name: 'MyChannel',
+    avatar: 'M',
+    role: 'Owner' as const,
+    followers: 0,
+  },
+  availableChannels: [],
+}
+
+vi.mock('../../../context/ChannelContext', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../../context/ChannelContext')>()
+
+  return {
+    ...actual,
+    useChannel: () => mockChannelState,
+  }
+})
 
 const authUser = {
   userId: 'user-1',
@@ -123,6 +143,13 @@ function makeFetch(channelStatus: number, userStatus: number) {
 
 describe('useDashboardData', () => {
   beforeEach(() => {
+    mockChannelState.selectedChannel = {
+      id: 'channel-1',
+      name: 'MyChannel',
+      avatar: 'M',
+      role: 'Owner',
+      followers: 0,
+    }
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
     vi.stubGlobal('fetch', makeFetch(200, 200))
   })
@@ -159,12 +186,38 @@ describe('useDashboardData', () => {
     vi.unstubAllGlobals()
   })
 
-  it('should load dashboard achievement data from the backend routes', async () => {
+  it('should show a sign-in message when no user is authenticated', async () => {
+    localStorage.removeItem('twitch_user')
+
     const { result } = renderHook(() => useDashboardData())
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false)
     })
+
+    expect(result.current.engagementData).toEqual([])
+    expect(result.current.recentActivity).toEqual([])
+    expect(result.current.stats).toEqual({
+      activeAchievements: 0,
+      totalAchievements: 0,
+      publicTemplates: 0,
+      completedAchievements: 0,
+      totalXpEarned: 0,
+    })
+    expect(result.current.errorMessage).toBe(
+      'Connecte-toi pour charger les succès du tableau de bord.'
+    )
+    expect(result.current.contextMessage).toBeNull()
+  })
+
+  it('should load dashboard achievement data from the backend routes', async () => {
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.stats.totalAchievements).toBe(2)
+      expect(result.current.stats.completedAchievements).toBe(1)
+      expect(result.current.errorMessage).toBeNull()
+    }, { timeout: 5000 })
 
     expect(result.current.stats).toEqual({
       activeAchievements: 1,
@@ -275,6 +328,27 @@ describe('useDashboardData', () => {
     expect(result.current.errorMessage).toBe('Impossible de charger les succès du tableau de bord.')
   })
 
+  it('should show the owner-only context message for moderator views', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+    mockChannelState.selectedChannel = {
+      id: 'mod-channel-1',
+      name: 'Moderator View',
+      avatar: 'M',
+      role: 'Moderator',
+      followers: 0,
+    }
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.contextMessage).toContain('gestion des succès')
+    expect(result.current.contextMessage).toContain('chaîne du compte connecté')
+    expect(result.current.contextMessage).toContain('progression des succès reste visible')
+  })
+
   it('should show sign-in message when user is not authenticated', async () => {
     localStorage.clear()
 
@@ -378,6 +452,151 @@ describe('useDashboardData', () => {
     })
 
     expect(result.current.engagementData.every(d => d.unlocks === 0)).toBe(true)
+  })
+
+  it('should fall back to "Recently" for invalid acquired dates', async () => {
+    const invalidDateAchievements = [
+      {
+        ...mockUserAchievements[0],
+        userState: {
+          progressCount: 1,
+          finished: true,
+          acquiredDate: 'not-a-date',
+        },
+      },
+    ]
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/achievements/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockChannelAchievements),
+          })
+        }
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(invalidDateAchievements),
+          })
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.recentActivity[0].time).toBe('Récemment')
+  })
+
+  it('should ignore late results after unmounting', async () => {
+    let resolveChannel: ((value: Response) => void) | null = null
+    let resolveUser: ((value: Response) => void) | null = null
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/achievements/channel/channel-1')) {
+          return new Promise<Response>(resolve => {
+            resolveChannel = resolve
+          })
+        }
+
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return new Promise<Response>(resolve => {
+            resolveUser = resolve
+          })
+        }
+
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result, unmount } = renderHook(() => useDashboardData())
+
+    expect(result.current.loading).toBe(true)
+
+    unmount()
+
+    await act(async () => {
+      resolveChannel?.({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockChannelAchievements),
+      } as Response)
+      resolveUser?.({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockUserAchievements),
+      } as Response)
+    })
+
+    expect(result.current.loading).toBe(true)
+  })
+
+  it('should ignore late errors after unmounting', async () => {
+    let rejectChannel: ((reason?: unknown) => void) | null = null
+    let rejectUser: ((reason?: unknown) => void) | null = null
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/achievements/channel/channel-1')) {
+          return new Promise<Response>((_, reject) => {
+            rejectChannel = reject
+          })
+        }
+
+        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+          return new Promise<Response>((_, reject) => {
+            rejectUser = reject
+          })
+        }
+
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+          text: () => Promise.resolve(''),
+        })
+      })
+    )
+
+    const { result, unmount } = renderHook(() => useDashboardData())
+
+    expect(result.current.loading).toBe(true)
+
+    unmount()
+
+    await act(async () => {
+      rejectChannel?.(new Error('late channel failure'))
+      rejectUser?.(new Error('late user failure'))
+      await Promise.resolve()
+    })
+
+    expect(result.current.loading).toBe(true)
   })
 
   it('should show recent activity time as hours ago for achievements unlocked hours ago', async () => {

@@ -1,7 +1,30 @@
 import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
-import { fireEvent, render, screen } from '../utils/test-utils'
+import { fireEvent, render, screen, waitFor } from '../utils/test-utils'
 import { Sidebar } from '../../components/layout/Sidebar'
+
+const mockChannelState = {
+  selectedChannel: {
+    id: 'channel-1',
+    name: 'MyChannel',
+    role: 'Owner' as const,
+  },
+  availableChannels: [
+    {
+      id: 'channel-1',
+      name: 'MyChannel',
+      role: 'Owner' as const,
+    },
+  ],
+}
+
+vi.mock('../../context/ChannelContext', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../context/ChannelContext')>()
+  return {
+    ...actual,
+    useChannel: () => mockChannelState,
+  }
+})
 
 vi.mock('lucide-react', () => ({
   Languages: () => <div data-testid="icon-languages" />,
@@ -17,6 +40,8 @@ vi.mock('lucide-react', () => ({
   Moon: () => <div data-testid="icon-moon" />,
   Settings: () => <div data-testid="icon-settings" />,
   LogOut: () => <div data-testid="icon-logout" />,
+  MessageSquare: () => <div data-testid="icon-message-square" />,
+  Download: () => <div data-testid="icon-download" />,
 }))
 
 describe('Sidebar', () => {
@@ -91,5 +116,42 @@ describe('Sidebar', () => {
       fireEvent.click(overlay)
       expect(mockOnClose).toHaveBeenCalled()
     }
+  })
+
+  it('should hide moderator-only pages and redirect away from hidden routes', async () => {
+    mockChannelState.selectedChannel = {
+      id: 'mod-channel-1',
+      name: 'ModeratorChannel',
+      role: 'Moderator',
+    }
+    mockChannelState.availableChannels = [
+      {
+        id: 'channel-1',
+        name: 'MyChannel',
+        role: 'Owner',
+      },
+      {
+        id: 'mod-channel-1',
+        name: 'ModeratorChannel',
+        role: 'Moderator',
+      },
+    ]
+
+    render(
+      <Sidebar
+        currentPage="profile"
+        onNavigate={mockOnNavigate}
+        isOpen={true}
+        onClose={mockOnClose}
+      />
+    )
+
+    expect(screen.queryByText('Profil utilisateur')).not.toBeInTheDocument()
+    expect(screen.queryByText('Hub viewer')).not.toBeInTheDocument()
+    expect(screen.queryByText('Discord Notifications')).not.toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(mockOnNavigate).toHaveBeenCalledWith('dashboard')
+    })
   })
 })

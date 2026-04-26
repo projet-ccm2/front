@@ -1,9 +1,9 @@
 export type AchievementTriggerLabel =
-  | 'message'
-  | 'message_content'
-  | 'channel_point_cost'
-  | 'redeem_channel_point'
-  | 'api_caller'
+  | 'countMessage'
+  | 'contentMessage'
+  | 'countCostChannelPoint'
+  | 'countRedeemChannelPoint'
+  | 'apicaller'
 
 export interface AchievementType {
   label: AchievementTriggerLabel
@@ -72,4 +72,8 @@ export interface AchievementSuggestionResponse {
   active: boolean
   secret: boolean
   type: AchievementType
+  method?: string | null
+  unlockingMethod?: string | null
+  triggerType?: string | null
+  triggerData?: string | number | boolean | Record<string, unknown> | null
 }

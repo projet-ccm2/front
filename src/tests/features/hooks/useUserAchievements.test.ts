@@ -2,6 +2,26 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, waitFor } from '../../utils/test-utils'
 import { useUserAchievements } from '../../../features/profile/hooks/useUserAchievements'
 
+const mockChannelState = {
+  selectedChannel: {
+    id: 'channel-1',
+    name: 'MyChannel',
+    avatar: 'M',
+    role: 'Owner' as const,
+    followers: 0,
+  },
+  availableChannels: [],
+}
+
+vi.mock('../../../context/ChannelContext', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../../context/ChannelContext')>()
+
+  return {
+    ...actual,
+    useChannel: () => mockChannelState,
+  }
+})
+
 const authUser = {
   userId: 'user-1',
   username: 'streamer',
@@ -72,6 +92,56 @@ describe('useUserAchievements', () => {
     })
 
     expect(result.current.achievements).toEqual(mockAchievements)
+    expect(result.current.errorMessage).toBeNull()
+  })
+
+  it('should load user achievements without a channel-specific scope for moderator views', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+    mockChannelState.selectedChannel = {
+      id: 'mod-channel-1',
+      name: 'Moderator View',
+      avatar: 'M',
+      role: 'Moderator',
+      followers: 0,
+    }
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockAchievements),
+    } as Response)
+
+    const { result } = renderHook(() => useUserAchievements())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    expect(result.current.achievements).toEqual(mockAchievements)
+    expect(result.current.errorMessage).toBeNull()
+  })
+
+  it('should ignore a late response after unmounting', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+
+    let resolveAchievements!: (value: typeof mockAchievements) => void
+    const pending = new Promise<typeof mockAchievements>(resolve => {
+      resolveAchievements = resolve
+    })
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () => pending as never,
+    } as Response)
+
+    const { result, unmount } = renderHook(() => useUserAchievements())
+    unmount()
+
+    resolveAchievements(mockAchievements)
+    await pending
+
+    expect(result.current.achievements).toEqual([])
     expect(result.current.errorMessage).toBeNull()
   })
 

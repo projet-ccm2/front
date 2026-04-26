@@ -180,4 +180,26 @@ describe('UserProfile', () => {
 
     expect(await screen.findByText(/service de succ.* indisponible/i)).toBeInTheDocument()
   })
+
+  it('should render the profile image when one is available', async () => {
+    localStorage.setItem(
+      'twitch_user',
+      JSON.stringify({
+        ...authUser,
+        channel: {
+          ...authUser.channel,
+          profileImageUrl: 'https://example.com/profile.png',
+        },
+      })
+    )
+
+    render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
+
+    expect(await screen.findAllByText('First Steps')).toHaveLength(1)
+    expect(document.querySelector('img[alt=""]')).toHaveAttribute(
+      'src',
+      'https://example.com/profile.png'
+    )
+  })
+
 })

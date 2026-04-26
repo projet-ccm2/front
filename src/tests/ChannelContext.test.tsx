@@ -4,6 +4,20 @@ import { render as rawRender } from '@testing-library/react'
 import { ChannelProvider, useChannel } from '../context/ChannelContext'
 import React from 'react'
 
+function ChannelProbe() {
+  const { selectedChannel, availableChannels } = useChannel()
+
+  return (
+    <div>
+      <div data-testid="selected-channel">{selectedChannel ? selectedChannel.name : 'none'}</div>
+      <div data-testid="available-count">{availableChannels.length}</div>
+      <div data-testid="available-names">
+        {availableChannels.map(channel => channel.name).join(',')}
+      </div>
+    </div>
+  )
+}
+
 class TestErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { error: string | null }
@@ -60,6 +74,150 @@ describe('ChannelContext', () => {
       </ChannelProvider>
     )
     expect(screen.getByText('Selected: MyTwitchChannel')).toBeInTheDocument()
+  })
+
+  it('should expose no channels when there is no authenticated user', () => {
+    localStorage.removeItem('twitch_user')
+
+    render(
+      <ChannelProvider>
+        <ChannelProbe />
+      </ChannelProvider>
+    )
+
+    expect(screen.getByTestId('selected-channel')).toHaveTextContent('none')
+    expect(screen.getByTestId('available-count')).toHaveTextContent('0')
+  })
+
+  it('should keep moderator channels unresolved when the Twitch token is malformed', () => {
+    localStorage.setItem('twitch_tokens', '{invalid-json')
+    vi.stubGlobal('fetch', vi.fn())
+
+    render(
+      <ChannelProvider>
+        <ChannelProbe />
+      </ChannelProvider>
+    )
+
+    expect(screen.getByTestId('selected-channel')).toHaveTextContent('MyTwitchChannel')
+    expect(screen.getByTestId('available-count')).toHaveTextContent('2')
+    expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,ProGamingHub')
+    expect(fetch).not.toHaveBeenCalled()
+
+    vi.unstubAllGlobals()
+  })
+
+  it('should keep moderator channels when the auth service rejects the request', async () => {
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token' }))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/channels/me/moderated')) {
+          return Promise.resolve({
+            ok: false,
+            status: 500,
+            json: () => Promise.resolve({}),
+            text: () => Promise.resolve('boom'),
+          })
+        }
+
+        if (url.startsWith('https://api.twitch.tv/helix/users')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({
+                data: [
+                  {
+                    id: 'ProGamingHub',
+                    display_name: 'Pro Gaming Hub',
+                    profile_image_url: 'https://example.com/mod.png',
+                  },
+                ],
+              }),
+          })
+        }
+
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({ message: `Unhandled request: ${url}` }),
+          text: () => Promise.resolve(`Unhandled request: ${url}`),
+        })
+      })
+    )
+
+    render(
+      <ChannelProvider>
+        <ChannelProbe />
+      </ChannelProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.getByTestId('selected-channel')).toHaveTextContent('MyTwitchChannel')
+    expect(screen.getByTestId('available-count')).toHaveTextContent('2')
+    expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,ProGamingHub')
+
+    vi.unstubAllGlobals()
+  })
+
+  it('should keep moderator channels when the auth service throws', async () => {
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token' }))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/channels/me/moderated')) {
+          throw new Error('network down')
+        }
+
+        if (url.startsWith('https://api.twitch.tv/helix/users')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({
+                data: [
+                  {
+                    id: 'ProGamingHub',
+                    display_name: 'Pro Gaming Hub',
+                    profile_image_url: 'https://example.com/mod.png',
+                  },
+                ],
+              }),
+          })
+        }
+
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({ message: `Unhandled request: ${url}` }),
+          text: () => Promise.resolve(`Unhandled request: ${url}`),
+        })
+      })
+    )
+
+    render(
+      <ChannelProvider>
+        <ChannelProbe />
+      </ChannelProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.getByTestId('selected-channel')).toHaveTextContent('MyTwitchChannel')
+    expect(screen.getByTestId('available-count')).toHaveTextContent('2')
+    expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,ProGamingHub')
+
+    vi.unstubAllGlobals()
   })
 
   it('should allow updating selected channel', async () => {

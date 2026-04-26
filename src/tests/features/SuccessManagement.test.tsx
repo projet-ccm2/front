@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { SuccessManagement } from '../../features/achievements/SuccessManagement'
 import React from 'react'
@@ -137,7 +137,7 @@ describe('SuccessManagement', () => {
   it('should render the management dashboard', async () => {
     renderManagement()
 
-    expect(screen.getByRole('heading', { name: 'Gérer les achievements' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Gérer les succès' })).toBeInTheDocument()
     expect(screen.getByText('Activez, désactivez et modifiez vos quêtes')).toBeInTheDocument()
     expect(await screen.findByText(/Chaîne/)).toBeInTheDocument()
   })
@@ -164,14 +164,14 @@ describe('SuccessManagement', () => {
     renderManagement()
 
     await screen.findByText('First Steps')
-    expect(screen.getByPlaceholderText('Rechercher des achievements...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Rechercher des succès...')).toBeInTheDocument()
   })
 
   it('should render filter options', async () => {
     renderManagement()
 
     await screen.findByText('First Steps')
-    expect(screen.getByText('All Achievements')).toBeInTheDocument()
+    expect(screen.getByText('Tous les succès')).toBeInTheDocument()
   })
 
   it('should toggle sidebar on mobile', async () => {
@@ -187,7 +187,7 @@ describe('SuccessManagement', () => {
     renderManagement()
 
     await screen.findByText('First Steps')
-    fireEvent.change(screen.getByPlaceholderText('Rechercher des achievements...'), {
+    fireEvent.change(screen.getByPlaceholderText('Rechercher des succès...'), {
       target: { value: 'Chat' },
     })
 
@@ -201,7 +201,7 @@ describe('SuccessManagement', () => {
     renderManagement()
 
     await screen.findByText('First Steps')
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Disabled Only' } })
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'disabled' } })
 
     await waitFor(() => {
       expect(screen.queryByText('First Steps')).not.toBeInTheDocument()
@@ -223,7 +223,7 @@ describe('SuccessManagement', () => {
 
     renderManagement()
 
-    expect(await screen.findByText('Aucun achievement pour cette chaîne')).toBeInTheDocument()
+    expect(await screen.findByText('Aucun succès pour cette chaîne')).toBeInTheDocument()
   })
 
   it('should render an error state when the API fails', async () => {
@@ -249,10 +249,10 @@ describe('SuccessManagement', () => {
   it('should toggle an achievement activation state optimistically', async () => {
     renderManagement()
 
-    const toggleButton = await screen.findByLabelText('Deactivate First Steps')
+    const toggleButton = await screen.findByLabelText('Désactiver First Steps')
     fireEvent.click(toggleButton)
 
-    expect(await screen.findByLabelText('Activate First Steps')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Activer First Steps')).toBeInTheDocument()
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -296,21 +296,21 @@ describe('SuccessManagement', () => {
 
     renderManagement()
 
-    fireEvent.click(await screen.findByLabelText('Deactivate First Steps'))
+    fireEvent.click(await screen.findByLabelText('Désactiver First Steps'))
 
     expect(
       await screen.findByText('Impossible de mettre à jour « First Steps ». Veuillez réessayer.')
     ).toBeInTheDocument()
-    expect(await screen.findByLabelText('Deactivate First Steps')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Désactiver First Steps')).toBeInTheDocument()
   })
 
   it('should delete an achievement after confirmation', async () => {
     renderManagement()
 
-    fireEvent.click(await screen.findByLabelText('Delete First Steps'))
+    fireEvent.click(await screen.findByLabelText('Supprimer First Steps'))
 
     // Dialog should appear with French confirmation text
-    expect(await screen.findByText("Supprimer l'achievement")).toBeInTheDocument()
+    expect(await screen.findByText('Supprimer le succès')).toBeInTheDocument()
     fireEvent.click(screen.getByText('Supprimer'))
 
     await waitFor(() => {
@@ -356,10 +356,10 @@ describe('SuccessManagement', () => {
 
     renderManagement()
 
-    fireEvent.click(await screen.findByLabelText('Delete First Steps'))
+    fireEvent.click(await screen.findByLabelText('Supprimer First Steps'))
 
-    // Dialog appears — confirm deletion
-    expect(await screen.findByText("Supprimer l'achievement")).toBeInTheDocument()
+    // Dialog appears â€” confirm deletion
+    expect(await screen.findByText('Supprimer le succès')).toBeInTheDocument()
     fireEvent.click(screen.getByText('Supprimer'))
 
     expect(
@@ -371,7 +371,7 @@ describe('SuccessManagement', () => {
   it('should open edit mode for the selected achievement', async () => {
     renderManagement()
 
-    fireEvent.click(await screen.findByLabelText('Edit First Steps'))
+    fireEvent.click(await screen.findByLabelText('Modifier First Steps'))
 
     expect(mockOnEditAchievement).toHaveBeenCalledWith('1')
   })

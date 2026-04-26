@@ -121,7 +121,7 @@ describe('App - Functional Coverage', () => {
     await screen.findAllByText('Tableau de bord')
 
     fireEvent.click(screen.getAllByRole('button', { name: /G.*succ.*s|Manage Achievements/i })[0])
-    expect(await screen.findByText('All Achievements')).toBeInTheDocument()
+    expect(await screen.findByText('Tous les succès')).toBeInTheDocument()
 
     fireEvent.click(screen.getAllByRole('button', { name: /Profil utilisateur|User Profile/i })[0])
     expect(await screen.findByRole('heading', { name: 'Classement' })).toBeInTheDocument()
@@ -183,7 +183,7 @@ describe('App - Functional Coverage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Use as Template|Utiliser comme mod.*le/i }))
     expect(
-      await screen.findByRole('heading', { name: /Create Achievement|Cr.*er un succ.*s/i })
+      await screen.findByRole('heading', { name: /Créer un succès|Create Achievement/i })
     ).toBeInTheDocument()
   })
 

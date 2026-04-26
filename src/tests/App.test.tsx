@@ -69,7 +69,9 @@ describe('App Component', () => {
       fireEvent.click(creatorButtons[0])
 
       await waitFor(() => {
-        expect(screen.getAllByText(/Design a new quest/i).length).toBeGreaterThan(0)
+        expect(
+          screen.getAllByText(/Concevez une nouvelle quête pour votre communauté/i).length
+        ).toBeGreaterThan(0)
       })
     })
   })

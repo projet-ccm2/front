@@ -89,25 +89,25 @@ const EN_TRANSLATIONS: TranslationMap = {
   'achievement.trigger.helper':
     'Choose the rule that best matches how a viewer should unlock this achievement.',
   'achievement.trigger.dataLabel': 'Trigger details',
-  'achievement.trigger.message.title': 'Messages sent',
-  'achievement.trigger.message.description':
+  'achievement.trigger.countMessage.title': 'Messages sent',
+  'achievement.trigger.countMessage.description':
     'Unlock after the viewer sends a number of chat messages.',
-  'achievement.trigger.message_content.title': 'Message content',
-  'achievement.trigger.message_content.description':
+  'achievement.trigger.contentMessage.title': 'Message content',
+  'achievement.trigger.contentMessage.description':
     'Unlock when the viewer sends a specific word or phrase in chat.',
-  'achievement.trigger.channel_point_cost.title': 'Channel point cost',
-  'achievement.trigger.channel_point_cost.description':
+  'achievement.trigger.countCostChannelPoint.title': 'Channel point cost',
+  'achievement.trigger.countCostChannelPoint.description':
     'Unlock after the viewer spends a fixed amount of channel points.',
-  'achievement.trigger.redeem_channel_point.title': 'Channel point redemption',
-  'achievement.trigger.redeem_channel_point.description':
+  'achievement.trigger.countRedeemChannelPoint.title': 'Channel point redemption',
+  'achievement.trigger.countRedeemChannelPoint.description':
     'Unlock when the viewer redeems a specific channel point reward.',
-  'achievement.trigger.api_caller.title': 'API event',
-  'achievement.trigger.api_caller.description':
+  'achievement.trigger.apicaller.title': 'API event',
+  'achievement.trigger.apicaller.description':
     'Unlock from an external API call or automated event.',
-  'achievement.trigger.dataLabel.redeem_channel_point': 'Channel point reward ID',
-  'achievement.trigger.dataLabel.channel_point_cost': 'Minimum point cost',
-  'achievement.goal.message': 'How many times',
-  'achievement.goal.channel_point_cost': 'Amount spent',
+  'achievement.trigger.dataLabel.countRedeemChannelPoint': 'Channel point reward ID',
+  'achievement.trigger.dataLabel.countCostChannelPoint': 'Minimum point cost',
+  'achievement.goal.countMessage': 'How many times',
+  'achievement.goal.countCostChannelPoint': 'Amount spent',
   'achievement.goal.default': 'Goal',
   'achievement.ownerOnly.creator': EN_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.channel': EN_OWNER_ONLY_MESSAGE,
@@ -466,25 +466,25 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'achievement.trigger.helper':
     'Choisis la règle qui correspond le mieux à la manière dont le viewer débloque ce succès.',
   'achievement.trigger.dataLabel': 'Détails du déclencheur',
-  'achievement.trigger.message.title': 'Messages envoyés',
-  'achievement.trigger.message.description':
+  'achievement.trigger.countMessage.title': 'Messages envoyés',
+  'achievement.trigger.countMessage.description':
     'Débloqué après qu’un viewer a envoyé un certain nombre de messages dans le chat.',
-  'achievement.trigger.message_content.title': 'Contenu du message',
-  'achievement.trigger.message_content.description':
+  'achievement.trigger.contentMessage.title': 'Contenu du message',
+  'achievement.trigger.contentMessage.description':
     'Débloqué quand le viewer envoie un mot ou une phrase précise dans le chat.',
-  'achievement.trigger.channel_point_cost.title': 'Coût en points de chaîne',
-  'achievement.trigger.channel_point_cost.description':
+  'achievement.trigger.countCostChannelPoint.title': 'Coût en points de chaîne',
+  'achievement.trigger.countCostChannelPoint.description':
     'Débloqué après qu’un viewer a dépensé une quantité fixe de points de chaîne.',
-  'achievement.trigger.redeem_channel_point.title': 'Récompense points de chaîne',
-  'achievement.trigger.redeem_channel_point.description':
+  'achievement.trigger.countRedeemChannelPoint.title': 'Récompense points de chaîne',
+  'achievement.trigger.countRedeemChannelPoint.description':
     'Débloqué quand le viewer échange une récompense précise de points de chaîne.',
-  'achievement.trigger.api_caller.title': 'Événement API',
-  'achievement.trigger.api_caller.description':
+  'achievement.trigger.apicaller.title': 'Événement API',
+  'achievement.trigger.apicaller.description':
     'Débloqué via un appel API externe ou un événement automatisé.',
-  'achievement.trigger.dataLabel.redeem_channel_point': 'ID de la récompense de point de chaîne',
-  'achievement.trigger.dataLabel.channel_point_cost': 'Coût minimum en points',
-  'achievement.goal.message': 'Combien de fois',
-  'achievement.goal.channel_point_cost': 'Quantité dépensée',
+  'achievement.trigger.dataLabel.countRedeemChannelPoint': 'ID de la récompense de point de chaîne',
+  'achievement.trigger.dataLabel.countCostChannelPoint': 'Coût minimum en points',
+  'achievement.goal.countMessage': 'Combien de fois',
+  'achievement.goal.countCostChannelPoint': 'Quantité dépensée',
   'achievement.goal.default': 'Objectif',
   'achievement.ownerOnly.creator': FR_OWNER_ONLY_MESSAGE,
   'achievement.ownerOnly.channel': FR_OWNER_ONLY_MESSAGE,

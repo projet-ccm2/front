@@ -21,32 +21,78 @@ export interface AchievementImageUploadFormValue {
   contentBase64: string
 }
 
+const TRIGGER_LABEL_ALIASES: Record<string, AchievementTriggerLabel> = {
+  message: 'countMessage',
+  countmessage: 'countMessage',
+  count_message: 'countMessage',
+  contentMessage: 'contentMessage',
+  contentmessage: 'contentMessage',
+  content_message: 'contentMessage',
+  message_content: 'contentMessage',
+  channel_point_cost: 'countCostChannelPoint',
+  channelpointcost: 'countCostChannelPoint',
+  countcostchannelpoint: 'countCostChannelPoint',
+  count_cost_channel_point: 'countCostChannelPoint',
+  redeem_channel_point: 'countRedeemChannelPoint',
+  redeemchannelpoint: 'countRedeemChannelPoint',
+  countredeemchannelpoint: 'countRedeemChannelPoint',
+  count_redeem_channel_point: 'countRedeemChannelPoint',
+  api_caller: 'apicaller',
+  apicaller: 'apicaller',
+}
+
+export function normalizeAchievementTriggerLabel(
+  label: string | null | undefined
+): AchievementTriggerLabel {
+  const trimmedLabel = label?.trim()
+
+  if (!trimmedLabel) {
+    return 'message'
+  }
+
+  if (trimmedLabel in TRIGGER_LABEL_ALIASES) {
+    return TRIGGER_LABEL_ALIASES[trimmedLabel]
+  }
+
+  if (
+    trimmedLabel === 'countMessage' ||
+    trimmedLabel === 'contentMessage' ||
+    trimmedLabel === 'countCostChannelPoint' ||
+    trimmedLabel === 'countRedeemChannelPoint' ||
+    trimmedLabel === 'apicaller'
+  ) {
+    return trimmedLabel
+  }
+
+  return 'message'
+}
+
 export function getAchievementTriggerOptions(language: Language): AchievementTriggerOption[] {
   return [
     {
-      value: 'message',
-      title: resolveTranslation(language, 'achievement.trigger.message.title'),
-      description: resolveTranslation(language, 'achievement.trigger.message.description'),
+      value: 'countMessage',
+      title: resolveTranslation(language, 'achievement.trigger.countMessage.title'),
+      description: resolveTranslation(language, 'achievement.trigger.countMessage.description'),
     },
     {
-      value: 'message_content',
-      title: resolveTranslation(language, 'achievement.trigger.message_content.title'),
-      description: resolveTranslation(language, 'achievement.trigger.message_content.description'),
+      value: 'contentMessage',
+      title: resolveTranslation(language, 'achievement.trigger.contentMessage.title'),
+      description: resolveTranslation(language, 'achievement.trigger.contentMessage.description'),
     },
     {
-      value: 'channel_point_cost',
-      title: resolveTranslation(language, 'achievement.trigger.channel_point_cost.title'),
+      value: 'countCostChannelPoint',
+      title: resolveTranslation(language, 'achievement.trigger.countCostChannelPoint.title'),
       description: resolveTranslation(
         language,
-        'achievement.trigger.channel_point_cost.description'
+        'achievement.trigger.countCostChannelPoint.description'
       ),
     },
     {
-      value: 'redeem_channel_point',
-      title: resolveTranslation(language, 'achievement.trigger.redeem_channel_point.title'),
+      value: 'countRedeemChannelPoint',
+      title: resolveTranslation(language, 'achievement.trigger.countRedeemChannelPoint.title'),
       description: resolveTranslation(
         language,
-        'achievement.trigger.redeem_channel_point.description'
+        'achievement.trigger.countRedeemChannelPoint.description'
       ),
     },
   ]
@@ -63,7 +109,7 @@ export const defaultAchievementFormValues: AchievementFormValues = {
   secret: false,
   image: null,
   type: {
-    label: 'message',
+    label: 'countMessage',
     data: null,
   },
 }
@@ -72,9 +118,21 @@ export function mergeSuggestionIntoFormValues(
   currentValues: AchievementFormValues,
   suggestion: AchievementSuggestionResponse
 ): AchievementFormValues {
+  const suggestedTriggerLabel = normalizeAchievementTriggerLabel(
+    suggestion.type?.label ??
+      suggestion.method ??
+      suggestion.unlockingMethod ??
+      suggestion.triggerType
+  )
+  const suggestedTriggerData = suggestion.type?.data ?? suggestion.triggerData ?? null
+
   return {
     ...currentValues,
     ...suggestion,
+    type: {
+      label: suggestedTriggerLabel,
+      data: suggestedTriggerData,
+    },
     label: currentValues.label,
     image: currentValues.image,
   }
@@ -105,7 +163,10 @@ export function createFormValuesFromAchievement(
     active: achievement.active,
     secret: achievement.secret,
     image: achievement.image,
-    type: achievement.type,
+    type: {
+      label: normalizeAchievementTriggerLabel(achievement.type.label),
+      data: achievement.type.data ?? null,
+    },
   }
 }
 

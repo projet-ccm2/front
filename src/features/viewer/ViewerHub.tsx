@@ -1,5 +1,5 @@
 import { CheckCircle2, ChevronRight, Lock, Medal, Menu, Star, Trophy, Zap } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
@@ -21,10 +21,6 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [filter, setFilter] = useState<AchievementFilter>('all')
 
-  useEffect(() => {
-    setFilter('all')
-  }, [selectedChannelId])
-
   const summaries = buildViewerChannelSummaries(achievements)
   const completedCount = achievements.filter(a => a.userState.finished).length
   const inProgressCount = achievements.filter(
@@ -38,7 +34,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
 
   const channelAchievements = selectedSummary?.achievements ?? achievements
 
-  const filteredAchievements = useMemo(() => {
+  const filteredAchievements = (() => {
     const base =
       filter === 'progress'
         ? channelAchievements.filter(a => !a.userState.finished && a.userState.progressCount > 0)
@@ -51,7 +47,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
       const scoreB = b.userState.finished ? 0 : b.userState.progressCount > 0 ? 1 : 2
       return scoreA - scoreB
     })
-  }, [channelAchievements, filter])
+  })()
 
   const getChannelName = (channelId: string) => getChannelDisplayName(channelId, user?.channel)
 

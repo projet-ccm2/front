@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { AchievementCreator } from '../../features/achievements/AchievementCreator'
 import { toast } from 'sonner'
@@ -26,7 +26,7 @@ const marketplaceTemplate = {
   image: null,
   channelId: null,
   type: {
-    label: 'message_content' as const,
+    label: 'contentMessage' as const,
     data: 'gg',
   },
 }
@@ -82,7 +82,7 @@ describe('AchievementCreator', () => {
             image: null,
             channelId: 'channel-1',
             type: {
-              label: 'message',
+              label: 'countMessage',
               data: null,
             },
           }),
@@ -111,15 +111,15 @@ describe('AchievementCreator', () => {
         json: () =>
           Promise.resolve({
             title: 'Chat Warrior',
-            description: 'Unlock this achievement after sending 250 messages in chat.',
+            description: "Débloquez ce succès après l'envoi de 250 messages dans le chat.",
             goal: 250,
             reward: 250,
             public: false,
             active: true,
             secret: false,
             type: {
-              label: 'message',
-              data: null,
+              label: 'contentMessage',
+              data: 'hello',
             },
           }),
       })
@@ -148,7 +148,7 @@ describe('AchievementCreator', () => {
 
   it('should render the achievement creator page', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    expect(screen.getByRole('heading', { name: 'Create Achievement' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Créer un succès' })).toBeInTheDocument()
   })
 
   it('should prefill the form from a marketplace template', async () => {
@@ -160,65 +160,89 @@ describe('AchievementCreator', () => {
     )
 
     expect(
-      screen.getByText('Template "Marketplace Template" loaded from the marketplace.')
+      screen.getByText(/Marketplace Template.*chargé depuis la marketplace/i)
     ).toBeInTheDocument()
     expect(screen.getByDisplayValue('Marketplace Template')).toBeInTheDocument()
     expect(screen.getByDisplayValue('Imported from marketplace')).toBeInTheDocument()
-    expect(screen.getByLabelText('Reward (XP / Points)')).toHaveValue(300)
-    expect(screen.getByText('Simple Mode')).toBeInTheDocument()
+    expect(screen.getByLabelText('Récompense (XP / Points)')).toHaveValue(300)
+    expect(screen.getByText('Mode simple')).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Messages envoyés' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Contenu du message' })).toBeInTheDocument()
-    expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('message_content')
+    expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('contentMessage')
     expect(screen.getByLabelText(/Détails du déclencheur/i)).toHaveValue('gg')
     expect(screen.getByLabelText('Objectif')).toHaveValue(75)
   })
 
   it('should allow entering achievement title', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    const titleInput = screen.getByPlaceholderText('Enter achievement name...')
+    const titleInput = screen.getByPlaceholderText('Entrez le nom du succès...')
     fireEvent.change(titleInput, { target: { value: 'Test Achievement' } })
     expect(titleInput).toHaveValue('Test Achievement')
   })
 
   it('should allow entering description', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    const descInput = screen.getByPlaceholderText('Describe how to unlock this achievement...')
+    const descInput = screen.getByPlaceholderText('Décrivez comment débloquer ce succès...')
     fireEvent.change(descInput, { target: { value: 'Test description' } })
     expect(descInput).toHaveValue('Test description')
   })
 
   it('should toggle secret achievement setting', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    const toggle = screen.getByRole('button', { name: /Secret Achievement/i })
+    const toggle = screen.getByRole('button', { name: /Succès secret/i })
     fireEvent.click(toggle)
     fireEvent.click(toggle)
     expect(toggle).toBeInTheDocument()
   })
 
+  it('should toggle public and active achievement states', () => {
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    const publicToggle = screen.getByRole('button', { name: /Modèle public/i })
+    const activeToggle = screen.getByRole('button', { name: /Actif/i })
+
+    fireEvent.click(publicToggle)
+    fireEvent.click(activeToggle)
+
+    expect(publicToggle).toBeInTheDocument()
+    expect(activeToggle).toBeInTheDocument()
+  })
+
   it('should switch between simple mode and the API feature preview', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-    fireEvent.click(screen.getByText('Simple Mode'))
+    fireEvent.click(screen.getByText('Mode simple'))
     expect(screen.getByLabelText(/Méthode de déblocage/i)).toBeInTheDocument()
     fireEvent.click(screen.getByText('API'))
     expect(screen.getByLabelText('Objectif')).toBeInTheDocument()
     expect(screen.queryByLabelText(/Méthode de déblocage/i)).not.toBeInTheDocument()
   })
 
+  it('should reset the trigger type when switching back from API mode', () => {
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    fireEvent.click(screen.getByText('API'))
+    fireEvent.click(screen.getByText('Mode simple'))
+
+    expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('countMessage')
+  })
+
   it('should render the default AI prompt', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
     expect(
-      screen.getByDisplayValue('Create an achievement for a user who sends 100 messages')
+      screen.getByDisplayValue(/Créer un succès pour un utilisateur qui envoie 100 messages/i)
     ).toBeInTheDocument()
   })
 
   it('should prefill the form from the AI suggestion route', async () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    fireEvent.click(screen.getByText('Generate with AI'))
+    fireEvent.click(screen.getByText("Générer avec l'IA"))
 
     expect(await screen.findByDisplayValue('Chat Warrior')).toBeInTheDocument()
-    expect(screen.getByLabelText('Combien de fois')).toHaveValue(250)
-    expect(screen.getByLabelText('Reward (XP / Points)')).toHaveValue(250)
+    expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('contentMessage')
+    expect(screen.getByLabelText(/Détails du déclencheur/i)).toHaveValue('hello')
+    expect(screen.getByLabelText('Objectif')).toHaveValue(250)
+    expect(screen.getByLabelText('Récompense (XP / Points)')).toHaveValue(250)
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -226,11 +250,51 @@ describe('AchievementCreator', () => {
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
-            prompt: 'Create an achievement for a user who sends 100 messages',
+            prompt: 'Créer un succès pour un utilisateur qui envoie 100 messages',
           }),
         })
       )
     })
+  })
+
+  it('should apply an AI suggestion trigger even when the backend returns an alternate trigger alias', async () => {
+    mockFetch.mockImplementationOnce((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+
+      if (url.includes('/achievements/ai-suggestion') && init?.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve({
+              title: 'Points Hunter',
+              description: 'Spend points to unlock this success.',
+              goal: 25,
+              reward: 80,
+              public: true,
+              active: true,
+              secret: false,
+              unlockingMethod: 'countRedeemChannelPoint',
+              triggerData: 'vip',
+            }),
+        })
+      }
+
+      return Promise.resolve({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ message: `Unhandled request: ${url}` }),
+        text: () => Promise.resolve(`Unhandled request: ${url}`),
+      })
+    })
+
+    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
+
+    fireEvent.click(screen.getByText("Générer avec l'IA"))
+
+    expect(await screen.findByDisplayValue('Points Hunter')).toBeInTheDocument()
+    expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('countRedeemChannelPoint')
+    expect(screen.getByLabelText(/récompense de point de chaîne/i)).toHaveValue('vip')
   })
 
   it('should toggle sidebar on mobile', () => {
@@ -242,7 +306,7 @@ describe('AchievementCreator', () => {
   it('should allow editing goal and reward', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
     const goalInput = screen.getByLabelText('Combien de fois')
-    const rewardInput = screen.getByLabelText('Reward (XP / Points)')
+    const rewardInput = screen.getByLabelText('Récompense (XP / Points)')
 
     fireEvent.change(goalInput, { target: { value: '300' } })
     fireEvent.change(rewardInput, { target: { value: '500' } })
@@ -254,21 +318,21 @@ describe('AchievementCreator', () => {
   it('should render all form elements', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(screen.getByText('Achievement Icon')).toBeInTheDocument()
-    expect(screen.getByText('Achievement Title')).toBeInTheDocument()
+    expect(screen.getByText('Icône du succès')).toBeInTheDocument()
+    expect(screen.getByText('Titre du succès')).toBeInTheDocument()
     expect(screen.getByText('Description')).toBeInTheDocument()
     expect(screen.getByText('Combien de fois')).toBeInTheDocument()
-    expect(screen.getByText('Reward (XP / Points)')).toBeInTheDocument()
-    expect(screen.getByText('Save Draft')).toBeInTheDocument()
-    expect(screen.getByText('Publish Achievement')).toBeInTheDocument()
+    expect(screen.getByText('Récompense (XP / Points)')).toBeInTheDocument()
+    expect(screen.getByText('Enregistrer le brouillon')).toBeInTheDocument()
+    expect(screen.getByText('Publier le succès')).toBeInTheDocument()
   })
 
   it('should render AI generation banner', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(screen.getByText('AI-Powered Generation')).toBeInTheDocument()
+    expect(screen.getByText('Génération par IA')).toBeInTheDocument()
     expect(
-      screen.getByText('Let AI create an achievement based on your channel context')
+      screen.getByText("Laissez l'IA créer un succès basé sur le contexte de votre chaîne")
     ).toBeInTheDocument()
     expect(screen.getByLabelText('AI Prompt')).toBeInTheDocument()
   })
@@ -277,18 +341,18 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByText('Version 1.0')).toBeInTheDocument()
-    expect(screen.getByText('This is a new achievement')).toBeInTheDocument()
+    expect(screen.getByText("C'est un nouveau succès")).toBeInTheDocument()
   })
 
   it('should render upload button and image state', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(screen.getByText('Upload Image')).toBeInTheDocument()
-    expect(screen.getByText('Clear Image')).toBeInTheDocument()
-    expect(screen.getByText('Recommended: 512x512px PNG or JPG')).toBeInTheDocument()
+    expect(screen.getByText(/Télécharger une image/i)).toBeInTheDocument()
+    expect(screen.getByText(/Effacer l'image/i)).toBeInTheDocument()
+    expect(screen.getByText(/Recommandé/i)).toBeInTheDocument()
     expect(
       screen.getByText(
-        'No image selected yet. Upload one to let achievement-management handle it on publish.'
+        /Aucune image sélectionnée\. Téléchargez-en une pour qu'elle soit gérée lors de la publication\./i
       )
     ).toBeInTheDocument()
   })
@@ -298,7 +362,7 @@ describe('AchievementCreator', () => {
 
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Upload Image' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Télécharger une image' }))
 
     expect(clickSpy).toHaveBeenCalled()
     clickSpy.mockRestore()
@@ -315,19 +379,19 @@ describe('AchievementCreator', () => {
     })
 
     expect(
-      await screen.findByText('Image "achievement.png" is ready to be uploaded.')
+      await screen.findByText('Image « achievement.png » prête à être uploadée.')
     ).toBeInTheDocument()
 
-    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+    fireEvent.change(screen.getByPlaceholderText('Entrez le nom du succès...'), {
       target: { value: 'First 100 Messages' },
     })
-    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+    fireEvent.change(screen.getByPlaceholderText('Décrivez comment débloquer ce succès...'), {
       target: { value: 'Unlock after 100 messages.' },
     })
-    fireEvent.click(screen.getByText('Publish Achievement'))
+    fireEvent.click(screen.getByText('Publier le succès'))
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Achievement "First 100 Messages" was published.')
+      expect(toast.success).toHaveBeenCalledWith('Le succès « First 100 Messages » a été publié.')
     })
 
     await waitFor(() => {
@@ -364,11 +428,11 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(screen.getByLabelText(/Méthode de déblocage/i)).toBeInTheDocument()
-    // Trigger detail is hidden for the default "message" trigger
+    // Trigger detail is hidden for the default "countMessage" trigger
     expect(screen.queryByLabelText(/Détails du déclencheur/i)).not.toBeInTheDocument()
-    // Switch to message_content to reveal the detail field
+    // Switch to contentMessage to reveal the detail field
     fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
-      target: { value: 'message_content' },
+      target: { value: 'contentMessage' },
     })
     expect(screen.getByLabelText(/Détails du déclencheur/i)).toBeInTheDocument()
   })
@@ -377,33 +441,35 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     const triggerSelect = screen.getByLabelText(/Méthode de déblocage/i)
-    // Switch to message_content to show the trigger data input
-    fireEvent.change(triggerSelect, { target: { value: 'message_content' } })
+    // Switch to contentMessage to show the trigger data input
+    fireEvent.change(triggerSelect, { target: { value: 'contentMessage' } })
 
     const triggerDataInput = screen.getByLabelText(/Détails du déclencheur/i)
     fireEvent.change(triggerDataInput, { target: { value: 'hello world' } })
 
-    expect(triggerSelect).toHaveValue('message_content')
+    expect(triggerSelect).toHaveValue('contentMessage')
     expect(triggerDataInput).toHaveValue('hello world')
   })
 
   it('should block publishing when trigger type requires data but data is empty', async () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+    fireEvent.change(screen.getByPlaceholderText('Entrez le nom du succès...'), {
       target: { value: 'Test Achievement' },
     })
-    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+    fireEvent.change(screen.getByPlaceholderText('Décrivez comment débloquer ce succès...'), {
       target: { value: 'Test description' },
     })
     fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
-      target: { value: 'message_content' },
+      target: { value: 'contentMessage' },
     })
     // Leave trigger data empty
-    fireEvent.click(screen.getByText('Publish Achievement'))
+    fireEvent.click(screen.getByText('Publier le succès'))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('A detail value is required for this trigger type.')
+      expect(toast.error).toHaveBeenCalledWith(
+        'Une valeur de détail est requise pour ce type de déclencheur.'
+      )
     })
     expect(mockFetch).not.toHaveBeenCalled()
   })
@@ -412,7 +478,7 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
-      target: { value: 'channel_point_cost' },
+      target: { value: 'countCostChannelPoint' },
     })
 
     expect(screen.getByLabelText('Coût minimum en points')).toBeInTheDocument()
@@ -422,19 +488,21 @@ describe('AchievementCreator', () => {
   it('should block publishing when channel_point_cost data is not a positive integer', async () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+    fireEvent.change(screen.getByPlaceholderText('Entrez le nom du succès...'), {
       target: { value: 'Test Achievement' },
     })
-    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+    fireEvent.change(screen.getByPlaceholderText('Décrivez comment débloquer ce succès...'), {
       target: { value: 'Test description' },
     })
     fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
-      target: { value: 'channel_point_cost' },
+      target: { value: 'countCostChannelPoint' },
     })
-    fireEvent.click(screen.getByText('Publish Achievement'))
+    fireEvent.click(screen.getByText('Publier le succès'))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Channel point cost must be a positive integer.')
+      expect(toast.error).toHaveBeenCalledWith(
+        'Le coût en points de chaîne doit être un entier positif.'
+      )
     })
     expect(mockFetch).not.toHaveBeenCalled()
   })
@@ -443,10 +511,10 @@ describe('AchievementCreator', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     fireEvent.change(screen.getByLabelText('AI Prompt'), { target: { value: '   ' } })
-    fireEvent.click(screen.getByText('Generate with AI'))
+    fireEvent.click(screen.getByText("Générer avec l'IA"))
 
     expect(
-      await screen.findByText('Enter an AI prompt before requesting a suggestion.')
+      await screen.findByText('Entrez une description avant de demander une suggestion.')
     ).toBeInTheDocument()
   })
 
@@ -457,7 +525,7 @@ describe('AchievementCreator', () => {
         Promise.resolve({
           ok: false,
           status: 502,
-          json: () => Promise.resolve({ message: 'bad gateway' }),
+          json: () => Promise.resolve({ countMessage: 'bad gateway' }),
           text: () => Promise.resolve('bad gateway'),
         })
       )
@@ -465,33 +533,33 @@ describe('AchievementCreator', () => {
 
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    fireEvent.click(screen.getByText('Generate with AI'))
+    fireEvent.click(screen.getByText("Générer avec l'IA"))
 
     expect(
-      await screen.findByText('Unable to generate an AI suggestion right now.')
+      await screen.findByText('Impossible de générer une suggestion IA pour le moment.')
     ).toBeInTheDocument()
   })
 
   it('should publish the achievement to the create route', async () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
-    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+    fireEvent.change(screen.getByPlaceholderText('Entrez le nom du succès...'), {
       target: { value: 'First 100 Messages' },
     })
-    fireEvent.change(screen.getByPlaceholderText('Describe how to unlock this achievement...'), {
+    fireEvent.change(screen.getByPlaceholderText('Décrivez comment débloquer ce succès...'), {
       target: { value: 'Unlock after 100 messages.' },
     })
     fireEvent.change(screen.getByLabelText('Combien de fois'), {
       target: { value: '100' },
     })
-    fireEvent.change(screen.getByLabelText('Reward (XP / Points)'), {
+    fireEvent.change(screen.getByLabelText('Récompense (XP / Points)'), {
       target: { value: '250' },
     })
 
-    fireEvent.click(screen.getByText('Publish Achievement'))
+    fireEvent.click(screen.getByText('Publier le succès'))
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Achievement "First 100 Messages" was published.')
+      expect(toast.success).toHaveBeenCalledWith('Le succès « First 100 Messages » a été publié.')
     })
 
     await waitFor(() => {
@@ -526,7 +594,7 @@ describe('AchievementCreator', () => {
 
     fireEvent.click(screen.getByText('MyChannel'))
     fireEvent.click(screen.getByText('ModChannel'))
-    fireEvent.click(screen.getByText('Publish Achievement'))
+    fireEvent.click(screen.getByText('Publier le succès'))
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
@@ -540,20 +608,22 @@ describe('AchievementCreator', () => {
 
     expect(await screen.findByDisplayValue('Existing Achievement')).toBeInTheDocument()
     expect(screen.getByLabelText('Combien de fois')).toHaveValue(300)
-    expect(screen.getByText('Edit Achievement')).toBeInTheDocument()
+    expect(screen.getByText('Modifier le succès')).toBeInTheDocument()
   })
 
   it('should update an existing achievement through the update route', async () => {
     render(<AchievementCreator achievementId="edit-1" onOpenSidebar={mockOnOpenSidebar} />)
 
     expect(await screen.findByDisplayValue('Existing Achievement')).toBeInTheDocument()
-    fireEvent.change(screen.getByPlaceholderText('Enter achievement name...'), {
+    fireEvent.change(screen.getByPlaceholderText('Entrez le nom du succès...'), {
       target: { value: 'Updated Achievement' },
     })
-    fireEvent.click(screen.getByText('Update Achievement'))
+    fireEvent.click(screen.getByText('Mettre à jour le succès'))
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Achievement "Updated Achievement" was updated.')
+      expect(toast.success).toHaveBeenCalledWith(
+        'Le succès « Updated Achievement » a été mis à jour.'
+      )
     })
 
     await waitFor(() => {
