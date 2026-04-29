@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { App } from '@capacitor/app'
+import { App as CapApp } from '@capacitor/app'
 import type { PluginListenerHandle } from '@capacitor/core'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LandingPage } from './features/landing/LandingPage'
@@ -95,10 +95,10 @@ export function AppContent() {
   const listenerRef = useRef<PluginListenerHandle | null>(null)
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
-    App.addListener('appUrlOpen', ({ url }) => {
+    CapApp.addListener('appUrlOpen', ({ url }: { url: string }) => {
       const hashIndex = url.indexOf('#')
       if (hashIndex !== -1) handleOAuthHash(url.substring(hashIndex))
-    }).then(handle => {
+    }).then((handle: PluginListenerHandle) => {
       listenerRef.current = handle
     })
     return () => {
