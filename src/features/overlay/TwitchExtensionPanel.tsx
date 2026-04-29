@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { PublicTwitchPanel } from './PublicTwitchPanel'
 import { buildTwitchExtensionPanelUrl } from './utils/twitchExtensionLink'
+import { FRONT_URL } from '../../config/environment'
 
 interface TwitchExtensionPanelProps {
   onOpenSidebar?: () => void
@@ -34,12 +35,7 @@ export function TwitchExtensionPanel({ onOpenSidebar }: Readonly<TwitchExtension
 
   const previewChannelId = getPreviewChannelId(globalThis.location.search)
   const previewViewerId = getPreviewViewerId(globalThis.location.search)
-  const extensionUrl =
-    typeof window === 'undefined'
-      ? ''
-      : buildTwitchExtensionPanelUrl(
-          globalThis._env_?.FRONT_URL || import.meta.env.FRONT_URL || window.location.origin
-        )
+  const extensionUrl = typeof window === 'undefined' ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
 
   const handleCopyLink = async () => {
     if (!extensionUrl || !navigator.clipboard?.writeText) {

@@ -3,12 +3,9 @@ import { createContext, useContext, useState, useCallback, useMemo } from 'react
 import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
 import { addBotAsModerator } from '../features/chat/api/chatClient'
+import { AUTH_SERVICE_URL, TWITCH_CLIENT_ID, FRONT_URL } from '../config/environment'
 
-const AUTH_SERVICE_URL =
-  globalThis._env_?.AUTH_SERVICE_URL || import.meta.env.AUTH_SERVICE_URL || 'http://localhost:3000'
-const TWITCH_CLIENT_ID = globalThis._env_?.TWITCH_CLIENT_ID || import.meta.env.TWITCH_CLIENT_ID
-const REDIRECT_URI =
-  globalThis._env_?.FRONT_URL || import.meta.env.FRONT_URL || globalThis.location.origin
+const REDIRECT_URI = FRONT_URL
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 

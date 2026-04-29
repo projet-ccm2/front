@@ -3,13 +3,7 @@ import react from '@vitejs/plugin-react-swc'
 import { healthCheckPlugin } from './vite-plugin-health'
 
 export default defineConfig({
-  envPrefix: [
-    'VITE_',
-    'TWITCH_CLIENT_ID',
-    'AUTH_SERVICE_URL',
-    'ACHIEVEMENT_MANAGEMENT_SERVICE_URL',
-    'FRONT_URL',
-  ],
+  envPrefix: ['VITE_'],
   plugins: [react(), healthCheckPlugin()],
   preview: {
     host: '0.0.0.0',

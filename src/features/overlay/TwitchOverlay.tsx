@@ -9,6 +9,7 @@ import {
 import { useChannel } from '../../context/ChannelContext'
 import { buildPublicPanelUrl } from './utils/publicPanelLink'
 import { buildTwitchExtensionPanelUrl } from './utils/twitchExtensionLink'
+import { FRONT_URL } from '../../config/environment'
 
 interface TwitchOverlayProps {
   onOpenSidebar: () => void
@@ -38,12 +39,7 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
     selectedChannel && typeof window !== 'undefined'
       ? buildPublicPanelUrl(selectedChannel.id, window.location.origin)
       : ''
-  const extensionUrl =
-    typeof window === 'undefined'
-      ? ''
-      : buildTwitchExtensionPanelUrl(
-          globalThis._env_?.FRONT_URL || import.meta.env.FRONT_URL || window.location.origin
-        )
+  const extensionUrl = typeof window === 'undefined' ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
 
   const handleCopyLink = async () => {
     if (!panelUrl || !navigator.clipboard?.writeText) {

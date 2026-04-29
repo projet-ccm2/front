@@ -1,7 +1,4 @@
-const USER_MANAGEMENT_URL =
-  globalThis._env_?.AUTH_SERVICE_URL ||
-  import.meta.env.VITE_AUTH_SERVICE_URL ||
-  'http://localhost:3000'
+import { AUTH_SERVICE_URL as USER_MANAGEMENT_URL } from '../../../config/environment'
 
 export class ApkError extends Error {
   readonly status: number

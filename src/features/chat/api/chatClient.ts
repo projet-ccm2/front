@@ -1,5 +1,4 @@
-const TWITCH_CLIENT_ID =
-  globalThis._env_?.TWITCH_CLIENT_ID || import.meta.env.VITE_TWITCH_CLIENT_ID || ''
+import { TWITCH_CLIENT_ID } from '../../../config/environment'
 
 /** User ID of the IRC bot account (streamquestbotccm) */
 const BOT_USER_ID = '1488389988'

@@ -3,12 +3,7 @@ import { createContext, useContext, useState, useMemo, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import type { Channel } from '../types/twitch'
-
-const TWITCH_CLIENT_ID = globalThis._env_?.TWITCH_CLIENT_ID || import.meta.env.TWITCH_CLIENT_ID
-const AUTH_SERVICE_URL =
-  globalThis._env_?.AUTH_SERVICE_URL ||
-  import.meta.env.VITE_AUTH_SERVICE_URL ||
-  'http://localhost:3000'
+import { TWITCH_CLIENT_ID, AUTH_SERVICE_URL } from '../config/environment'
 
 interface TwitchHelixUser {
   id: string
