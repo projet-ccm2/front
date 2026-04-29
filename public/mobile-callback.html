@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <script>
+      var hash = window.location.hash
+      if (hash.includes('access_token')) {
+        window.location.replace('com.streamquest.app://callback' + hash)
+      }
+    </script>
+  </body>
+</html>

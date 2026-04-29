@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { App } from '@capacitor/app'
+import type { PluginListenerHandle } from '@capacitor/core'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LandingPage } from './features/landing/LandingPage'
 import { Dashboard } from './features/dashboard/Dashboard'
@@ -46,47 +49,61 @@ export function AppContent() {
   const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
 
-  useEffect(() => {
-    const handleCallback = async () => {
-      const hash = globalThis.location.hash
-      if (hash?.includes('access_token')) {
-        const params = new URLSearchParams(hash.substring(1))
-        const accessToken = params.get('access_token')
-        const idToken = params.get('id_token')
-        const tokenType = params.get('token_type')
-        const expiresIn = Number(params.get('expires_in'))
-        const scope = params.get('scope')?.split(' ') ?? []
-        const state = params.get('state') ?? ''
+  const handleOAuthHash = async (hash: string) => {
+    if (!hash.includes('access_token')) return
+    const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash)
+    const accessToken = params.get('access_token')
+    const idToken = params.get('id_token')
+    const tokenType = params.get('token_type')
+    const expiresIn = Number(params.get('expires_in'))
+    const scope = params.get('scope')?.split(' ') ?? []
+    const state = params.get('state') ?? ''
 
-        if (accessToken && idToken) {
-          const savedState = sessionStorage.getItem('twitch_auth_state')
-          if (!savedState || savedState !== state) {
-            console.error('OAuth state mismatch — aborting auth')
-            return
-          }
-          sessionStorage.removeItem('twitch_auth_state')
-
-          try {
-            await completeAuth({
-              accessToken,
-              idToken,
-              tokenType: tokenType ?? 'bearer',
-              expiresIn,
-              scope,
-              state,
-            })
-            // Clean URL
-            globalThis.history.replaceState({}, document.title, globalThis.location.pathname)
-            setCurrentScreen('dashboard')
-            setSidebarOpen(false)
-          } catch (error) {
-            console.error('Auth completion failed', error)
-          }
-        }
-      }
+    if (!accessToken || !idToken) return
+    const savedState = sessionStorage.getItem('twitch_auth_state')
+    if (!savedState || savedState !== state) {
+      console.error('OAuth state mismatch — aborting auth')
+      return
     }
+    sessionStorage.removeItem('twitch_auth_state')
 
-    handleCallback()
+    try {
+      await completeAuth({
+        accessToken,
+        idToken,
+        tokenType: tokenType ?? 'bearer',
+        expiresIn,
+        scope,
+        state,
+      })
+      globalThis.history?.replaceState({}, document.title, globalThis.location.pathname)
+      setCurrentScreen('dashboard')
+      setSidebarOpen(false)
+    } catch (error) {
+      console.error('Auth completion failed', error)
+    }
+  }
+
+  // Web: parse hash on mount
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      handleOAuthHash(globalThis.location.hash)
+    }
+  }, [completeAuth])
+
+  // Native: listen for deep link com.streamquest.app://callback#access_token=...
+  const listenerRef = useRef<PluginListenerHandle | null>(null)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    App.addListener('appUrlOpen', ({ url }) => {
+      const hashIndex = url.indexOf('#')
+      if (hashIndex !== -1) handleOAuthHash(url.substring(hashIndex))
+    }).then(handle => {
+      listenerRef.current = handle
+    })
+    return () => {
+      listenerRef.current?.remove()
+    }
   }, [completeAuth])
 
   const handleNavigate = (page: string) => {

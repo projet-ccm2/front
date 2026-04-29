@@ -3,7 +3,9 @@ import { createContext, useContext, useState, useCallback, useMemo } from 'react
 import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
 import { addBotAsModerator } from '../features/chat/api/chatClient'
-import { AUTH_SERVICE_URL, TWITCH_CLIENT_ID, FRONT_URL } from '../config/environment'
+import { AUTH_SERVICE_URL, TWITCH_CLIENT_ID, FRONT_URL, MOBILE_REDIRECT_URI } from '../config/environment'
+import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 
 const REDIRECT_URI = FRONT_URL
 
@@ -26,15 +28,20 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
 
   const isAuthenticated = !!user
 
-  const login = useCallback(() => {
+  const login = useCallback(async () => {
     const scope = encodeURIComponent(
       'openid user:read:email moderator:read:followers channel:read:subscriptions bits:read channel:read:redemptions channel:read:hype_train channel:read:polls channel:read:predictions channel:read:charity chat:read user:read:moderated_channels moderation:read channel:manage:moderators'
     )
     const responseType = 'token id_token'
     const state = crypto.randomUUID()
     sessionStorage.setItem('twitch_auth_state', state)
-    const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=${responseType}&scope=${scope}&state=${state}`
-    globalThis.location.href = twitchUrl
+    const redirectUri = Capacitor.isNativePlatform() ? MOBILE_REDIRECT_URI : REDIRECT_URI
+    const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&state=${state}`
+    if (Capacitor.isNativePlatform()) {
+      await Browser.open({ url: twitchUrl })
+    } else {
+      globalThis.location.href = twitchUrl
+    }
   }, [])
 
   const logout = useCallback(() => {

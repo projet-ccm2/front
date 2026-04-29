@@ -30,6 +30,14 @@ if [ ! -d "android" ]; then
     npx cap add android
 fi
 
+echo "Patching AndroidManifest for deep link..."
+MANIFEST="android/app/src/main/AndroidManifest.xml"
+INTENT_FILTER='        <intent-filter>\n            <action android:name="android.intent.action.VIEW" \/>\n            <category android:name="android.intent.category.DEFAULT" \/>\n            <category android:name="android.intent.category.BROWSABLE" \/>\n            <data android:scheme="com.streamquest.app" \/>\n        <\/intent-filter>'
+if ! grep -q 'com.streamquest.app' "$MANIFEST"; then
+    sed -i "s|</activity>|${INTENT_FILTER}\n    </activity>|" "$MANIFEST"
+    echo "Intent filter added."
+fi
+
 echo "Syncing Capacitor..."
 if [ ! -d "android" ]; then
     echo "Error: Android platform not found after initialization"

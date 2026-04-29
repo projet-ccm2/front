@@ -9,3 +9,5 @@ export const ACHIEVEMENT_MANAGEMENT_SERVICE_URL =
   'http://localhost:3001'
 export const FRONT_URL =
   env?.FRONT_URL || import.meta.env.VITE_FRONT_URL || globalThis.location?.origin || ''
+
+export const MOBILE_REDIRECT_URI = `${FRONT_URL}/mobile-callback`
