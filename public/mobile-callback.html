@@ -7,7 +7,14 @@
     <script>
       var hash = window.location.hash
       if (hash.includes('access_token')) {
-        window.location.replace('com.streamquest.app://callback' + hash)
+        // Convert hash params to query string for the intent:// URL format
+        // (Chrome Custom Tabs require intent:// to reliably open the app)
+        var queryString = hash.substring(1)
+        var intentUrl =
+          'intent://callback?' +
+          queryString +
+          '#Intent;scheme=com.streamquest.app;package=com.streamquest.app;end'
+        window.location.replace(intentUrl)
       }
     </script>
   </body>

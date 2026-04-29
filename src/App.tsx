@@ -96,8 +96,11 @@ export function AppContent() {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
     CapApp.addListener('appUrlOpen', ({ url }: { url: string }) => {
-      const hashIndex = url.indexOf('#')
-      if (hashIndex !== -1) handleOAuthHash(url.substring(hashIndex))
+      // intent:// redirects pass params as query string: com.streamquest.app://callback?access_token=...
+      const queryIndex = url.indexOf('?')
+      if (queryIndex !== -1) {
+        handleOAuthHash(url.substring(queryIndex + 1))
+      }
     }).then((handle: PluginListenerHandle) => {
       listenerRef.current = handle
     })
