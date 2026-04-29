@@ -7,7 +7,7 @@ import type {
   UserAchievement,
 } from './achievementManagement.types'
 
-import { ACHIEVEMENT_MANAGEMENT_SERVICE_URL } from '../../config/environment'
+import { ACHIEVEMENT_MANAGEMENT_SERVICE_URL } from '../../../config/environment'
 
 export class AchievementManagementError extends Error {
   readonly status: number
