@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core'
 import { App as CapApp } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import type { PluginListenerHandle } from '@capacitor/core'
+import { toast } from 'sonner'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LandingPage } from './features/landing/LandingPage'
 import { Dashboard } from './features/dashboard/Dashboard'
@@ -60,12 +61,16 @@ export function AppContent() {
     const scope = params.get('scope')?.split(' ') ?? []
     const state = params.get('state') ?? ''
 
-    if (!accessToken || !idToken) return
+    if (!accessToken || !idToken) {
+      toast.error('Auth: tokens manquants dans le callback')
+      return
+    }
     const savedState = Capacitor.isNativePlatform()
       ? localStorage.getItem('twitch_auth_state')
       : sessionStorage.getItem('twitch_auth_state')
     if (!savedState || savedState !== state) {
-      console.error('OAuth state mismatch — aborting auth')
+      console.error('OAuth state mismatch — aborting auth', { savedState, state })
+      toast.error(`Auth: state mismatch (saved=${savedState ?? 'null'} / received=${state || 'null'})`)
       return
     }
     localStorage.removeItem('twitch_auth_state')
@@ -85,6 +90,8 @@ export function AppContent() {
       setSidebarOpen(false)
     } catch (error) {
       console.error('Auth completion failed', error)
+      const message = error instanceof Error ? error.message : String(error)
+      toast.error(`Auth backend KO: ${message}`)
     }
   }
 
@@ -95,19 +102,37 @@ export function AppContent() {
     }
   }, [completeAuth])
 
-  // Native: listen for deep link com.streamquest.app://callback#access_token=...
+  // Native: listen for deep link com.streamquest.app://callback?access_token=...
+  // + handle cold start (app killed during OAuth flow)
   const listenerRef = useRef<PluginListenerHandle | null>(null)
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
-    CapApp.addListener('appUrlOpen', async ({ url }: { url: string }) => {
+
+    const processUrl = async (url: string) => {
       const queryIndex = url.indexOf('?')
       if (queryIndex !== -1) {
         await handleOAuthHash(url.substring(queryIndex + 1))
+      } else {
+        toast.error(`Deep link sans query: ${url}`)
       }
       try { await Browser.close() } catch { /* already closed */ }
+    }
+
+    CapApp.addListener('appUrlOpen', async ({ url }: { url: string }) => {
+      await processUrl(url)
     }).then((handle: PluginListenerHandle) => {
       listenerRef.current = handle
     })
+
+    // Cold start: deep link delivered before listener was registered
+    CapApp.getLaunchUrl().then((result) => {
+      if (result?.url) {
+        void processUrl(result.url)
+      }
+    }).catch((error) => {
+      console.error('getLaunchUrl failed', error)
+    })
+
     return () => {
       listenerRef.current?.remove()
     }
@@ -145,7 +170,12 @@ export function AppContent() {
   }
 
   if (!isAuthenticated && currentScreen === 'landing') {
-    return <LandingPage onConnect={login} />
+    return (
+      <>
+        <LandingPage onConnect={login} />
+        <Toaster />
+      </>
+    )
   }
 
   return (
