@@ -13,69 +13,10 @@
         👉 Ouvrir StreamQuest
       </a>
     </p>
+    <noscript>
+      <p style="color: red; font-weight: bold;">JavaScript est désactivé — impossible de poursuivre la connexion.</p>
+    </noscript>
     <pre id="log" style="background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 11px; margin-top: 24px;"></pre>
-    <script>
-      var logEl = document.getElementById('log');
-      var statusEl = document.getElementById('status');
-      function log(msg) { logEl.textContent += msg + '\n'; }
-      function setStatus(msg) { statusEl.textContent = msg; }
-
-      try {
-        var href = window.location.href;
-        var hash = window.location.hash;
-        var search = window.location.search;
-
-        log('href: ' + href);
-        log('hash length: ' + hash.length);
-        log('search: ' + search);
-        log('UA: ' + navigator.userAgent);
-
-        if (search && search.indexOf('error') !== -1) {
-          setStatus('❌ Twitch a renvoyé une erreur — voir log ci-dessous.');
-          return;
-        }
-
-        var payload = '';
-        if (hash && hash.indexOf('access_token') !== -1) {
-          payload = hash.charAt(0) === '#' ? hash.substring(1) : hash;
-        } else if (search && search.indexOf('access_token') !== -1) {
-          payload = search.charAt(0) === '?' ? search.substring(1) : search;
-        }
-
-        if (!payload) {
-          setStatus('❌ Aucun access_token dans l\'URL');
-          log('ERROR: no access_token found');
-          return;
-        }
-
-        var customSchemeUrl = 'com.streamquest.app://callback?' + payload;
-        var isAndroid = /Android/i.test(navigator.userAgent);
-
-        // Android intent:// URL — much more reliable than custom scheme through Chrome Custom Tabs.
-        // The package= forces Android to launch StreamQuest specifically.
-        var intentUrl = 'intent://callback?' + payload +
-          '#Intent;scheme=com.streamquest.app;package=com.streamquest.app;end';
-
-        var primary = isAndroid ? intentUrl : customSchemeUrl;
-        log('Primary redirect URL (truncated): ' + primary.substring(0, 120) + '...');
-
-        var link = document.getElementById('open-link');
-        link.href = customSchemeUrl;
-        link.style.display = 'inline-block';
-        setStatus('Ouverture de StreamQuest...');
-
-        // Auto redirect
-        window.location.href = primary;
-
-        // If still here after 2.5s, prompt user to tap the button
-        setTimeout(function() {
-          setStatus('Si l\'app ne s\'est pas ouverte, tape sur le bouton ci-dessous :');
-          log('Auto-redirect timeout — fallback shown.');
-        }, 2500);
-      } catch (e) {
-        setStatus('❌ Erreur JS — voir log ci-dessous.');
-        log('JS ERROR: ' + (e && e.message ? e.message : String(e)));
-      }
-    </script>
+    <script src="/mobile-callback.js"></script>
   </body>
 </html>
