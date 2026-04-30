@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { App as CapApp } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
 import type { PluginListenerHandle } from '@capacitor/core'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LandingPage } from './features/landing/LandingPage'
@@ -60,11 +61,14 @@ export function AppContent() {
     const state = params.get('state') ?? ''
 
     if (!accessToken || !idToken) return
-    const savedState = sessionStorage.getItem('twitch_auth_state')
+    const savedState = Capacitor.isNativePlatform()
+      ? localStorage.getItem('twitch_auth_state')
+      : sessionStorage.getItem('twitch_auth_state')
     if (!savedState || savedState !== state) {
       console.error('OAuth state mismatch — aborting auth')
       return
     }
+    localStorage.removeItem('twitch_auth_state')
     sessionStorage.removeItem('twitch_auth_state')
 
     try {
@@ -95,12 +99,12 @@ export function AppContent() {
   const listenerRef = useRef<PluginListenerHandle | null>(null)
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
-    CapApp.addListener('appUrlOpen', ({ url }: { url: string }) => {
-      // intent:// redirects pass params as query string: com.streamquest.app://callback?access_token=...
+    CapApp.addListener('appUrlOpen', async ({ url }: { url: string }) => {
       const queryIndex = url.indexOf('?')
       if (queryIndex !== -1) {
-        handleOAuthHash(url.substring(queryIndex + 1))
+        await handleOAuthHash(url.substring(queryIndex + 1))
       }
+      try { await Browser.close() } catch { /* already closed */ }
     }).then((handle: PluginListenerHandle) => {
       listenerRef.current = handle
     })

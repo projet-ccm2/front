@@ -34,7 +34,11 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     )
     const responseType = 'token id_token'
     const state = crypto.randomUUID()
-    sessionStorage.setItem('twitch_auth_state', state)
+    if (Capacitor.isNativePlatform()) {
+      localStorage.setItem('twitch_auth_state', state)
+    } else {
+      sessionStorage.setItem('twitch_auth_state', state)
+    }
     const redirectUri = Capacitor.isNativePlatform() ? MOBILE_REDIRECT_URI : REDIRECT_URI
     const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&state=${state}`
     if (Capacitor.isNativePlatform()) {
