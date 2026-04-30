@@ -5,8 +5,6 @@ import { Browser } from '@capacitor/browser'
 import type { PluginListenerHandle } from '@capacitor/core'
 import { toast } from 'sonner'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { DebugLog, debugLog } from './components/DebugLog'
-import { AUTH_SERVICE_URL, FRONT_URL, MOBILE_REDIRECT_URI, TWITCH_CLIENT_ID } from './config/environment'
 import { LandingPage } from './features/landing/LandingPage'
 import { Dashboard } from './features/dashboard/Dashboard'
 import { Sidebar } from './components/layout/Sidebar'
@@ -54,11 +52,7 @@ export function AppContent() {
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
 
   const handleOAuthHash = async (hash: string) => {
-    debugLog(`handleOAuthHash called, len=${hash.length}, hasToken=${hash.includes('access_token')}`)
-    if (!hash.includes('access_token')) {
-      debugLog('NO access_token in hash — return')
-      return
-    }
+    if (!hash.includes('access_token')) return
     const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash)
     const accessToken = params.get('access_token')
     const idToken = params.get('id_token')
@@ -67,27 +61,18 @@ export function AppContent() {
     const scope = params.get('scope')?.split(' ') ?? []
     const state = params.get('state') ?? ''
 
-    debugLog(`parsed: accessToken=${accessToken ? 'YES('+accessToken.length+')' : 'NO'}, idToken=${idToken ? 'YES' : 'NO'}, state=${state || 'EMPTY'}`)
-
-    if (!accessToken || !idToken) {
-      debugLog('Tokens manquants — abort')
-      toast.error('Auth: tokens manquants dans le callback')
-      return
-    }
+    if (!accessToken || !idToken) return
     const savedState = Capacitor.isNativePlatform()
       ? localStorage.getItem('twitch_auth_state')
       : sessionStorage.getItem('twitch_auth_state')
-    debugLog(`state check: saved=${savedState || 'null'} received=${state || 'null'}`)
     if (!savedState || savedState !== state) {
-      debugLog('STATE MISMATCH — abort')
-      toast.error(`Auth: state mismatch (saved=${savedState ?? 'null'} / received=${state || 'null'})`)
+      console.error('OAuth state mismatch — aborting auth')
       return
     }
     localStorage.removeItem('twitch_auth_state')
     sessionStorage.removeItem('twitch_auth_state')
 
     try {
-      debugLog(`fetching ${AUTH_SERVICE_URL}/auth/callback`)
       await completeAuth({
         accessToken,
         idToken,
@@ -96,13 +81,12 @@ export function AppContent() {
         scope,
         state,
       })
-      debugLog('completeAuth OK — navigate to dashboard')
       globalThis.history?.replaceState({}, document.title, globalThis.location.pathname)
       setCurrentScreen('dashboard')
       setSidebarOpen(false)
     } catch (error) {
+      console.error('Auth completion failed', error)
       const message = error instanceof Error ? error.message : String(error)
-      debugLog(`completeAuth FAILED: ${message}`)
       toast.error(`Auth backend KO: ${message}`)
     }
   }
@@ -121,46 +105,25 @@ export function AppContent() {
     if (!Capacitor.isNativePlatform()) return
 
     const processUrl = async (url: string) => {
-      debugLog(`processUrl: ${url.substring(0, 200)}`)
       const queryIndex = url.indexOf('?')
       if (queryIndex !== -1) {
         await handleOAuthHash(url.substring(queryIndex + 1))
-      } else {
-        debugLog(`no '?' in URL`)
       }
       try { await Browser.close() } catch { /* already closed */ }
     }
 
-    debugLog(`Native ready — FRONT_URL=${FRONT_URL || 'EMPTY'}`)
-    debugLog(`AUTH_SERVICE_URL=${AUTH_SERVICE_URL}`)
-    debugLog(`MOBILE_REDIRECT_URI=${MOBILE_REDIRECT_URI}`)
-    debugLog(`TWITCH_CLIENT_ID=${TWITCH_CLIENT_ID ? 'set('+TWITCH_CLIENT_ID.length+')' : 'EMPTY'}`)
-
     CapApp.addListener('appUrlOpen', async ({ url }: { url: string }) => {
-      debugLog(`>>> appUrlOpen fired`)
       await processUrl(url)
     }).then((handle: PluginListenerHandle) => {
       listenerRef.current = handle
-      debugLog('appUrlOpen listener registered')
     })
 
     CapApp.getLaunchUrl().then((result) => {
       if (result?.url) {
-        debugLog(`getLaunchUrl returned: ${result.url.substring(0, 200)}`)
         void processUrl(result.url)
-      } else {
-        debugLog('getLaunchUrl: no launch URL')
       }
     }).catch((error) => {
-      debugLog(`getLaunchUrl ERROR: ${String(error)}`)
-    })
-
-    CapApp.addListener('appStateChange', ({ isActive }) => {
-      debugLog(`appStateChange: isActive=${isActive}`)
-    })
-
-    CapApp.addListener('resume', () => {
-      debugLog('resume event')
+      console.error('getLaunchUrl failed', error)
     })
 
     return () => {
@@ -204,7 +167,6 @@ export function AppContent() {
       <>
         <LandingPage onConnect={login} />
         <Toaster />
-        {Capacitor.isNativePlatform() && <DebugLog />}
       </>
     )
   }
@@ -257,7 +219,6 @@ export function AppContent() {
         </main>
       </div>
       <Toaster />
-      {Capacitor.isNativePlatform() && <DebugLog />}
     </>
   )
 }

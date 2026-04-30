@@ -5,18 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Retour à StreamQuest</title>
   </head>
-  <body style="font-family: sans-serif; padding: 20px; color: #333; background: #fff;">
-    <h2 style="color: #9146FF;">StreamQuest — Callback</h2>
-    <p id="status" style="font-size: 16px;">Préparation...</p>
+  <body style="font-family: sans-serif; text-align: center; margin-top: 60px; color: #333;">
+    <p id="msg">Redirection vers l'application…</p>
     <p>
-      <a id="open-link" style="display:none; color: #fff; background: #9146FF; padding: 16px 28px; border-radius: 6px; text-decoration: none; font-size: 20px; font-weight: bold;">
-        👉 Ouvrir StreamQuest
+      <a id="open-link" style="display:none; color: #fff; background: #9146FF; padding: 14px 24px; border-radius: 6px; text-decoration: none; font-size: 18px; font-weight: bold;">
+        Ouvrir StreamQuest
       </a>
     </p>
-    <noscript>
-      <p style="color: red; font-weight: bold;">JavaScript est désactivé — impossible de poursuivre la connexion.</p>
-    </noscript>
-    <pre id="log" style="background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 11px; margin-top: 24px;"></pre>
-    <script src="/mobile-callback.js"></script>
+    <script>
+      (function () {
+        var hash = window.location.hash;
+        var search = window.location.search;
+        var payload = '';
+        if (hash && hash.indexOf('access_token') !== -1) {
+          payload = hash.charAt(0) === '#' ? hash.substring(1) : hash;
+        } else if (search && search.indexOf('access_token') !== -1) {
+          payload = search.charAt(0) === '?' ? search.substring(1) : search;
+        }
+        if (!payload) return;
+
+        var customSchemeUrl = 'com.streamquest.app://callback?' + payload;
+        var isAndroid = /Android/i.test(navigator.userAgent);
+        // Android intent:// URL with explicit package — most reliable through Chrome Custom Tabs
+        var intentUrl = 'intent://callback?' + payload +
+          '#Intent;scheme=com.streamquest.app;package=com.streamquest.app;end';
+
+        var link = document.getElementById('open-link');
+        link.href = customSchemeUrl;
+        setTimeout(function () { link.style.display = 'inline-block'; }, 1500);
+
+        window.location.href = isAndroid ? intentUrl : customSchemeUrl;
+      })();
+    </script>
   </body>
 </html>
