@@ -121,14 +121,7 @@ jobs:
           fi
 
       - name: Patch AndroidManifest for deep link
-        run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          if ! grep -q 'com.streamquest.app' "$MANIFEST"; then
-            sed -i 's|</activity>|        <intent-filter>\n            <action android:name="android.intent.action.VIEW" />\n            <category android:name="android.intent.category.DEFAULT" />\n            <category android:name="android.intent.category.BROWSABLE" />\n            <data android:scheme="com.streamquest.app" />\n        </intent-filter>\n    </activity>|' "$MANIFEST"
-            echo "Intent filter added to AndroidManifest"
-          else
-            echo "Intent filter already present, skipping"
-          fi
+        run: node scripts/patch-android-manifest.mjs
 
       - name: Sync Capacitor
         run: |
