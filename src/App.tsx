@@ -5,6 +5,7 @@ import { Browser } from '@capacitor/browser'
 import type { PluginListenerHandle } from '@capacitor/core'
 import { toast } from 'sonner'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { AUTH_SERVICE_URL, FRONT_URL, MOBILE_REDIRECT_URI, TWITCH_CLIENT_ID } from './config/environment'
 import { LandingPage } from './features/landing/LandingPage'
 import { Dashboard } from './features/dashboard/Dashboard'
 import { Sidebar } from './components/layout/Sidebar'
@@ -109,6 +110,7 @@ export function AppContent() {
     if (!Capacitor.isNativePlatform()) return
 
     const processUrl = async (url: string) => {
+      toast.info(`appUrlOpen: ${url.substring(0, 80)}`)
       const queryIndex = url.indexOf('?')
       if (queryIndex !== -1) {
         await handleOAuthHash(url.substring(queryIndex + 1))
@@ -116,6 +118,18 @@ export function AppContent() {
         toast.error(`Deep link sans query: ${url}`)
       }
       try { await Browser.close() } catch { /* already closed */ }
+    }
+
+    // Diagnostic at startup so user can confirm config is correct
+    toast.info(`Native ready — front=${FRONT_URL || 'EMPTY'}`, { duration: 8000 })
+    if (!TWITCH_CLIENT_ID) {
+      toast.error('TWITCH_CLIENT_ID vide au build', { duration: 10000 })
+    }
+    if (!AUTH_SERVICE_URL || AUTH_SERVICE_URL.includes('localhost')) {
+      toast.error(`AUTH_SERVICE_URL suspect: ${AUTH_SERVICE_URL}`, { duration: 10000 })
+    }
+    if (!MOBILE_REDIRECT_URI || MOBILE_REDIRECT_URI.startsWith('https://localhost')) {
+      toast.error(`MOBILE_REDIRECT_URI suspect: ${MOBILE_REDIRECT_URI}`, { duration: 10000 })
     }
 
     CapApp.addListener('appUrlOpen', async ({ url }: { url: string }) => {
@@ -127,10 +141,21 @@ export function AppContent() {
     // Cold start: deep link delivered before listener was registered
     CapApp.getLaunchUrl().then((result) => {
       if (result?.url) {
+        toast.info(`getLaunchUrl: ${result.url.substring(0, 80)}`)
         void processUrl(result.url)
       }
     }).catch((error) => {
       console.error('getLaunchUrl failed', error)
+      toast.error(`getLaunchUrl error: ${String(error)}`)
+    })
+
+    // App resume detection — fires every time the app comes back to foreground.
+    // If user goes through OAuth and returns to the app WITHOUT a deep link firing,
+    // we'll see this toast but no appUrlOpen → confirms deep link is broken.
+    CapApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        toast.info('App active (resume)')
+      }
     })
 
     return () => {

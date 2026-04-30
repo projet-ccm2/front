@@ -5,25 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Retour à StreamQuest</title>
   </head>
-  <body style="font-family: sans-serif; text-align: center; margin-top: 60px; color: #333;">
-    <p id="msg">Redirection vers l'application...</p>
-    <p id="fallback" style="display:none;">
-      <a id="fallback-link" style="color: #9146FF; font-size: 18px;">
+  <body style="font-family: sans-serif; padding: 20px; color: #333; background: #fff;">
+    <h2 style="color: #9146FF;">StreamQuest — Callback</h2>
+    <pre id="log" style="background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 12px;"></pre>
+    <p>
+      <a id="open-link" style="display:none; color: #fff; background: #9146FF; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-size: 18px;">
         Ouvrir StreamQuest
       </a>
     </p>
     <script>
-      var hash = window.location.hash;
-      if (hash.includes('access_token')) {
-        var queryString = hash.substring(1);
-        var appUrl = 'com.streamquest.app://callback?' + queryString;
+      var logEl = document.getElementById('log');
+      function log(msg) {
+        logEl.textContent += msg + '\n';
+      }
 
-        var fallback = document.getElementById('fallback');
-        var link = document.getElementById('fallback-link');
-        link.href = appUrl;
-        setTimeout(function() { fallback.style.display = 'block'; }, 1500);
+      try {
+        log('href = ' + window.location.href);
+        log('hash length = ' + window.location.hash.length);
+        log('search = ' + window.location.search);
 
-        window.location.href = appUrl;
+        var hash = window.location.hash;
+        var search = window.location.search;
+
+        // Twitch error case: ?error=...&error_description=...
+        if (search && search.indexOf('error') !== -1) {
+          log('Twitch returned an error in query string');
+          return;
+        }
+
+        var payload = '';
+        if (hash && hash.indexOf('access_token') !== -1) {
+          payload = hash.charAt(0) === '#' ? hash.substring(1) : hash;
+        } else if (search && search.indexOf('access_token') !== -1) {
+          payload = search.charAt(0) === '?' ? search.substring(1) : search;
+        }
+
+        if (!payload) {
+          log('ERROR: no access_token found in URL');
+        } else {
+          var appUrl = 'com.streamquest.app://callback?' + payload;
+          log('Redirecting to: ' + appUrl.substring(0, 80) + '...');
+
+          var link = document.getElementById('open-link');
+          link.href = appUrl;
+          link.style.display = 'inline-block';
+
+          // Try auto-redirect, fallback to button if it fails
+          window.location.href = appUrl;
+
+          setTimeout(function() {
+            log('Auto-redirect did not fire — tap the button above.');
+          }, 2500);
+        }
+      } catch (e) {
+        log('JS ERROR: ' + (e && e.message ? e.message : String(e)));
       }
     </script>
   </body>
