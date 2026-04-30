@@ -5,6 +5,7 @@ import { Browser } from '@capacitor/browser'
 import type { PluginListenerHandle } from '@capacitor/core'
 import { toast } from 'sonner'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { DebugLog, debugLog } from './components/DebugLog'
 import { AUTH_SERVICE_URL, FRONT_URL, MOBILE_REDIRECT_URI, TWITCH_CLIENT_ID } from './config/environment'
 import { LandingPage } from './features/landing/LandingPage'
 import { Dashboard } from './features/dashboard/Dashboard'
@@ -53,7 +54,11 @@ export function AppContent() {
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
 
   const handleOAuthHash = async (hash: string) => {
-    if (!hash.includes('access_token')) return
+    debugLog(`handleOAuthHash called, len=${hash.length}, hasToken=${hash.includes('access_token')}`)
+    if (!hash.includes('access_token')) {
+      debugLog('NO access_token in hash — return')
+      return
+    }
     const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash)
     const accessToken = params.get('access_token')
     const idToken = params.get('id_token')
@@ -62,15 +67,19 @@ export function AppContent() {
     const scope = params.get('scope')?.split(' ') ?? []
     const state = params.get('state') ?? ''
 
+    debugLog(`parsed: accessToken=${accessToken ? 'YES('+accessToken.length+')' : 'NO'}, idToken=${idToken ? 'YES' : 'NO'}, state=${state || 'EMPTY'}`)
+
     if (!accessToken || !idToken) {
+      debugLog('Tokens manquants — abort')
       toast.error('Auth: tokens manquants dans le callback')
       return
     }
     const savedState = Capacitor.isNativePlatform()
       ? localStorage.getItem('twitch_auth_state')
       : sessionStorage.getItem('twitch_auth_state')
+    debugLog(`state check: saved=${savedState || 'null'} received=${state || 'null'}`)
     if (!savedState || savedState !== state) {
-      console.error('OAuth state mismatch — aborting auth', { savedState, state })
+      debugLog('STATE MISMATCH — abort')
       toast.error(`Auth: state mismatch (saved=${savedState ?? 'null'} / received=${state || 'null'})`)
       return
     }
@@ -78,6 +87,7 @@ export function AppContent() {
     sessionStorage.removeItem('twitch_auth_state')
 
     try {
+      debugLog(`fetching ${AUTH_SERVICE_URL}/auth/callback`)
       await completeAuth({
         accessToken,
         idToken,
@@ -86,12 +96,13 @@ export function AppContent() {
         scope,
         state,
       })
+      debugLog('completeAuth OK — navigate to dashboard')
       globalThis.history?.replaceState({}, document.title, globalThis.location.pathname)
       setCurrentScreen('dashboard')
       setSidebarOpen(false)
     } catch (error) {
-      console.error('Auth completion failed', error)
       const message = error instanceof Error ? error.message : String(error)
+      debugLog(`completeAuth FAILED: ${message}`)
       toast.error(`Auth backend KO: ${message}`)
     }
   }
@@ -110,52 +121,46 @@ export function AppContent() {
     if (!Capacitor.isNativePlatform()) return
 
     const processUrl = async (url: string) => {
-      toast.info(`appUrlOpen: ${url.substring(0, 80)}`)
+      debugLog(`processUrl: ${url.substring(0, 200)}`)
       const queryIndex = url.indexOf('?')
       if (queryIndex !== -1) {
         await handleOAuthHash(url.substring(queryIndex + 1))
       } else {
-        toast.error(`Deep link sans query: ${url}`)
+        debugLog(`no '?' in URL`)
       }
       try { await Browser.close() } catch { /* already closed */ }
     }
 
-    // Diagnostic at startup so user can confirm config is correct
-    toast.info(`Native ready — front=${FRONT_URL || 'EMPTY'}`, { duration: 8000 })
-    if (!TWITCH_CLIENT_ID) {
-      toast.error('TWITCH_CLIENT_ID vide au build', { duration: 10000 })
-    }
-    if (!AUTH_SERVICE_URL || AUTH_SERVICE_URL.includes('localhost')) {
-      toast.error(`AUTH_SERVICE_URL suspect: ${AUTH_SERVICE_URL}`, { duration: 10000 })
-    }
-    if (!MOBILE_REDIRECT_URI || MOBILE_REDIRECT_URI.startsWith('https://localhost')) {
-      toast.error(`MOBILE_REDIRECT_URI suspect: ${MOBILE_REDIRECT_URI}`, { duration: 10000 })
-    }
+    debugLog(`Native ready — FRONT_URL=${FRONT_URL || 'EMPTY'}`)
+    debugLog(`AUTH_SERVICE_URL=${AUTH_SERVICE_URL}`)
+    debugLog(`MOBILE_REDIRECT_URI=${MOBILE_REDIRECT_URI}`)
+    debugLog(`TWITCH_CLIENT_ID=${TWITCH_CLIENT_ID ? 'set('+TWITCH_CLIENT_ID.length+')' : 'EMPTY'}`)
 
     CapApp.addListener('appUrlOpen', async ({ url }: { url: string }) => {
+      debugLog(`>>> appUrlOpen fired`)
       await processUrl(url)
     }).then((handle: PluginListenerHandle) => {
       listenerRef.current = handle
+      debugLog('appUrlOpen listener registered')
     })
 
-    // Cold start: deep link delivered before listener was registered
     CapApp.getLaunchUrl().then((result) => {
       if (result?.url) {
-        toast.info(`getLaunchUrl: ${result.url.substring(0, 80)}`)
+        debugLog(`getLaunchUrl returned: ${result.url.substring(0, 200)}`)
         void processUrl(result.url)
+      } else {
+        debugLog('getLaunchUrl: no launch URL')
       }
     }).catch((error) => {
-      console.error('getLaunchUrl failed', error)
-      toast.error(`getLaunchUrl error: ${String(error)}`)
+      debugLog(`getLaunchUrl ERROR: ${String(error)}`)
     })
 
-    // App resume detection — fires every time the app comes back to foreground.
-    // If user goes through OAuth and returns to the app WITHOUT a deep link firing,
-    // we'll see this toast but no appUrlOpen → confirms deep link is broken.
     CapApp.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) {
-        toast.info('App active (resume)')
-      }
+      debugLog(`appStateChange: isActive=${isActive}`)
+    })
+
+    CapApp.addListener('resume', () => {
+      debugLog('resume event')
     })
 
     return () => {
@@ -199,6 +204,7 @@ export function AppContent() {
       <>
         <LandingPage onConnect={login} />
         <Toaster />
+        {Capacitor.isNativePlatform() && <DebugLog />}
       </>
     )
   }
@@ -251,6 +257,7 @@ export function AppContent() {
         </main>
       </div>
       <Toaster />
+      {Capacitor.isNativePlatform() && <DebugLog />}
     </>
   )
 }
