@@ -18,26 +18,21 @@ import {
 import type { Achievement, AchievementTriggerLabel } from './api/achievementManagement.types'
 import { isRenderableImageSource } from './utils/achievementImage'
 import { isOwnerAchievementChannelId } from './utils/achievementManagementChannel'
+import { useTwitchChannelRewards } from './hooks/useTwitchChannelRewards'
 
 function getTriggerFieldConfig(label: AchievementTriggerLabel, t: (key: string) => string) {
-  const showDetail =
-    label === 'contentMessage' ||
-    label === 'countRedeemChannelPoint' ||
-    label === 'countCostChannelPoint'
+  const showDetail = label === 'contentMessage' || label === 'countRedeemChannelPoint'
   const detailLabel =
     label === 'countRedeemChannelPoint'
-      ? t('achievement.trigger.dataLabel.countRedeemChannelPoint')
-      : label === 'countCostChannelPoint'
-        ? t('achievement.trigger.dataLabel.countCostChannelPoint')
-        : t('achievement.trigger.dataLabel')
-  const detailInputType = label === 'countCostChannelPoint' ? 'number' : 'text'
+      ? t('achievement.trigger.rewards.label')
+      : t('achievement.trigger.dataLabel')
   const goalLabel =
     label === 'countMessage'
       ? t('achievement.goal.countMessage')
       : label === 'countCostChannelPoint'
         ? t('achievement.goal.countCostChannelPoint')
         : t('achievement.goal.default')
-  return { showDetail, detailLabel, detailInputType, goalLabel }
+  return { showDetail, detailLabel, goalLabel }
 }
 
 interface AchievementCreatorProps {
@@ -72,12 +67,6 @@ function getPublishValidationError(
   if (TRIGGER_TYPES_REQUIRING_DATA.includes(formValues.type.label) && !formValues.type.data) {
     return t('creator.validation.missingDetail')
   }
-  if (formValues.type.label === 'countCostChannelPoint') {
-    const cost = Number(formValues.type.data)
-    if (!Number.isInteger(cost) || cost <= 0) {
-      return t('creator.validation.invalidCost')
-    }
-  }
   return null
 }
 
@@ -89,6 +78,8 @@ export function AchievementCreator({
   const { selectedChannel } = useChannel()
   const { language, t } = useLanguage()
   const isReadOnly = selectedChannel ? !isOwnerAchievementChannelId(selectedChannel.id) : false
+  const { rewards, isLoading: isLoadingRewards, error: rewardsError } =
+    useTwitchChannelRewards(selectedChannel?.id ?? null)
   const achievementTriggerOptions = getAchievementTriggerOptions(language)
   const [mode, setMode] = useState<'simple' | 'api'>('simple')
   const [formValues, setFormValues] = useState(defaultAchievementFormValues)
@@ -279,7 +270,10 @@ export function AchievementCreator({
     setIsSubmitting(true)
 
     try {
-      const normalizedTypeData = formValues.type.data ?? 'dummy label'
+      const normalizedTypeData =
+        formValues.type.label === 'countCostChannelPoint'
+          ? 1
+          : (formValues.type.data ?? 'dummy label')
       const normalizedPayload = {
         ...formValues,
         title: formValues.title.trim(),
@@ -715,26 +709,77 @@ export function AchievementCreator({
                             >
                               {triggerConfig.detailLabel}
                             </label>
-                            <input
-                              id="achievement-trigger-data"
-                              type={triggerConfig.detailInputType}
-                              value={
-                                formValues.type.data === null
-                                  ? ''
-                                  : String(formValues.type.data ?? '')
-                              }
-                              onChange={event =>
-                                setFormValues(current => ({
-                                  ...current,
-                                  type: {
-                                    ...current.type,
-                                    data: event.target.value.trim() ? event.target.value : null,
-                                  },
-                                }))
-                              }
-                              placeholder="..."
-                              className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
-                            />
+                            {formValues.type.label === 'countRedeemChannelPoint' ? (
+                              <>
+                                {isLoadingRewards && (
+                                  <p className="text-sm text-gray-400 dark:text-gray-600 mb-2">
+                                    {t('achievement.trigger.rewards.loading')}
+                                  </p>
+                                )}
+                                {!isLoadingRewards && rewardsError && (
+                                  <p className="text-sm text-red-400 dark:text-red-600 mb-2">
+                                    {t('achievement.trigger.rewards.error')}
+                                  </p>
+                                )}
+                                {!isLoadingRewards && !rewardsError && rewards.length === 0 && (
+                                  <p className="text-sm text-gray-400 dark:text-gray-600 mb-2">
+                                    {t('achievement.trigger.rewards.empty')}
+                                  </p>
+                                )}
+                                <select
+                                  id="achievement-trigger-data"
+                                  value={
+                                    formValues.type.data === null ? '' : String(formValues.type.data)
+                                  }
+                                  onChange={event =>
+                                    setFormValues(current => ({
+                                      ...current,
+                                      type: {
+                                        ...current.type,
+                                        data: event.target.value || null,
+                                      },
+                                    }))
+                                  }
+                                  className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
+                                >
+                                  <option value="">...</option>
+                                  {rewards.map(reward => (
+                                    <option key={reward.id} value={reward.id}>
+                                      {reward.title} — {reward.cost} pts
+                                    </option>
+                                  ))}
+                                  {formValues.type.data !== null &&
+                                    !rewards.some(r => r.id === String(formValues.type.data)) && (
+                                      <option value={String(formValues.type.data)} disabled>
+                                        {t('achievement.trigger.rewards.unknown', {
+                                          id: String(formValues.type.data),
+                                        })}
+                                      </option>
+                                    )}
+                                </select>
+                              </>
+                            ) : (
+                              <input
+                                id="achievement-trigger-data"
+                                type="text"
+                                value={
+                                  formValues.type.data === null
+                                    ? ''
+                                    : String(formValues.type.data ?? '')
+                                }
+                                onChange={event =>
+                                  setFormValues(current => ({
+                                    ...current,
+                                    type: {
+                                      ...current.type,
+                                      data: event.target.value.trim() ? event.target.value : null,
+                                    },
+                                  }))
+                                }
+                                placeholder="..."
+                                className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
+                              />
+                            )}
                           </div>
                         )}
                         <div>

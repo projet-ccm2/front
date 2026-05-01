@@ -39,3 +39,9 @@ export interface ChannelContextType {
   setSelectedChannel: (channel: Channel) => void
   availableChannels: Channel[]
 }
+
+export interface TwitchCustomReward {
+  id: string
+  title: string
+  cost: number
+}

@@ -294,7 +294,7 @@ describe('AchievementCreator', () => {
 
     expect(await screen.findByDisplayValue('Points Hunter')).toBeInTheDocument()
     expect(screen.getByLabelText(/Méthode de déblocage/i)).toHaveValue('countRedeemChannelPoint')
-    expect(screen.getByLabelText(/récompense de point de chaîne/i)).toHaveValue('vip')
+    expect(screen.getByLabelText(/récompense en points de chaîne/i)).toHaveValue('vip')
   })
 
   it('should toggle sidebar on mobile', () => {
@@ -474,37 +474,15 @@ describe('AchievementCreator', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('should show the cost input for channel_point_cost trigger type', () => {
+  it('should show only the goal field for channel_point_cost trigger type', () => {
     render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
 
     fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
       target: { value: 'countCostChannelPoint' },
     })
 
-    expect(screen.getByLabelText('Coût minimum en points')).toBeInTheDocument()
-    expect(screen.getByLabelText('Coût minimum en points')).toHaveAttribute('type', 'number')
-  })
-
-  it('should block publishing when channel_point_cost data is not a positive integer', async () => {
-    render(<AchievementCreator onOpenSidebar={mockOnOpenSidebar} />)
-
-    fireEvent.change(screen.getByPlaceholderText('Entrez le nom du succès...'), {
-      target: { value: 'Test Achievement' },
-    })
-    fireEvent.change(screen.getByPlaceholderText('Décrivez comment débloquer ce succès...'), {
-      target: { value: 'Test description' },
-    })
-    fireEvent.change(screen.getByLabelText(/Méthode de déblocage/i), {
-      target: { value: 'countCostChannelPoint' },
-    })
-    fireEvent.click(screen.getByText('Publier le succès'))
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        'Le coût en points de chaîne doit être un entier positif.'
-      )
-    })
-    expect(mockFetch).not.toHaveBeenCalled()
+    expect(screen.getByLabelText('Quantité dépensée')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Coût minimum en points')).not.toBeInTheDocument()
   })
 
   it('should show an error when the AI prompt is empty', async () => {
