@@ -7,6 +7,8 @@ export const ACHIEVEMENT_MANAGEMENT_SERVICE_URL =
   env?.ACHIEVEMENT_MANAGEMENT_SERVICE_URL ||
   import.meta.env.VITE_ACHIEVEMENT_MANAGEMENT_SERVICE_URL ||
   'http://localhost:3001'
+export const API_SERVICE_URL =
+  env?.API_SERVICE_URL || import.meta.env.VITE_API_SERVICE_URL || 'http://localhost:3000'
 export const FRONT_URL =
   env?.FRONT_URL || import.meta.env.VITE_FRONT_URL || globalThis.location?.origin || ''
 

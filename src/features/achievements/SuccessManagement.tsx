@@ -7,6 +7,7 @@ import { achievementManagementClient } from './api/achievementManagementClient'
 import type { Achievement } from './api/achievementManagement.types'
 import { useChannelAchievements } from './hooks/useChannelAchievements'
 import { AchievementThumbnail } from './components/AchievementThumbnail'
+import { ApiCallerEndpointInfo } from './components/ApiCallerEndpointInfo'
 import {
   Dialog,
   DialogContent,
@@ -373,6 +374,9 @@ export function SuccessManagement({
                           </button>
                         )}
                       </div>
+                      {achievement.type.label === 'apicaller' && (
+                        <ApiCallerEndpointInfo achievementId={achievement.id} />
+                      )}
                     </div>
                   </div>
                 </div>
