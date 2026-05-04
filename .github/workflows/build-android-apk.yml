@@ -64,16 +64,19 @@ jobs:
             echo "TWITCH_CLIENT_ID=${{ secrets.PROD_TWITCH_CLIENT_ID }}" >> $GITHUB_OUTPUT
             echo "AUTH_SERVICE_URL=${{ secrets.PROD_AUTH_SERVICE_URL }}" >> $GITHUB_OUTPUT
             echo "ACHIEVEMENT_MANAGEMENT_SERVICE_URL=${{ secrets.PROD_ACHIEVEMENT_MANAGEMENT_SERVICE_URL }}" >> $GITHUB_OUTPUT
+            echo "API_SERVICE_URL=${{ secrets.PROD_API_SERVICE_URL }}" >> $GITHUB_OUTPUT
             echo "FRONT_URL=${{ secrets.PROD_FRONT_URL }}" >> $GITHUB_OUTPUT
           elif [ "$ENV" == "integration" ]; then
             echo "TWITCH_CLIENT_ID=${{ secrets.INT_TWITCH_CLIENT_ID }}" >> $GITHUB_OUTPUT
             echo "AUTH_SERVICE_URL=${{ secrets.INT_AUTH_SERVICE_URL }}" >> $GITHUB_OUTPUT
             echo "ACHIEVEMENT_MANAGEMENT_SERVICE_URL=${{ secrets.INT_ACHIEVEMENT_MANAGEMENT_SERVICE_URL }}" >> $GITHUB_OUTPUT
+            echo "API_SERVICE_URL=${{ secrets.INT_API_SERVICE_URL }}" >> $GITHUB_OUTPUT
             echo "FRONT_URL=${{ secrets.INT_FRONT_URL }}" >> $GITHUB_OUTPUT
           else
             echo "TWITCH_CLIENT_ID=${{ secrets.DEV_TWITCH_CLIENT_ID }}" >> $GITHUB_OUTPUT
             echo "AUTH_SERVICE_URL=${{ secrets.DEV_AUTH_SERVICE_URL }}" >> $GITHUB_OUTPUT
             echo "ACHIEVEMENT_MANAGEMENT_SERVICE_URL=${{ secrets.DEV_ACHIEVEMENT_MANAGEMENT_SERVICE_URL }}" >> $GITHUB_OUTPUT
+            echo "API_SERVICE_URL=${{ secrets.DEV_API_SERVICE_URL }}" >> $GITHUB_OUTPUT
             echo "FRONT_URL=${{ secrets.DEV_FRONT_URL }}" >> $GITHUB_OUTPUT
           fi
 
@@ -92,6 +95,7 @@ jobs:
           VITE_TWITCH_CLIENT_ID: ${{ steps.build-vars.outputs.TWITCH_CLIENT_ID }}
           VITE_AUTH_SERVICE_URL: ${{ steps.build-vars.outputs.AUTH_SERVICE_URL }}
           VITE_ACHIEVEMENT_MANAGEMENT_SERVICE_URL: ${{ steps.build-vars.outputs.ACHIEVEMENT_MANAGEMENT_SERVICE_URL }}
+          VITE_API_SERVICE_URL: ${{ steps.build-vars.outputs.API_SERVICE_URL }}
           VITE_FRONT_URL: ${{ steps.build-vars.outputs.FRONT_URL }}
 
       - name: Generate app icons
