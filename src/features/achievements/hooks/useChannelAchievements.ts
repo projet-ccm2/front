@@ -15,7 +15,7 @@ interface UseChannelAchievementsResult {
   achievements: Achievement[]
   isLoading: boolean
   errorMessage: string | null
-  isReadOnly: boolean
+  isModeratorChannel: boolean
 }
 
 function getErrorMessage(error: unknown, language: Language) {
