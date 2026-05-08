@@ -426,10 +426,10 @@ const EN_TRANSLATIONS: TranslationMap = {
   'creator.validation.missingFields': 'Title and description are required before publishing.',
   'creator.validation.missingDetail': 'A detail value is required for this trigger type.',
   'creator.validation.invalidCost': 'Channel point cost must be a positive integer.',
-  'management.readOnly.banner':
-    'Moderator view — achievements are read-only for this channel.',
-  'creator.readOnly.banner':
-    'Moderator view — you can browse achievements but cannot create or modify them.',
+  'management.moderator.banner':
+    'Moderator view — changes you make will affect this channel.',
+  'creator.moderator.banner':
+    'Moderator view — you are creating or editing achievements for another channel.',
 }
 
 const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
@@ -828,10 +828,10 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'creator.validation.missingDetail':
     'Une valeur de détail est requise pour ce type de déclencheur.',
   'creator.validation.invalidCost': 'Le coût en points de chaîne doit être un entier positif.',
-  'management.readOnly.banner':
-    'Vue modérateur — les succès sont en lecture seule pour cette chaîne.',
-  'creator.readOnly.banner':
-    'Vue modérateur — vous pouvez consulter les succès mais pas les créer ou les modifier.',
+  'management.moderator.banner':
+    'Vue modérateur — les modifications affecteront cette chaîne.',
+  'creator.moderator.banner':
+    'Vue modérateur — vous créez ou modifiez des succès pour une autre chaîne.',
 }
 
 export const TRANSLATIONS: Record<Language, TranslationMap> = {

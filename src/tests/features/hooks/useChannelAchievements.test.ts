@@ -57,7 +57,7 @@ describe('useChannelAchievements', () => {
 
     expect(result.current.achievements).toEqual(mockAchievements)
     expect(result.current.errorMessage).toBeNull()
-    expect(result.current.isReadOnly).toBe(true)
+    expect(result.current.isModeratorChannel).toBe(true)
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('/achievements/channel/0'),
       expect.any(Object)
@@ -79,7 +79,7 @@ describe('useChannelAchievements', () => {
 
     expect(result.current.achievements).toEqual(mockAchievements)
     expect(result.current.errorMessage).toBeNull()
-    expect(result.current.isReadOnly).toBe(false)
+    expect(result.current.isModeratorChannel).toBe(false)
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('/achievements/channel/channel-1'),
       expect.any(Object)

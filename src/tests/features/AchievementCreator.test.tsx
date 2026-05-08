@@ -559,7 +559,7 @@ describe('AchievementCreator', () => {
     expect(createBody).toContain('"imageUpload":null')
   })
 
-  it('should show a read-only banner and disable publish for synthetic moderator channel ids', async () => {
+  it('should show a moderator banner for synthetic moderator channel ids', async () => {
     localStorage.setItem(
       'twitch_user',
       JSON.stringify({
@@ -575,11 +575,11 @@ describe('AchievementCreator', () => {
 
     expect(
       await screen.findByText(
-        'Vue modérateur — vous pouvez consulter les succès mais pas les créer ou les modifier.'
+        'Vue modérateur — vous créez ou modifiez des succès pour une autre chaîne.'
       )
     ).toBeInTheDocument()
 
-    expect(screen.getByText('Publier le succès')).toBeDisabled()
+    expect(screen.getByText('Publier le succès')).not.toBeDisabled()
   })
 
   it('should load an existing achievement in edit mode', async () => {

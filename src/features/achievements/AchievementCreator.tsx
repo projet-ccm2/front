@@ -58,9 +58,6 @@ function getPublishValidationError(
   if (!selectedChannel) {
     return t('creator.validation.noChannel')
   }
-  if (!isOwnerAchievementChannelId(selectedChannel.id)) {
-    return t('achievement.ownerOnly.creator')
-  }
   if (!formValues.title.trim() || !formValues.description.trim()) {
     return t('creator.validation.missingFields')
   }
@@ -77,7 +74,7 @@ export function AchievementCreator({
 }: Readonly<AchievementCreatorProps>) {
   const { selectedChannel } = useChannel()
   const { language, t } = useLanguage()
-  const isReadOnly = selectedChannel ? !isOwnerAchievementChannelId(selectedChannel.id) : false
+  const isModeratorChannel = selectedChannel ? !isOwnerAchievementChannelId(selectedChannel.id) : false
   const { rewards, isLoading: isLoadingRewards, error: rewardsError } =
     useTwitchChannelRewards(selectedChannel?.id ?? null)
   const achievementTriggerOptions = getAchievementTriggerOptions(language)
@@ -346,10 +343,10 @@ export function AchievementCreator({
           </div>
         </div>
 
-        {isReadOnly && (
+        {isModeratorChannel && (
           <div className="mx-4 sm:mx-8 mt-4 flex items-center gap-3 rounded-xl border border-[#ffd700]/40 bg-[#ffd700]/10 px-4 py-3 text-sm text-[#ffd700] dark:text-[#a16200]">
             <Lock className="w-4 h-4 flex-shrink-0" />
-            {t('creator.readOnly.banner')}
+            {t('creator.moderator.banner')}
           </div>
         )}
 
@@ -819,9 +816,9 @@ export function AchievementCreator({
                 </button>
                 <button
                   onClick={() => void handlePublish()}
-                  disabled={isReadOnly || isSubmitting || isLoadingAchievement || Boolean(loadError)}
+                  disabled={isSubmitting || isLoadingAchievement || Boolean(loadError)}
                   className={`px-6 py-3 bg-gradient-to-r from-[#9146FF] to-[#772ce8] hover:from-[#772ce8] hover:to-[#9146FF] text-white rounded-lg transition-all flex items-center justify-center gap-2 ${
-                    isReadOnly || isSubmitting || isLoadingAchievement || loadError
+                    isSubmitting || isLoadingAchievement || loadError
                       ? 'opacity-60 cursor-not-allowed'
                       : ''
                   }`}

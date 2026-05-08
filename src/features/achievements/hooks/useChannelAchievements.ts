@@ -103,6 +103,6 @@ export function useChannelAchievements(channelId: string | null): UseChannelAchi
     achievements,
     isLoading,
     errorMessage,
-    isReadOnly: channelId !== null && !isOwnerAchievementChannelId(channelId),
+    isModeratorChannel: channelId !== null && !isOwnerAchievementChannelId(channelId),
   }
 }
