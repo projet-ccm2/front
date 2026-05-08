@@ -643,6 +643,7 @@ export function AchievementCreator({
                       setMode('api')
                       setFormValues(current => ({
                         ...current,
+                        goal: 1,
                         type: { label: 'apicaller', data: null },
                       }))
                     }}
@@ -802,23 +803,6 @@ export function AchievementCreator({
                   )
                 })()}
 
-              {mode === 'api' && (
-                <div className="mb-8">
-                  <label
-                    htmlFor="achievement-goal-api"
-                    className="block text-white dark:text-gray-900 mb-3 font-medium"
-                  >
-                    {t('achievement.goal.default')}
-                  </label>
-                  <input
-                    id="achievement-goal-api"
-                    type="number"
-                    value={formValues.goal}
-                    onChange={event => updateField('goal', Number(event.target.value) || 0)}
-                    className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
-                  />
-                </div>
-              )}
 
               <div className="mb-8 p-4 bg-[#2d2d31] dark:bg-gray-100 rounded-lg border-l-4 border-[#00f593]">
                 <div className="flex items-center gap-2 text-[#00f593] mb-1">
