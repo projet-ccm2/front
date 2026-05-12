@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, act } from './utils/test-utils'
+import { render, screen, act, waitFor } from './utils/test-utils'
 import { render as rawRender } from '@testing-library/react'
 import { ChannelProvider, useChannel } from '../context/ChannelContext'
 import React from 'react'
@@ -155,13 +155,11 @@ describe('ChannelContext', () => {
       </ChannelProvider>
     )
 
-    await act(async () => {
-      await Promise.resolve()
-    })
-
     expect(screen.getByTestId('selected-channel')).toHaveTextContent('MyTwitchChannel')
     expect(screen.getByTestId('available-count')).toHaveTextContent('2')
-    expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,Pro Gaming Hub')
+    await waitFor(() => {
+      expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,Pro Gaming Hub')
+    })
 
     vi.unstubAllGlobals()
   })
@@ -209,13 +207,11 @@ describe('ChannelContext', () => {
       </ChannelProvider>
     )
 
-    await act(async () => {
-      await Promise.resolve()
-    })
-
     expect(screen.getByTestId('selected-channel')).toHaveTextContent('MyTwitchChannel')
     expect(screen.getByTestId('available-count')).toHaveTextContent('2')
-    expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,Pro Gaming Hub')
+    await waitFor(() => {
+      expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,Pro Gaming Hub')
+    })
 
     vi.unstubAllGlobals()
   })
