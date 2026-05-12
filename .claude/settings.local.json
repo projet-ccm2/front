@@ -11,7 +11,8 @@
       "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(i['path']\\) for i in data.get\\('tree',[]\\) if i['type']=='blob']\")",
       "Bash(rtk git *)",
       "Bash(rtk grep *)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }
