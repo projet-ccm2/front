@@ -69,12 +69,14 @@ describe('Sidebar', () => {
     expect(mockOnNavigate).toHaveBeenCalledWith('creator')
   })
 
-  it('should toggle the theme when the theme button is clicked', () => {
+  it('should toggle the theme when the theme button is clicked', async () => {
     render(<Sidebar currentPage="dashboard" onNavigate={mockOnNavigate} isOpen={true} />)
 
-    expect(screen.getByRole('button', { name: 'Mode sombre' })).toBeInTheDocument()
+    expect(document.querySelector('div.light')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Mode sombre' }))
-    expect(screen.getByRole('button', { name: 'Mode clair' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(document.querySelector('div.dark')).toBeInTheDocument()
+    })
   })
 
   it('should log out and navigate to landing', () => {

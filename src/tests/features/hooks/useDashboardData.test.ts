@@ -210,6 +210,21 @@ describe('useDashboardData', () => {
     expect(result.current.contextMessage).toBeNull()
   })
 
+  it('should show an English sign-in message when no user is authenticated and language is English', async () => {
+    localStorage.removeItem('twitch_user')
+    localStorage.setItem('stream-quest_language', 'en')
+
+    const { result } = renderHook(() => useDashboardData())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.errorMessage).toBe('Sign in to load dashboard achievements.')
+
+    localStorage.removeItem('stream-quest_language')
+  })
+
   it('should load dashboard achievement data from the backend routes', async () => {
     const { result } = renderHook(() => useDashboardData())
 

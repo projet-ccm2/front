@@ -28,6 +28,12 @@ export interface BadgeUpsertPayload {
   imageUpload?: AchievementImageUpload | null
 }
 
+export interface LeaderboardEntry {
+  username: string
+  userId: string
+  xp: number
+}
+
 export interface Achievement {
   id: string
   title: string

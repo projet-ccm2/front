@@ -6,6 +6,7 @@ import type {
   Badge,
   BadgeUpsertPayload,
   CreateAchievementPayload,
+  LeaderboardEntry,
   UserAchievement,
 } from './achievementManagement.types'
 
@@ -82,6 +83,11 @@ export const achievementManagementClient = {
       method: 'PUT',
       body: JSON.stringify(payload),
     })
+  },
+  getChannelLeaderboard(channelId: string) {
+    return requestJson<LeaderboardEntry[]>(
+      `/achievements/channel/${channelId}/leaderboard?limit=10`
+    )
   },
   createAchievement(payload: CreateAchievementPayload) {
     return requestJson<Achievement>('/achievements', {

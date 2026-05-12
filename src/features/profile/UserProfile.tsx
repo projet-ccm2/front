@@ -1,9 +1,12 @@
 import { Trophy, Clock, TrendingUp, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { useUserAchievements } from './hooks/useUserAchievements'
+import { useChannelLeaderboard } from './hooks/useChannelLeaderboard'
 import { useUserBadges } from '../badges/hooks/useUserBadges'
 import { BadgeThumbnail } from '../badges/components/BadgeThumbnail'
+import { getRealChannelId } from '../achievements/utils/achievementManagementChannel'
 
 const XP_PER_LEVEL = 250
 
@@ -13,6 +16,7 @@ interface UserProfileProps {
 
 export function UserProfile({ onOpenSidebar }: UserProfileProps) {
   const { user } = useAuth()
+  const { selectedChannel } = useChannel()
   const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useUserAchievements()
   const {
@@ -20,6 +24,15 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
     isLoading: areBadgesLoading,
     errorMessage: badgesErrorMessage,
   } = useUserBadges(user?.userId ?? null)
+
+  const leaderboardChannelId = selectedChannel
+    ? getRealChannelId(selectedChannel.id)
+    : (user?.channel.id ?? null)
+  const {
+    entries: leaderboardEntries,
+    isLoading: isLeaderboardLoading,
+    errorMessage: leaderboardError,
+  } = useChannelLeaderboard(leaderboardChannelId)
 
   const unlockedCount = achievements.filter(achievement => achievement.userState.finished).length
   const totalCount = achievements.length
@@ -196,37 +209,96 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
           </div>
 
           <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
-              <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900">
-                {t('profile.leaderboard')}
-              </h2>
-              <button className="w-full sm:w-auto px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-gray-300 dark:text-gray-700 rounded-lg transition-colors text-sm">
-                {t('profile.leaderboardAction')}
-              </button>
-            </div>
-            <p className="mb-4 text-sm text-gray-400 dark:text-gray-600">
-              {t('profile.leaderboardDescription')}
-            </p>
-            <div className="rounded-xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50 sm:p-5">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-full flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 text-white">
-                  {user?.username?.charAt(0).toUpperCase() ?? 'U'}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-white dark:text-gray-900 text-sm sm:text-base truncate">
-                    {user?.username ?? t('profile.titleFallback')}
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">
-                    {t('profile.level', { level: currentLevel })} • {currentXP.toLocaleString()} XP
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[#ffd700] text-sm sm:text-base">
-                    {t('profile.leaderboardPending')}
-                  </div>
-                </div>
+            <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900 mb-4 sm:mb-6">
+              {t('profile.leaderboard')}
+            </h2>
+
+            {isLeaderboardLoading && (
+              <div className="text-sm text-gray-400 dark:text-gray-600">
+                {t('profile.leaderboard.loading')}
               </div>
-            </div>
+            )}
+
+            {!isLeaderboardLoading && leaderboardError && (
+              <div className="rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+                {leaderboardError}
+              </div>
+            )}
+
+            {!isLeaderboardLoading && !leaderboardError && leaderboardEntries.length === 0 && (
+              <div className="rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600">
+                {t('profile.leaderboard.empty')}
+              </div>
+            )}
+
+            {!isLeaderboardLoading && !leaderboardError && leaderboardEntries.length > 0 && (
+              <>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {leaderboardEntries.slice(0, 3).map((entry, index) => {
+                    const medals = ['🥇', '🥈', '🥉']
+                    const borderColors = [
+                      'border-[#ffd700]/50',
+                      'border-[#c0c0c0]/50',
+                      'border-[#cd7f32]/50',
+                    ]
+                    const bgColors = [
+                      'bg-[#ffd700]/10',
+                      'bg-[#c0c0c0]/10',
+                      'bg-[#cd7f32]/10',
+                    ]
+                    const isCurrentUser = entry.userId === user?.userId
+                    return (
+                      <div
+                        key={entry.userId}
+                        className={`rounded-xl border p-3 text-center ${borderColors[index]} ${bgColors[index]} ${isCurrentUser ? 'ring-2 ring-[#9146FF]' : ''}`}
+                      >
+                        <div className="mb-1 text-2xl">{medals[index]}</div>
+                        <div className="truncate text-sm font-medium text-white dark:text-gray-900">
+                          {entry.username}
+                        </div>
+                        {isCurrentUser && (
+                          <div className="text-xs text-[#9146FF]">({t('profile.leaderboard.you')})</div>
+                        )}
+                        <div className="mt-1 text-xs text-gray-400 dark:text-gray-600">
+                          {entry.xp.toLocaleString()} XP
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {leaderboardEntries.slice(3).length > 0 && (
+                  <div className="space-y-2">
+                    {leaderboardEntries.slice(3).map((entry, index) => {
+                      const isCurrentUser = entry.userId === user?.userId
+                      return (
+                        <div
+                          key={entry.userId}
+                          className={`flex items-center gap-3 rounded-lg px-4 py-3 ${
+                            isCurrentUser
+                              ? 'border border-[#9146FF]/40 bg-[#9146FF]/10'
+                              : 'border border-[#2d2d31] bg-[#0f0f12] dark:border-gray-200 dark:bg-gray-50'
+                          }`}
+                        >
+                          <span className="w-8 text-sm font-medium text-gray-400 dark:text-gray-600">
+                            #{index + 4}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-sm text-white dark:text-gray-900">
+                            {entry.username}
+                            {isCurrentUser && (
+                              <span className="ml-2 text-xs text-[#9146FF]">({t('profile.leaderboard.you')})</span>
+                            )}
+                          </span>
+                          <span className="text-sm text-gray-400 dark:text-gray-600">
+                            {entry.xp.toLocaleString()} XP
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

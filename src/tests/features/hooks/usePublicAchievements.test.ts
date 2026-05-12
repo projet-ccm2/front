@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, waitFor } from '../../utils/test-utils'
+import { renderHook, waitFor, act } from '../../utils/test-utils'
 import { usePublicAchievements } from '../../../features/marketplace/hooks/usePublicAchievements'
 
 const mockAchievements = [
@@ -137,5 +137,31 @@ describe('usePublicAchievements', () => {
 
     expect(result.current.achievements).toEqual([])
     expect(result.current.errorMessage).toBe('Impossible de charger les succès de la marketplace.')
+  })
+
+  it('should not update state when unmounted before fetch resolves', async () => {
+    let resolver!: (value: Response) => void
+    vi.mocked(fetch).mockImplementation(() => new Promise<Response>(r => { resolver = r }))
+
+    const { unmount } = renderHook(() => usePublicAchievements())
+
+    unmount()
+
+    await act(async () => {
+      resolver({ ok: true, status: 200, json: () => Promise.resolve([]) } as Response)
+    })
+  })
+
+  it('should not update state when unmounted before fetch rejects', async () => {
+    let rejecter!: (err: Error) => void
+    vi.mocked(fetch).mockImplementation(() => new Promise<Response>((_, r) => { rejecter = r }))
+
+    const { unmount } = renderHook(() => usePublicAchievements())
+
+    unmount()
+
+    await act(async () => {
+      rejecter(new Error('Network failure'))
+    })
   })
 })

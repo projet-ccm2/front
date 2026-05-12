@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderHook, waitFor } from '../../utils/test-utils'
+import { renderHook, waitFor, act } from '../../utils/test-utils'
 import { useViewerHub } from '../../../features/viewer/hooks/useViewerHub'
 
 const authUser = {
@@ -175,5 +175,35 @@ describe('useViewerHub', () => {
     })
 
     expect(result.current.errorMessage).toBe('Impossible de charger le hub viewer.')
+  })
+
+  it('should not update state when unmounted before fetch resolves', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+
+    let resolver!: (value: Response) => void
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(r => { resolver = r })))
+
+    const { unmount } = renderHook(() => useViewerHub())
+
+    unmount()
+
+    await act(async () => {
+      resolver({ ok: true, status: 200, json: () => Promise.resolve([]) } as Response)
+    })
+  })
+
+  it('should not update state when unmounted before fetch rejects', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+
+    let rejecter!: (err: Error) => void
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((_, r) => { rejecter = r })))
+
+    const { unmount } = renderHook(() => useViewerHub())
+
+    unmount()
+
+    await act(async () => {
+      rejecter(new Error('Network failure'))
+    })
   })
 })

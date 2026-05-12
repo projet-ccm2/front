@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { Save, Upload, X, BadgeInfo } from 'lucide-react'
+import { Save, Upload, X, BadgeInfo, Lock, ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '../../context/AuthContext'
+import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { achievementManagementClient } from '../achievements/api/achievementManagementClient'
 import type {
@@ -11,6 +12,7 @@ import type {
   BadgeUpsertPayload,
 } from '../achievements/api/achievementManagement.types'
 import { createImageUploadFormValue } from '../achievements/forms/achievementFormModel'
+import { isOwnerAchievementChannelId } from '../achievements/utils/achievementManagementChannel'
 import { BadgeThumbnail } from './components/BadgeThumbnail'
 import { useChannelBadge } from './hooks/useChannelBadge'
 
@@ -33,8 +35,10 @@ interface ChannelBadgeManagerProps {
 
 export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps) {
   const { user } = useAuth()
+  const { selectedChannel } = useChannel()
   const { language, t } = useLanguage()
-  const channelId = user?.channel.id ?? null
+  const isOwnerChannel = selectedChannel ? isOwnerAchievementChannelId(selectedChannel.id) : false
+  const channelId = isOwnerChannel ? (selectedChannel?.id ?? null) : null
   const { badge, isLoading, errorMessage, isNotFound } = useChannelBadge(channelId)
   const [currentBadge, setCurrentBadge] = useState<ChannelBadge | null>(null)
   const [draftTitle, setDraftTitle] = useState('')
@@ -177,6 +181,14 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
     )
   }
 
+  if (!selectedChannel) {
+    return (
+      <div className={`rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600 ${className}`}>
+        {t('badge.channel.noChannel')}
+      </div>
+    )
+  }
+
   return (
     <section
       className={`rounded-xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white ${className}`}
@@ -188,10 +200,17 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
         <div>
           <h2 className="text-xl text-white dark:text-gray-900">{t('badge.channel.title')}</h2>
           <p className="text-sm text-gray-400 dark:text-gray-600">
-            {t('badge.channel.subtitle', { channelName: user.channel.name })}
+            {t('badge.channel.subtitle', { channelName: selectedChannel.name })}
           </p>
         </div>
       </div>
+
+      {!isOwnerChannel && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-[#ffd700]/40 bg-[#ffd700]/10 px-4 py-3 text-sm text-[#ffd700] dark:text-[#a16200]">
+          <Lock className="h-4 w-4 flex-shrink-0" />
+          {t('badge.channel.ownerOnly')}
+        </div>
+      )}
 
       {isLoading && (
         <div className="rounded-xl border border-dashed border-[#2d2d31] p-6 text-sm text-gray-400 dark:border-gray-200 dark:text-gray-600">
@@ -279,17 +298,15 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
               className="hidden"
             />
 
-            <div className="rounded-lg border border-dashed border-[#4d4d51] p-4 text-sm text-gray-400 dark:border-gray-300 dark:text-gray-600">
+            <div className="flex items-center gap-3 rounded-lg border border-dashed border-[#4d4d51] p-4 text-sm text-gray-400 dark:border-gray-300 dark:text-gray-600">
+              <ImageIcon className="h-4 w-4 flex-shrink-0" />
               {selectedImageUpload ? (
-                <span className="break-all">
+                <span>
                   {t('badge.channel.form.selected')}{' '}
-                  <span className="text-white dark:text-gray-900">{selectedImageUpload.fileName}</span>
+                  <span className="font-medium text-white dark:text-gray-900">{selectedImageUpload.fileName}</span>
                 </span>
               ) : currentImage ? (
-                <span className="break-all">
-                  {t('badge.channel.form.current')}{' '}
-                  <span className="text-white dark:text-gray-900">{currentImage}</span>
-                </span>
+                <span className="text-white dark:text-gray-900">{t('badge.channel.form.current')}</span>
               ) : (
                 <span>{t('badge.channel.form.empty')}</span>
               )}

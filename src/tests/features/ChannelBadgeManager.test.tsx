@@ -138,4 +138,125 @@ describe('ChannelBadgeManager', () => {
 
     expect(await screen.findByText('Aucun badge lié à cette chaîne')).toBeInTheDocument()
   })
+
+  it('shows an error when a file with an invalid type is selected', async () => {
+    render(<ChannelBadgeManager />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Titre du badge')).toHaveValue('Top Fan')
+    })
+
+    const fileInput = screen.getByTestId('channel-badge-image-input')
+    const gifFile = new File(['gif-data'], 'animation.gif', { type: 'image/gif' })
+
+    fireEvent.change(fileInput, { target: { files: [gifFile] } })
+
+    await waitFor(() => {
+      expect(screen.getByText(/JPEG.*PNG.*WebP|acceptées/i)).toBeInTheDocument()
+    })
+  })
+
+  it('shows an error when an oversized image file is selected', async () => {
+    render(<ChannelBadgeManager />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Titre du badge')).toHaveValue('Top Fan')
+    })
+
+    const fileInput = screen.getByTestId('channel-badge-image-input')
+    const oversizedFile = new File(['x'], 'big.png', { type: 'image/png' })
+    Object.defineProperty(oversizedFile, 'size', { value: 11 * 1024 * 1024 })
+
+    fireEvent.change(fileInput, { target: { files: [oversizedFile] } })
+
+    await waitFor(() => {
+      expect(screen.getByText(/doit faire moins|must be smaller/i)).toBeInTheDocument()
+    })
+  })
+
+  it('shows a validation error when saving with a blank title and no image', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/badges/channel/channel-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ id: 'badge-1', title: '', image: null }),
+          })
+        }
+
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({ message: `Unhandled: ${url}` }),
+          text: () => Promise.resolve(`Unhandled: ${url}`),
+        })
+      })
+    )
+
+    render(<ChannelBadgeManager />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Enregistrer le badge' })).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le badge' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/titre ou sélectionne une image/i)
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('shows an error message when the save API call fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        const method = init?.method ?? 'GET'
+
+        if (url.includes('/badges/channel/channel-1') && method === 'GET') {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockBadge),
+          })
+        }
+
+        if (url.includes('/badges/channel/channel-1') && method === 'PUT') {
+          return Promise.resolve({
+            ok: false,
+            status: 500,
+            json: () => Promise.resolve({ message: 'server error' }),
+            text: () => Promise.resolve('server error'),
+          })
+        }
+
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({ message: `Unhandled: ${url}` }),
+          text: () => Promise.resolve(`Unhandled: ${url}`),
+        })
+      })
+    )
+
+    render(<ChannelBadgeManager />)
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Top Fan')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le badge' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Achievement-management request failed with status 500/i)
+      ).toBeInTheDocument()
+    })
+  })
 })

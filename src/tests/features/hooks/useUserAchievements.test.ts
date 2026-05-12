@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, waitFor } from '../../utils/test-utils'
+import { renderHook, waitFor, act } from '../../utils/test-utils'
 import { useUserAchievements } from '../../../features/profile/hooks/useUserAchievements'
 
 const mockChannelState = {
@@ -236,5 +236,35 @@ describe('useUserAchievements', () => {
 
     expect(result.current.achievements).toEqual([])
     expect(result.current.errorMessage).toBe('Impossible de charger les succès du profil.')
+  })
+
+  it('should not update state when unmounted before fetch resolves', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+
+    let resolver!: (value: Response) => void
+    vi.mocked(fetch).mockImplementation(() => new Promise<Response>(r => { resolver = r }))
+
+    const { unmount } = renderHook(() => useUserAchievements())
+
+    unmount()
+
+    await act(async () => {
+      resolver({ ok: true, status: 200, json: () => Promise.resolve([]) } as Response)
+    })
+  })
+
+  it('should not update state when unmounted before fetch rejects', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+
+    let rejecter!: (err: Error) => void
+    vi.mocked(fetch).mockImplementation(() => new Promise<Response>((_, r) => { rejecter = r }))
+
+    const { unmount } = renderHook(() => useUserAchievements())
+
+    unmount()
+
+    await act(async () => {
+      rejecter(new Error('Network failure'))
+    })
   })
 })

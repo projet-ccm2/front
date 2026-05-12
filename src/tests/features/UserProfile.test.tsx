@@ -78,6 +78,18 @@ describe('UserProfile', () => {
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input)
 
+        if (url.includes('/leaderboard')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve([
+                { username: 'streamer', userId: 'user-1', xp: 500 },
+                { username: 'viewer1', userId: 'user-2', xp: 350 },
+              ]),
+          })
+        }
+
         if (url.includes('/achievements/user/user-1/channel/channel-1')) {
           return Promise.resolve({
             ok: true,
@@ -154,10 +166,9 @@ describe('UserProfile', () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     expect(await screen.findByText(/50 \/ 250 XP/)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Classement' })).toBeInTheDocument()
-    expect(screen.getByText(/Classement des comptes par niveau et XP/i)).toBeInTheDocument()
+    expect(await screen.findByText('viewer1')).toBeInTheDocument()
     expect(screen.getAllByText('streamer').length).toBeGreaterThan(0)
-    expect(screen.getByText(/Niveau 1\s*•\s*50 XP/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Classement global/i })).toBeInTheDocument()
+    expect(screen.getByText('500 XP')).toBeInTheDocument()
   })
 
   it('should show zeroed progress when no user achievements are returned', async () => {
@@ -258,5 +269,60 @@ describe('UserProfile', () => {
       'src',
       'https://example.com/profile.png'
     )
+  })
+
+  it('should display rank 4 and beyond including current user highlighted', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/leaderboard')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve([
+                { username: 'viewer1', userId: 'user-2', xp: 500 },
+                { username: 'viewer2', userId: 'user-3', xp: 400 },
+                { username: 'viewer3', userId: 'user-4', xp: 300 },
+                { username: 'viewer4', userId: 'user-5', xp: 200 },
+                { username: 'streamer', userId: 'user-1', xp: 100 },
+              ]),
+          })
+        }
+
+        if (url.includes('/achievements/user/user-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockUserAchievements),
+          })
+        }
+
+        if (url.includes('/badges/user/user-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve([]),
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve([]),
+        })
+      })
+    )
+
+    render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
+
+    expect(await screen.findByText('viewer4')).toBeInTheDocument()
+    expect(screen.getByText('#4')).toBeInTheDocument()
+    expect(screen.getByText('200 XP')).toBeInTheDocument()
+    // current user (streamer) appears in rank 5 with highlight
+    expect(screen.getByText('#5')).toBeInTheDocument()
+    expect(screen.getByText('100 XP')).toBeInTheDocument()
   })
 })

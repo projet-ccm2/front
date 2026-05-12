@@ -213,7 +213,10 @@ describe('AchievementCreator', () => {
     fireEvent.click(screen.getByText('Mode simple'))
     expect(screen.getByLabelText(/Méthode de déblocage/i)).toBeInTheDocument()
     fireEvent.click(screen.getByText('API'))
-    expect(screen.getByLabelText('Objectif')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Méthode de déblocage/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/Objectif/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/Détails du déclencheur/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'API' })).toBeInTheDocument()
     expect(screen.queryByLabelText(/Méthode de déblocage/i)).not.toBeInTheDocument()
   })
 

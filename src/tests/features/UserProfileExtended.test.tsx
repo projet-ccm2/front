@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '../utils/test-utils'
+import { render, screen, waitFor } from '../utils/test-utils'
 import { UserProfile } from '../../features/profile/UserProfile'
 import React from 'react'
 
@@ -39,18 +39,46 @@ const mockUserAchievements = [
   },
 ]
 
+const mockBadges = [
+  { id: 'badge-1', title: 'First Steps', image: 'https://example.com/badge.png' },
+]
+
+const mockLeaderboard = [
+  { username: 'streamer', userId: 'user-1', xp: 500 },
+  { username: 'viewer1', userId: 'user-2', xp: 350 },
+  { username: 'viewer2', userId: 'user-3', xp: 200 },
+]
+
 describe('UserProfile - Function Coverage', () => {
   beforeEach(() => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
     vi.stubGlobal(
       'fetch',
-      vi.fn(() =>
-        Promise.resolve({
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/leaderboard')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockLeaderboard),
+          })
+        }
+
+        if (url.includes('/badges/user/')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockBadges),
+          })
+        }
+
+        return Promise.resolve({
           ok: true,
           status: 200,
           json: () => Promise.resolve(mockUserAchievements),
         })
-      )
+      })
     )
   })
 
@@ -77,18 +105,22 @@ describe('UserProfile - Function Coverage', () => {
   it('should render badges section', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
-    expect(screen.getByRole('heading', { name: /Badges de succ.*s/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Badges du compte/i })).toBeInTheDocument()
     expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
-  it('should render account leaderboard section', async () => {
+  it('should render account leaderboard section with real data', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
     await screen.findAllByText('First Steps')
     expect(screen.getByText('Classement')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Classement global/i })).toBeInTheDocument()
-    expect(screen.getByText(/Classement des comptes par niveau et XP/i)).toBeInTheDocument()
-    expect(screen.getAllByText('streamer').length).toBeGreaterThan(0)
-    expect(screen.getByText(/Niveau 1\s*•\s*50 XP/i)).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.getByText('viewer1')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('viewer2')).toBeInTheDocument()
+    expect(screen.getByText('500 XP')).toBeInTheDocument()
+    expect(screen.getByText('350 XP')).toBeInTheDocument()
   })
 })

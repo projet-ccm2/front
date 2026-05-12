@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 vi.mock('../../../features/achievements/api/achievementManagementClient', async importOriginal => {
   const actual =
@@ -14,7 +14,7 @@ vi.mock('../../../features/achievements/api/achievementManagementClient', async 
   }
 })
 
-import { renderHook, waitFor } from '../../utils/test-utils'
+import { renderHook, waitFor, act } from '../../utils/test-utils'
 import {
   AchievementManagementError,
   achievementManagementClient,
@@ -170,5 +170,23 @@ describe('usePublicViewerAchievements', () => {
     })
 
     expect(result.current.errorMessage).toBe('Impossible de charger les succès du viewer.')
+  })
+
+  it('ignores a late error after unmounting', async () => {
+    let rejecter!: (err: Error) => void
+    const pending = new Promise<never>((_, reject) => { rejecter = reject })
+
+    vi.mocked(achievementManagementClient.getUserChannelAchievements).mockReturnValue(
+      pending as never
+    )
+
+    const { unmount } = renderHook(() => usePublicViewerAchievements('channel-1', 'viewer-1'))
+
+    unmount()
+
+    await act(async () => {
+      rejecter(new Error('Network failure'))
+      await pending.catch(() => undefined)
+    })
   })
 })

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../../../context/LanguageContext'
 import type { Language } from '../../../i18n/translations'
 import {
@@ -42,6 +42,9 @@ function getErrorMessage(error: unknown, language: Language) {
 
 export function useUserBadges(userId: string | null): UseUserBadgesResult {
   const { language } = useLanguage()
+  const languageRef = useRef(language)
+  languageRef.current = language
+
   const [badges, setBadges] = useState<Badge[]>([])
   const [isLoading, setIsLoading] = useState(Boolean(userId))
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -49,11 +52,7 @@ export function useUserBadges(userId: string | null): UseUserBadgesResult {
   useEffect(() => {
     if (!userId) {
       setBadges([])
-      setErrorMessage(
-        language === 'fr'
-          ? 'Connecte-toi pour charger les badges du compte.'
-          : 'Sign in to load account badges.'
-      )
+      setErrorMessage(null)
       setIsLoading(false)
       return
     }
@@ -77,7 +76,7 @@ export function useUserBadges(userId: string | null): UseUserBadgesResult {
         }
 
         setBadges([])
-        setErrorMessage(getErrorMessage(error, language))
+        setErrorMessage(getErrorMessage(error, languageRef.current))
       } finally {
         if (isMounted) {
           setIsLoading(false)
@@ -90,7 +89,7 @@ export function useUserBadges(userId: string | null): UseUserBadgesResult {
     return () => {
       isMounted = false
     }
-  }, [language, userId])
+  }, [userId])
 
   return {
     badges,

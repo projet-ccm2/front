@@ -52,6 +52,18 @@ describe('App - Functional Coverage', () => {
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input)
 
+        if (url.includes('/leaderboard')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve([
+                { username: 'testuser', userId: '123456', xp: 500 },
+                { username: 'viewer1', userId: '999', xp: 200 },
+              ]),
+          })
+        }
+
         if (url.includes('/achievements/channel/123')) {
           return Promise.resolve({
             ok: true,

@@ -5,53 +5,50 @@ import {
   achievementManagementClient,
   AchievementManagementError,
 } from '../../achievements/api/achievementManagementClient'
-import type { Badge } from '../../achievements/api/achievementManagement.types'
+import type { LeaderboardEntry } from '../../achievements/api/achievementManagement.types'
 
-interface UseChannelBadgeResult {
-  badge: Badge | null
+interface UseChannelLeaderboardResult {
+  entries: LeaderboardEntry[]
   isLoading: boolean
   errorMessage: string | null
-  isNotFound: boolean
 }
 
-function getErrorMessage(error: unknown, language: Language) {
+function getErrorMessage(error: unknown, language: Language): string {
   if (error instanceof AchievementManagementError) {
     switch (error.status) {
       case 400:
         return language === 'fr'
-          ? 'La requête du badge de chaîne est invalide.'
-          : 'The channel badge request is invalid.'
+          ? 'La requête du classement est invalide.'
+          : 'The leaderboard request is invalid.'
       case 502:
         return language === 'fr'
-          ? 'Le service des badges est actuellement indisponible.'
-          : 'The badge service is currently unavailable.'
+          ? 'Le service de classement est actuellement indisponible.'
+          : 'The leaderboard service is currently unavailable.'
       default:
         return language === 'fr'
-          ? 'Impossible de charger le badge de la chaîne.'
-          : 'Unable to load the channel badge.'
+          ? 'Impossible de charger le classement.'
+          : 'Unable to load the leaderboard.'
     }
   }
 
   return language === 'fr'
-    ? 'Impossible de charger le badge de la chaîne.'
-    : 'Unable to load the channel badge.'
+    ? 'Impossible de charger le classement.'
+    : 'Unable to load the leaderboard.'
 }
 
-export function useChannelBadge(channelId: string | null): UseChannelBadgeResult {
+export function useChannelLeaderboard(channelId: string | null): UseChannelLeaderboardResult {
   const { language } = useLanguage()
   const languageRef = useRef(language)
   languageRef.current = language
 
-  const [badge, setBadge] = useState<Badge | null>(null)
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [isLoading, setIsLoading] = useState(Boolean(channelId))
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isNotFound, setIsNotFound] = useState(false)
 
   useEffect(() => {
     if (!channelId) {
-      setBadge(null)
+      setEntries([])
       setErrorMessage(null)
-      setIsNotFound(false)
       setIsLoading(false)
       return
     }
@@ -59,28 +56,25 @@ export function useChannelBadge(channelId: string | null): UseChannelBadgeResult
     let isMounted = true
     setIsLoading(true)
     setErrorMessage(null)
-    setIsNotFound(false)
 
-    const loadBadge = async () => {
+    const loadLeaderboard = async () => {
       try {
-        const data = await achievementManagementClient.getChannelBadge(channelId)
+        const data = await achievementManagementClient.getChannelLeaderboard(channelId)
 
         if (!isMounted) {
           return
         }
 
-        setBadge(data)
+        setEntries(data)
       } catch (error) {
         if (!isMounted) {
           return
         }
 
-        setBadge(null)
+        setEntries([])
         if (error instanceof AchievementManagementError && error.status === 404) {
-          setIsNotFound(true)
           setErrorMessage(null)
         } else {
-          setIsNotFound(false)
           setErrorMessage(getErrorMessage(error, languageRef.current))
         }
       } finally {
@@ -90,17 +84,12 @@ export function useChannelBadge(channelId: string | null): UseChannelBadgeResult
       }
     }
 
-    loadBadge()
+    loadLeaderboard()
 
     return () => {
       isMounted = false
     }
   }, [channelId])
 
-  return {
-    badge,
-    isLoading,
-    errorMessage,
-    isNotFound,
-  }
+  return { entries, isLoading, errorMessage }
 }
