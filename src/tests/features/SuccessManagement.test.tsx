@@ -72,6 +72,15 @@ describe('SuccessManagement', () => {
       })
     }
 
+    if (url.includes('/badges/channel/')) {
+      return Promise.resolve({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ message: 'not found' }),
+        text: () => Promise.resolve('not found'),
+      })
+    }
+
     if (url.includes('/activate')) {
       return Promise.resolve({
         ok: true,
@@ -212,18 +221,36 @@ describe('SuccessManagement', () => {
   it('should render an empty state when the API returns no achievements', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(() =>
-        Promise.resolve({
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/badges/channel/')) {
+          return Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve({ message: 'not found' }),
+            text: () => Promise.resolve('not found'),
+          })
+        }
+
+        return Promise.resolve({
           ok: true,
           status: 200,
           json: () => Promise.resolve([]),
         })
-      )
+      })
     )
 
     renderManagement()
 
     expect(await screen.findByText('Aucun succès pour cette chaîne')).toBeInTheDocument()
+  })
+
+  it('should render the channel badge manager section', async () => {
+    renderManagement()
+
+    expect(await screen.findByText('Badge de la chaîne')).toBeInTheDocument()
+    expect(screen.getByText('Aucun badge lié à cette chaîne')).toBeInTheDocument()
   })
 
   it('should render an error state when the API fails', async () => {

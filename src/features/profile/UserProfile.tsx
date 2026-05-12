@@ -2,6 +2,8 @@ import { Trophy, Clock, TrendingUp, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { useUserAchievements } from './hooks/useUserAchievements'
+import { useUserBadges } from '../badges/hooks/useUserBadges'
+import { BadgeThumbnail } from '../badges/components/BadgeThumbnail'
 
 const XP_PER_LEVEL = 250
 
@@ -13,6 +15,11 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
   const { user } = useAuth()
   const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useUserAchievements()
+  const {
+    badges,
+    isLoading: areBadgesLoading,
+    errorMessage: badgesErrorMessage,
+  } = useUserBadges(user?.userId ?? null)
 
   const unlockedCount = achievements.filter(achievement => achievement.userState.finished).length
   const totalCount = achievements.length
@@ -92,6 +99,18 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
             </div>
           </div>
 
+          {isLoading && (
+            <div className="mb-4 rounded-xl border border-dashed border-[#2d2d31] bg-[#18181b] p-4 text-sm text-gray-400 dark:border-gray-200 dark:bg-white dark:text-gray-600">
+              {t('profile.loading')}
+            </div>
+          )}
+
+          {!isLoading && errorMessage && (
+            <div className="mb-4 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-[#ff8080] dark:text-[#b42318]">
+              {errorMessage}
+            </div>
+          )}
+
           <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
               <div className="flex items-center gap-3 mb-2">
@@ -137,52 +156,40 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
               {t('profile.section.badges')}
             </h2>
 
-            {isLoading && (
-              <div className="text-gray-400 dark:text-gray-600">{t('profile.loading')}</div>
+            {areBadgesLoading && (
+              <div className="text-gray-400 dark:text-gray-600">{t('profile.badges.loading')}</div>
             )}
 
-            {!isLoading && errorMessage && (
+            {!areBadgesLoading && badgesErrorMessage && (
               <div className="rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-[#ff8080] dark:text-[#b42318]">
-                {errorMessage}
+                {badgesErrorMessage}
               </div>
             )}
 
-            {!isLoading && !errorMessage && achievements.length === 0 && (
+            {!areBadgesLoading && !badgesErrorMessage && badges.length === 0 && (
               <div className="rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600">
-                {t('profile.empty')}
+                {t('profile.badges.empty')}
               </div>
             )}
 
-            {!isLoading && !errorMessage && achievements.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4">
-                {achievements.map(achievement => (
-                  <div
-                    key={achievement.id}
-                    className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 sm:p-4 transition-all ${
-                      achievement.userState.finished
-                        ? 'bg-gradient-to-br from-[#9146FF]/20 to-[#772ce8]/20 border-[#9146FF]'
-                        : 'bg-[#2d2d31] dark:bg-gray-200 border-[#4d4d51] dark:border-gray-300 opacity-70'
-                    }`}
-                    title={achievement.title}
+            {!areBadgesLoading && !badgesErrorMessage && badges.length > 0 && (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {badges.map(badge => (
+                  <article
+                    key={badge.id}
+                    className="rounded-2xl border border-[#2d2d31] bg-[#0f0f12] p-3 transition-transform hover:-translate-y-0.5 hover:border-[#9146FF] dark:border-gray-200 dark:bg-gray-50"
+                    title={badge.title}
                   >
-                    <div className="text-xl sm:text-2xl mb-1 sm:mb-2 text-center text-white dark:text-gray-900">
-                      {achievement.label || achievement.title.slice(0, 2).toUpperCase()}
+                    <BadgeThumbnail title={badge.title} image={badge.image} className="h-24 w-full" />
+                    <div className="mt-3 space-y-1 text-center">
+                      <div className="text-sm font-medium text-white dark:text-gray-900">
+                        {badge.title}
+                      </div>
+                      <div className="text-xs text-gray-400 dark:text-gray-600">
+                        {t('profile.badges.item')}
+                      </div>
                     </div>
-                    <div
-                      className={`text-xs text-center line-clamp-2 ${
-                        achievement.userState.finished
-                          ? 'text-white dark:text-gray-900'
-                          : 'text-gray-400 dark:text-gray-600'
-                      }`}
-                    >
-                      {achievement.title}
-                    </div>
-                    <div className="mt-2 text-[10px] text-gray-400 dark:text-gray-600 text-center">
-                      {achievement.userState.finished
-                        ? t('profile.unlocked')
-                        : `${achievement.userState.progressCount}/${achievement.goal}`}
-                    </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             )}

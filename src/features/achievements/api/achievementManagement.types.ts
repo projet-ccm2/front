@@ -16,6 +16,18 @@ export interface AchievementImageUpload {
   contentBase64: string
 }
 
+export interface Badge {
+  id: string
+  title: string
+  image: string
+}
+
+export interface BadgeUpsertPayload {
+  title?: string
+  image?: string | null
+  imageUpload?: AchievementImageUpload | null
+}
+
 export interface Achievement {
   id: string
   title: string

@@ -24,6 +24,12 @@ const mockAchievement = {
   },
 }
 
+const mockBadge = {
+  id: 'badge-1',
+  title: 'Badge Title',
+  image: 'https://example.com/badge.png',
+}
+
 describe('achievementManagementClient', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
@@ -96,6 +102,152 @@ describe('achievementManagementClient', () => {
             label: 'message',
             data: null,
           },
+        }),
+      })
+    )
+  })
+
+  it('should fetch user badges', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve([mockBadge]),
+    } as Response)
+
+    const result = await achievementManagementClient.getUserBadges('user-1')
+
+    expect(result).toEqual([mockBadge])
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/badges/user/user-1'),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+        }),
+      })
+    )
+  })
+
+  it('should fetch channel badge', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockBadge),
+    } as Response)
+
+    const result = await achievementManagementClient.getChannelBadge('channel-1')
+
+    expect(result).toEqual(mockBadge)
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/badges/channel/channel-1'),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+        }),
+      })
+    )
+  })
+
+  it('should send badge update payloads with image uploads', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockBadge),
+    } as Response)
+
+    await achievementManagementClient.updateChannelBadge('channel-1', {
+      title: 'Updated Badge Title',
+      imageUpload: {
+        fileName: 'badge.png',
+        mimeType: 'image/png',
+        contentBase64: 'data:image/png;base64,abc',
+      },
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/badges/channel/channel-1'),
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({
+          title: 'Updated Badge Title',
+          imageUpload: {
+            fileName: 'badge.png',
+            mimeType: 'image/png',
+            contentBase64: 'data:image/png;base64,abc',
+          },
+        }),
+      })
+    )
+  })
+
+  it('should send badge update payloads with only the current image', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockBadge),
+    } as Response)
+
+    await achievementManagementClient.updateChannelBadge('channel-1', {
+      image: 'https://example.com/badge.png',
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/badges/channel/channel-1'),
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({
+          image: 'https://example.com/badge.png',
+        }),
+      })
+    )
+  })
+
+  it('should send badge update payloads with only an image upload', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockBadge),
+    } as Response)
+
+    await achievementManagementClient.updateChannelBadge('channel-1', {
+      imageUpload: {
+        fileName: 'badge.png',
+        mimeType: 'image/png',
+        contentBase64: 'data:image/png;base64,abc',
+      },
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/badges/channel/channel-1'),
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({
+          imageUpload: {
+            fileName: 'badge.png',
+            mimeType: 'image/png',
+            contentBase64: 'data:image/png;base64,abc',
+          },
+        }),
+      })
+    )
+  })
+
+  it('should send badge update payloads with only a title', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockBadge),
+    } as Response)
+
+    await achievementManagementClient.updateChannelBadge('channel-1', {
+      title: 'Updated Badge Title',
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/badges/channel/channel-1'),
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({
+          title: 'Updated Badge Title',
         }),
       })
     )

@@ -3,6 +3,8 @@ import type {
   AchievementSuggestionPayload,
   AchievementSuggestionResponse,
   AchievementUpsertPayload,
+  Badge,
+  BadgeUpsertPayload,
   CreateAchievementPayload,
   UserAchievement,
 } from './achievementManagement.types'
@@ -68,6 +70,18 @@ export const achievementManagementClient = {
   },
   getUserChannelAchievements(userId: string, channelId: string) {
     return requestJson<UserAchievement[]>(`/achievements/user/${userId}/channel/${channelId}`)
+  },
+  getUserBadges(userId: string) {
+    return requestJson<Badge[]>(`/badges/user/${userId}`)
+  },
+  getChannelBadge(channelId: string) {
+    return requestJson<Badge>(`/badges/channel/${channelId}`)
+  },
+  updateChannelBadge(channelId: string, payload: BadgeUpsertPayload) {
+    return requestJson<Badge>(`/badges/channel/${channelId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
   },
   createAchievement(payload: CreateAchievementPayload) {
     return requestJson<Achievement>('/achievements', {

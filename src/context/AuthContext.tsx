@@ -5,7 +5,7 @@ import type { TwitchUser, AuthContextType } from '../types/twitch'
 import { addBotAsModerator } from '../features/chat/api/chatClient'
 import { AUTH_SERVICE_URL, TWITCH_CLIENT_ID, FRONT_URL, MOBILE_REDIRECT_URI } from '../config/environment'
 import { Capacitor } from '@capacitor/core'
-import { Browser } from '@capacitor/browser'
+import { openExternalUrl } from '../utils/browserRuntime'
 
 const REDIRECT_URI = FRONT_URL
 
@@ -41,11 +41,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     }
     const redirectUri = Capacitor.isNativePlatform() ? MOBILE_REDIRECT_URI : REDIRECT_URI
     const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&state=${state}`
-    if (Capacitor.isNativePlatform()) {
-      await Browser.open({ url: twitchUrl })
-    } else {
-      globalThis.location.href = twitchUrl
-    }
+    await openExternalUrl(twitchUrl)
   }, [])
 
   const logout = useCallback(() => {

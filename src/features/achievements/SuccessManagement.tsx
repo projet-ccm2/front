@@ -7,6 +7,7 @@ import { achievementManagementClient } from './api/achievementManagementClient'
 import type { Achievement } from './api/achievementManagement.types'
 import { useChannelAchievements } from './hooks/useChannelAchievements'
 import { AchievementThumbnail } from './components/AchievementThumbnail'
+import { ChannelBadgeManager } from '../badges/ChannelBadgeManager'
 import { ApiCallerEndpointInfo } from './components/ApiCallerEndpointInfo'
 import {
   Dialog,
@@ -203,6 +204,10 @@ export function SuccessManagement({
             {t('management.moderator.banner')}
           </div>
         )}
+
+        <div className="px-4 sm:px-8 pt-4">
+          <ChannelBadgeManager />
+        </div>
 
         <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">

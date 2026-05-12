@@ -1,8 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { App as CapApp } from '@capacitor/app'
-import { Browser } from '@capacitor/browser'
-import type { PluginListenerHandle } from '@capacitor/core'
 import { toast } from 'sonner'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LandingPage } from './features/landing/LandingPage'
@@ -29,6 +26,7 @@ import { isTwitchExtensionPanelPath } from './features/overlay/utils/twitchExten
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
 import { useLanguage } from './context/LanguageContext'
 import { Toaster } from './components/ui/sonner'
+import { addUrlOpenListener, closeExternalUrl, getLaunchUrl } from './utils/browserRuntime'
 
 type Screen =
   | 'landing'
@@ -51,7 +49,7 @@ export function AppContent() {
   const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
 
-  const handleOAuthHash = async (hash: string) => {
+  const handleOAuthHash = useCallback(async (hash: string) => {
     if (!hash.includes('access_token')) return
     const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash)
     const accessToken = params.get('access_token')
@@ -66,7 +64,7 @@ export function AppContent() {
       ? localStorage.getItem('twitch_auth_state')
       : sessionStorage.getItem('twitch_auth_state')
     if (!savedState || savedState !== state) {
-      console.error('OAuth state mismatch — aborting auth')
+      console.error('OAuth state mismatch - aborting auth')
       return
     }
     localStorage.removeItem('twitch_auth_state')
@@ -89,18 +87,30 @@ export function AppContent() {
       const message = error instanceof Error ? error.message : String(error)
       toast.error(`Auth backend KO: ${message}`)
     }
-  }
+  }, [completeAuth])
 
   // Web: parse hash on mount
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) {
-      handleOAuthHash(globalThis.location.hash)
+      const hash = globalThis.location.hash
+      if (!hash.includes('access_token')) {
+        return undefined
+      }
+
+      const timer = globalThis.setTimeout(() => {
+        void handleOAuthHash(hash)
+      }, 0)
+
+      return () => {
+        globalThis.clearTimeout(timer)
+      }
     }
-  }, [completeAuth])
+    return undefined
+  }, [handleOAuthHash])
 
   // Native: listen for deep link com.streamquest.app://callback?access_token=...
   // + handle cold start (app killed during OAuth flow)
-  const listenerRef = useRef<PluginListenerHandle | null>(null)
+  const listenerRef = useRef<{ remove: () => void } | null>(null)
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
 
@@ -109,27 +119,29 @@ export function AppContent() {
       if (queryIndex !== -1) {
         await handleOAuthHash(url.substring(queryIndex + 1))
       }
-      try { await Browser.close() } catch { /* already closed */ }
+      try {
+        await closeExternalUrl()
+      } catch {
+        /* already closed */
+      }
     }
 
-    CapApp.addListener('appUrlOpen', async ({ url }: { url: string }) => {
+    void addUrlOpenListener(async (url: string) => {
       await processUrl(url)
-    }).then((handle: PluginListenerHandle) => {
+    }).then((handle: { remove: () => void }) => {
       listenerRef.current = handle
     })
 
-    CapApp.getLaunchUrl().then((result) => {
+    getLaunchUrl().then((result) => {
       if (result?.url) {
         void processUrl(result.url)
       }
-    }).catch((error) => {
-      console.error('getLaunchUrl failed', error)
     })
 
     return () => {
       listenerRef.current?.remove()
     }
-  }, [completeAuth])
+  }, [handleOAuthHash])
 
   const handleNavigate = (page: string) => {
     if (page !== 'creator') {

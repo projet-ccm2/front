@@ -16,42 +16,57 @@ export function useTwitchChannelRewards(channelId: string | null): {
     if (!channelId || !isOwnerAchievementChannelId(channelId)) return
 
     let isMounted = true
-    setIsLoading(true)
-    setError(false)
 
-    const stored = localStorage.getItem('twitch_tokens')
-    if (!stored || !TWITCH_CLIENT_ID) {
-      setIsLoading(false)
-      setError(true)
-      return
+    const loadRewards = async () => {
+      setIsLoading(true)
+      setError(false)
+
+      const stored = localStorage.getItem('twitch_tokens')
+      if (!stored || !TWITCH_CLIENT_ID) {
+        if (isMounted) {
+          setIsLoading(false)
+          setError(true)
+        }
+        return
+      }
+
+      let accessToken: string
+      try {
+        accessToken = (JSON.parse(stored) as { accessToken: string }).accessToken
+      } catch {
+        if (isMounted) {
+          setIsLoading(false)
+          setError(true)
+        }
+        return
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${channelId}`,
+          { headers: { Authorization: `Bearer ${accessToken}`, 'Client-Id': TWITCH_CLIENT_ID } }
+        )
+
+        if (!response.ok) {
+          throw new Error()
+        }
+
+        const json = (await response.json()) as { data: TwitchCustomReward[] }
+        if (isMounted) {
+          setRewards(json.data)
+        }
+      } catch {
+        if (isMounted) {
+          setError(true)
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
     }
 
-    let accessToken: string
-    try {
-      accessToken = (JSON.parse(stored) as { accessToken: string }).accessToken
-    } catch {
-      setIsLoading(false)
-      setError(true)
-      return
-    }
-
-    fetch(
-      `https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${channelId}`,
-      { headers: { Authorization: `Bearer ${accessToken}`, 'Client-Id': TWITCH_CLIENT_ID } }
-    )
-      .then(res => {
-        if (!res.ok) throw new Error()
-        return res.json() as Promise<{ data: TwitchCustomReward[] }>
-      })
-      .then(json => {
-        if (isMounted) setRewards(json.data)
-      })
-      .catch(() => {
-        if (isMounted) setError(true)
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false)
-      })
+    void loadRewards()
 
     return () => {
       isMounted = false
