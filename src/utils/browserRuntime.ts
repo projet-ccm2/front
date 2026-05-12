@@ -1,9 +1,5 @@
 export async function openExternalUrl(url: string) {
-  const openedWindow = globalThis.open(url, '_blank', 'noopener,noreferrer')
-
-  if (!openedWindow) {
-    globalThis.location.href = url
-  }
+  globalThis.location.href = url
 }
 
 export async function closeExternalUrl() {

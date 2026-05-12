@@ -146,11 +146,9 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
 
     if (selectedImageUpload) {
       payload.imageUpload = selectedImageUpload
-    } else if (currentImage !== null) {
-      payload.image = currentImage
     }
 
-    if (!payload.title && !payload.image && !payload.imageUpload) {
+    if (!payload.title && !payload.imageUpload) {
       setSaveError(t('badge.channel.error.validation'))
       return
     }
