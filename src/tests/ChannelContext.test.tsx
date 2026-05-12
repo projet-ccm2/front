@@ -1,4 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
+
+vi.mock('../config/environment', () => ({
+  TWITCH_CLIENT_ID: 'test-client-id',
+  AUTH_SERVICE_URL: 'http://localhost:3000',
+  ACHIEVEMENT_MANAGEMENT_SERVICE_URL: 'http://localhost:3001',
+  API_SERVICE_URL: 'http://localhost:3000',
+  FRONT_URL: '',
+  MOBILE_REDIRECT_URI: '/mobile-callback.html',
+}))
+
 import { render, screen, act, waitFor } from './utils/test-utils'
 import { render as rawRender } from '@testing-library/react'
 import { ChannelProvider, useChannel } from '../context/ChannelContext'
