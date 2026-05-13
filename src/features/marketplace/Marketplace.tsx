@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
-import { Search, Download, Filter, Menu, X, Plus, Eye, Target } from 'lucide-react'
+import { Search, Filter, Menu, X, Plus, Target } from 'lucide-react'
 import { usePublicAchievements } from './hooks/usePublicAchievements'
 import { useLanguage } from '../../context/LanguageContext'
 import type { Achievement } from '../achievements/api/achievementManagement.types'
@@ -11,9 +11,18 @@ interface MarketplaceProps {
   readonly onOpenSidebar: () => void
 }
 
+const NORMALIZED_TO_LABEL: Record<string, string> = {
+  countMessage: 'message',
+  contentMessage: 'message_content',
+  countCostChannelPoint: 'channel_point_cost',
+  countRedeemChannelPoint: 'redeem_channel_point',
+  apicaller: 'api_caller',
+}
+
 const getCategoryLabel = (typeLabel: string, t: (key: string) => string) => {
-  const translated = t(`marketplace.category.${typeLabel}`)
-  if (translated !== `marketplace.category.${typeLabel}`) return translated
+  const key = NORMALIZED_TO_LABEL[typeLabel] ?? typeLabel
+  const translated = t(`marketplace.category.${key}`)
+  if (translated !== `marketplace.category.${key}`) return translated
   return typeLabel
     .split('_')
     .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
@@ -236,14 +245,6 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                       </p>
 
                       <div className="flex flex-wrap items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1 text-gray-400 dark:text-gray-600">
-                          <Download className="w-4 h-4" />
-                          <span>{achievement.downloads}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-gray-400 dark:text-gray-600">
-                          <Eye className="w-4 h-4" />
-                          <span>{achievement.visits}</span>
-                        </div>
                         <div className="flex items-center gap-1 text-[#ffd700]">
                           <Target className="w-4 h-4" />
                           <span>{achievement.goal}</span>

@@ -389,7 +389,7 @@ export function SuccessManagement({
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-dialog-title"
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#2d2d31] dark:border-gray-200 bg-[#18181b] dark:bg-white p-6 shadow-2xl"
+            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[#2d2d31] dark:border-gray-200 bg-[#18181b] dark:bg-white p-5 shadow-2xl"
           >
             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#ff4444]/15">
               <Trash2 className="h-6 w-6 text-[#ff4444]" />
@@ -412,7 +412,7 @@ export function SuccessManagement({
               </button>
               <button
                 onClick={() => void confirmDelete()}
-                className="px-4 py-2 rounded-lg bg-[#ff4444] hover:bg-[#cc3333] text-sm font-medium text-white transition-colors"
+                className="px-4 py-2 rounded-lg border border-[#ff4444] bg-[#ff4444]/15 hover:bg-[#ff4444] text-sm font-medium text-[#ff4444] hover:text-white transition-colors"
               >
                 {t('management.delete.confirm')}
               </button>

@@ -161,9 +161,8 @@ describe('Marketplace', () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     await screen.findByText('Speed Runner')
-    expect(screen.getByText('234')).toBeInTheDocument()
-    expect(screen.getByText('980')).toBeInTheDocument()
     expect(screen.getByText('1000 XP')).toBeInTheDocument()
+    expect(screen.getByText('2')).toBeInTheDocument()
   })
 
   it('should filter achievements with search', async () => {
