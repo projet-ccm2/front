@@ -11,13 +11,14 @@ interface MarketplaceProps {
   readonly onOpenSidebar: () => void
 }
 
-type SortOption = 'mostDownloaded' | 'mostVisited' | 'highestReward' | 'newestAvailable'
-
-const formatTriggerLabel = (label: string) =>
-  label
+const getCategoryLabel = (typeLabel: string, t: (key: string) => string) => {
+  const translated = t(`marketplace.category.${typeLabel}`)
+  if (translated !== `marketplace.category.${typeLabel}`) return translated
+  return typeLabel
     .split('_')
     .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(' ')
+}
 
 const getVisibilityBadgeClassName = (isSecret: boolean) => {
   if (isSecret) {
@@ -33,13 +34,11 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showSecretOnly, setShowSecretOnly] = useState(false)
-  const [showActiveOnly, setShowActiveOnly] = useState(false)
-  const [sortBy, setSortBy] = useState<SortOption>('mostDownloaded')
   const { achievements, isLoading, errorMessage } = usePublicAchievements()
 
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(
-      new Set(achievements.map(achievement => formatTriggerLabel(achievement.type.label)))
+      new Set(achievements.map(achievement => achievement.type.label))
     )
 
     return ['all', ...uniqueCategories]
@@ -51,7 +50,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
     return [...achievements]
       .filter(achievement => {
         if (selectedCategory !== 'all') {
-          return formatTriggerLabel(achievement.type.label) === selectedCategory
+          return achievement.type.label === selectedCategory
         }
 
         return true
@@ -67,23 +66,8 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
           .includes(normalizedSearch)
       })
       .filter(achievement => (showSecretOnly ? achievement.secret : true))
-      .filter(achievement => (showActiveOnly ? achievement.active : true))
-      .sort((left, right) => {
-        switch (sortBy) {
-          case 'mostVisited':
-            return right.visits - left.visits
-          case 'highestReward':
-            return right.reward - left.reward
-          case 'newestAvailable': {
-            if (right.active === left.active) return 0
-            return right.active ? -1 : 1
-          }
-          case 'mostDownloaded':
-          default:
-            return right.downloads - left.downloads
-        }
-      })
-  }, [achievements, search, selectedCategory, showSecretOnly, showActiveOnly, sortBy])
+      .sort((left, right) => right.downloads - left.downloads)
+  }, [achievements, search, selectedCategory, showSecretOnly])
 
   return (
     <div className="flex flex-col">
@@ -166,7 +150,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                 >
                   {category === 'all'
                     ? t('marketplace.category.all')
-                    : formatTriggerLabel(category)}
+                    : getCategoryLabel(category, t)}
                 </button>
               ))}
             </div>
@@ -174,17 +158,6 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
             <div className="mt-8">
               <h3 className="text-white dark:text-gray-900 mb-4">{t('marketplace.visibility')}</h3>
               <div className="space-y-2">
-                <label className="flex items-center gap-3 cursor-pointer text-sm">
-                  <input
-                    type="checkbox"
-                    checked={showActiveOnly}
-                    onChange={event => setShowActiveOnly(event.target.checked)}
-                    className="w-4 h-4 rounded border-[#4d4d51] dark:border-gray-300 bg-[#2d2d31] dark:bg-gray-100 text-[#9146FF] focus:ring-[#9146FF]"
-                  />
-                  <span className="text-gray-400 dark:text-gray-600">
-                    {t('marketplace.visibility.activeOnly')}
-                  </span>
-                </label>
                 <label className="flex items-center gap-3 cursor-pointer text-sm">
                   <input
                     type="checkbox"
@@ -197,26 +170,6 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                   </span>
                 </label>
               </div>
-            </div>
-
-            <div className="mt-8">
-              <h3 className="text-white dark:text-gray-900 mb-4">{t('marketplace.sortBy')}</h3>
-              <select
-                value={sortBy}
-                onChange={event => setSortBy(event.target.value as SortOption)}
-                className="w-full px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none text-sm"
-              >
-                {[
-                  { value: 'mostDownloaded', label: t('marketplace.sort.downloaded') },
-                  { value: 'mostVisited', label: t('marketplace.sort.visited') },
-                  { value: 'highestReward', label: t('marketplace.sort.reward') },
-                  { value: 'newestAvailable', label: t('marketplace.sort.newest') },
-                ].map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
@@ -302,7 +255,7 @@ export function Marketplace({ onOpenSidebar, onUseTemplate }: MarketplaceProps) 
                     <div className="p-4 bg-[#1a1a1d] dark:bg-gray-50">
                       <div className="flex items-center justify-between mb-3 text-xs">
                         <span className="text-gray-400 dark:text-gray-600">
-                          {formatTriggerLabel(achievement.type.label)}
+                          {getCategoryLabel(achievement.type.label, t)}
                         </span>
                         <span
                           className={

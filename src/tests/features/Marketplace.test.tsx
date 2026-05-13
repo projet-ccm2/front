@@ -109,8 +109,8 @@ describe('Marketplace', () => {
 
     await screen.findByText('Speed Runner')
     expect(screen.getByText('Tous')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Message' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Redeem Channel Point' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Messages chat' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Récompense de points' })).toBeInTheDocument()
   })
 
   it('should toggle filters on mobile', async () => {
@@ -126,7 +126,7 @@ describe('Marketplace', () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     await screen.findByText('Speed Runner')
-    fireEvent.click(screen.getByRole('button', { name: 'Redeem Channel Point' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Récompense de points' }))
 
     await waitFor(() => {
       expect(screen.queryByText('Speed Runner')).not.toBeInTheDocument()
@@ -134,34 +134,16 @@ describe('Marketplace', () => {
     expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
   })
 
-  it('should handle detailed interactions', async () => {
+  it('should filter by secret achievements', async () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     await screen.findByText('Speed Runner')
-    fireEvent.click(screen.getByTestId('mobile-filter-btn'))
-
-    fireEvent.change(screen.getByRole('combobox'), {
-      target: { value: 'highestReward' },
-    })
-
-    screen.getAllByText('Utiliser comme modèle').forEach(button => fireEvent.click(button))
-
     fireEvent.click(screen.getByLabelText('Secrets uniquement'))
-    expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
-  })
 
-  it('should sort by newest availability and active state', async () => {
-    render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
-
-    await screen.findByText('Speed Runner')
-    fireEvent.click(screen.getByTestId('mobile-filter-btn'))
-    fireEvent.change(screen.getByRole('combobox'), {
-      target: { value: 'newestAvailable' },
+    await waitFor(() => {
+      expect(screen.queryByText('Speed Runner')).not.toBeInTheDocument()
     })
-    fireEvent.click(screen.getByLabelText('Actifs uniquement'))
-
-    expect(screen.getByText('Speed Runner')).toBeInTheDocument()
-    expect(screen.queryByText('Hype Train Conductor')).not.toBeInTheDocument()
+    expect(screen.getByText('Hype Train Conductor')).toBeInTheDocument()
   })
 
   it('should toggle mobile filters sidebar', async () => {
@@ -242,8 +224,9 @@ describe('Marketplace', () => {
     render(<Marketplace onOpenSidebar={mockOnOpenSidebar} onUseTemplate={mockOnUseTemplate} />)
 
     const templateButtons = await screen.findAllByText('Utiliser comme modèle')
+    // sorted by mostDownloaded: Hype Train Conductor (567) before Speed Runner (234)
     fireEvent.click(templateButtons[0])
 
-    expect(mockOnUseTemplate).toHaveBeenCalledWith(mockAchievements[0])
+    expect(mockOnUseTemplate).toHaveBeenCalledWith(mockAchievements[1])
   })
 })
