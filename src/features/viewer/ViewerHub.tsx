@@ -126,10 +126,10 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
               iconBg="bg-[#60a5fa]/20"
             />
             <StatCard
-              icon={<Medal className="h-5 w-5 text-gray-400" />}
+              icon={<Medal className="h-5 w-5 text-gray-400 dark:text-gray-500" />}
               label={t('viewerHub.metrics.total')}
               value={achievements.length}
-              iconBg="bg-[#2d2d31]"
+              iconBg="bg-[#2d2d31] dark:bg-gray-100"
             />
           </div>
         </div>
@@ -707,7 +707,7 @@ function FilterTabs({
             'flex flex-1 items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
             filter === tab.key
               ? 'bg-[#9146FF] text-white'
-              : 'text-gray-400 hover:text-white dark:hover:text-gray-900',
+              : 'text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-900',
           ].join(' ')}
         >
           {tab.label} — {tab.count}
@@ -775,7 +775,7 @@ function AchievementRow({
     ? 'border-[#00f593]/30'
     : isInProgress
       ? 'border-[#9146FF]/30'
-      : 'border-[#2d2d31]'
+      : 'border-[#2d2d31] dark:border-gray-200'
 
   const barColor = isCompleted ? 'bg-[#00f593]' : 'bg-[#9146FF]'
 

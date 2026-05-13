@@ -355,7 +355,7 @@ export function SuccessManagement({
                           disabled={pendingIds.includes(achievement.id)}
                           onClick={() => void handleToggleActive(achievement)}
                           className={`w-12 h-6 rounded-full transition-colors relative ${
-                            achievement.active ? 'bg-[#9146FF]' : 'bg-[#4d4d51]'
+                            achievement.active ? 'bg-[#9146FF]' : 'bg-[#4d4d51] dark:bg-gray-300'
                           } ${pendingIds.includes(achievement.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                           <div
@@ -389,34 +389,36 @@ export function SuccessManagement({
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-dialog-title"
-            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-3rem)] max-w-xs -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#2d2d31] dark:border-gray-200 bg-[#18181b] dark:bg-white shadow-2xl overflow-hidden"
+            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#2d2d31] dark:border-gray-200 bg-[#18181b] dark:bg-white shadow-2xl overflow-hidden"
           >
             {/* Header */}
-            <div className="flex flex-col items-center gap-3 px-6 pt-8 pb-5 text-center">
+            <div className="flex flex-col items-center gap-4 px-8 pt-10 pb-7 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#ff4444]/10 ring-1 ring-[#ff4444]/30">
                 <Trash2 className="h-7 w-7 text-[#ff4444]" />
               </div>
-              <h2
-                id="delete-dialog-title"
-                className="text-base font-semibold text-white dark:text-gray-900"
-              >
-                {t('management.delete.title')}
-              </h2>
-              <p className="text-sm leading-relaxed text-gray-400 dark:text-gray-500">
-                {t('management.delete.description', { title: achievementToDelete.title })}
-              </p>
+              <div className="flex flex-col gap-2">
+                <h2
+                  id="delete-dialog-title"
+                  className="text-base font-semibold text-white dark:text-gray-900"
+                >
+                  {t('management.delete.title')}
+                </h2>
+                <p className="text-sm leading-relaxed text-gray-400 dark:text-gray-500 px-2">
+                  {t('management.delete.description', { title: achievementToDelete.title })}
+                </p>
+              </div>
             </div>
             {/* Footer */}
             <div className="flex border-t border-[#2d2d31] dark:border-gray-200">
               <button
                 onClick={() => setAchievementToDelete(null)}
-                className="flex-1 py-3.5 text-sm text-gray-400 dark:text-gray-600 hover:text-white dark:hover:text-gray-900 hover:bg-[#2d2d31] dark:hover:bg-gray-100 transition-colors border-r border-[#2d2d31] dark:border-gray-200"
+                className="flex-1 px-6 py-4 text-sm text-gray-400 dark:text-gray-600 hover:text-white dark:hover:text-gray-900 hover:bg-[#2d2d31] dark:hover:bg-gray-100 transition-colors border-r border-[#2d2d31] dark:border-gray-200"
               >
                 {t('management.delete.cancel')}
               </button>
               <button
                 onClick={() => void confirmDelete()}
-                className="flex-1 py-3.5 text-sm font-semibold text-[#ff4444] hover:bg-[#ff4444]/10 transition-colors"
+                className="flex-1 px-6 py-4 text-sm font-semibold text-[#ff4444] hover:bg-[#ff4444]/10 transition-colors"
               >
                 {t('management.delete.confirm')}
               </button>
