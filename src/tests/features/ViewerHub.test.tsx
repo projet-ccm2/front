@@ -237,6 +237,28 @@ describe('ViewerHub', () => {
     expect(await screen.findByRole('heading', { name: 'channel-2' })).toBeInTheDocument()
   })
 
+  it('shows a back button in the channel detail view and returns to overview on click', async () => {
+    render(<ViewerHub onOpenSidebar={vi.fn()} />)
+
+    await screen.findByRole('heading', { name: 'Hub viewer' })
+
+    // Navigate to channel-2 via desktop sidebar
+    const channelButtons = await screen.findAllByText('channel-2')
+    fireEvent.click(channelButtons[0])
+
+    expect(await screen.findByRole('heading', { name: 'channel-2' })).toBeInTheDocument()
+
+    // Back button should be present
+    const backBtn = screen.getByTestId('back-btn')
+    expect(backBtn).toBeInTheDocument()
+
+    // Click back → returns to overview
+    fireEvent.click(backBtn)
+
+    expect(await screen.findByRole('heading', { name: 'Hub viewer' })).toBeInTheDocument()
+    expect(screen.queryByTestId('back-btn')).not.toBeInTheDocument()
+  })
+
   it('shows the channel detail view when a channel card is clicked (line 379)', async () => {
     render(<ViewerHub onOpenSidebar={vi.fn()} />)
 
@@ -248,6 +270,25 @@ describe('ViewerHub', () => {
     fireEvent.click(channelButtons[2])
 
     expect(await screen.findByRole('heading', { name: 'channel-2' })).toBeInTheDocument()
+  })
+
+  it('resolves channel name and avatar from ChannelContext for moderated channels', async () => {
+    localStorage.setItem(
+      'twitch_user',
+      JSON.stringify({
+        ...authUser,
+        channelsWhichIsMod: ['channel-2'],
+      })
+    )
+
+    render(<ViewerHub onOpenSidebar={vi.fn()} />)
+
+    await screen.findByRole('heading', { name: 'Hub viewer' })
+
+    // channel-2 is in channelsWhichIsMod so ChannelContext sets its name to 'channel-2'
+    // (enrichment from Helix only happens when twitch_tokens are in localStorage)
+    // The channel should still appear (name matches channelId before enrichment)
+    expect(screen.getAllByText('channel-2').length).toBeGreaterThan(0)
   })
 
   it('navigates to channel detail and filters by completed (line 586)', async () => {

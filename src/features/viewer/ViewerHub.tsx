@@ -1,7 +1,8 @@
-import { CheckCircle2, ChevronRight, Lock, Medal, Menu, Star, Trophy, Zap } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, ChevronRight, Lock, Medal, Menu, Star, Trophy, Zap } from 'lucide-react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { useViewerHub } from './hooks/useViewerHub'
 import { buildViewerChannelSummaries } from './utils/viewerHub'
@@ -17,6 +18,7 @@ type AchievementFilter = 'all' | 'progress' | 'completed'
 export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const { user } = useAuth()
   const { t } = useLanguage()
+  const { availableChannels } = useChannel()
   const { achievements, isLoading, errorMessage } = useViewerHub()
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [filter, setFilter] = useState<AchievementFilter>('all')
@@ -49,10 +51,24 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
     })
   })()
 
-  const getChannelName = (channelId: string) => getChannelDisplayName(channelId, user?.channel)
+  const getChannelName = (channelId: string): string => {
+    const direct = availableChannels.find(c => c.id === channelId)
+    if (direct) return direct.name
+    const asMod = availableChannels.find(c => c.id === `mod-${channelId}`)
+    if (asMod) return asMod.name
+    return getChannelDisplayName(channelId, user?.channel)
+  }
 
-  const getChannelAvatar = (channelId: string): string | undefined =>
-    channelId === user?.channel.id ? user.channel.profileImageUrl : undefined
+  const getChannelAvatar = (channelId: string): string | undefined => {
+    const candidates = [
+      availableChannels.find(c => c.id === channelId),
+      availableChannels.find(c => c.id === `mod-${channelId}`),
+    ]
+    for (const channel of candidates) {
+      if (channel && isRenderableImageSource(channel.avatar)) return channel.avatar
+    }
+    return undefined
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0e0e10] dark:bg-gray-50">
@@ -307,6 +323,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                   inProgressCount={selectedSummary.inProgressAchievements}
                   getChannelName={getChannelName}
                   getChannelAvatar={getChannelAvatar}
+                  onBack={() => setSelectedChannelId(null)}
                   t={t}
                 />
               )}
@@ -346,7 +363,7 @@ function OverviewPanel({
   t: (key: string, params?: Record<string, string | number>) => string
 }>) {
   const tabs: { key: AchievementFilter; label: string; count: number }[] = [
-    { key: 'all', label: 'Tous', count: totalCount },
+    { key: 'all', label: t('viewerHub.all'), count: totalCount },
     { key: 'progress', label: t('viewerHub.channelProgress'), count: inProgressCount },
     { key: 'completed', label: t('viewerHub.channelUnlocked'), count: completedCount },
   ]
@@ -398,12 +415,12 @@ function OverviewPanel({
                       {name}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {summary.totalAchievements} succès au total
+                      {t('viewerHub.channelTotal', { n: summary.totalAchievements })}
                     </div>
                   </div>
                   <div className="flex-shrink-0 text-right">
                     <div className="text-lg font-bold text-white dark:text-gray-900">{pct}%</div>
-                    <div className="text-[11px] text-gray-500">complété</div>
+                    <div className="text-[11px] text-gray-500">{t('viewerHub.channelCompleted')}</div>
                   </div>
                 </div>
                 <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
@@ -468,6 +485,7 @@ function ChannelDetailView({
   inProgressCount,
   getChannelName,
   getChannelAvatar,
+  onBack,
   t,
 }: Readonly<{
   summary: ViewerChannelSummary
@@ -477,6 +495,7 @@ function ChannelDetailView({
   inProgressCount: number
   getChannelName: (id: string) => string
   getChannelAvatar: (id: string) => string | undefined
+  onBack: () => void
   t: (key: string, params?: Record<string, string | number>) => string
 }>) {
   const channelName = getChannelName(summary.channelId)
@@ -486,7 +505,7 @@ function ChannelDetailView({
       : 0
 
   const tabs: { key: AchievementFilter; label: string; count: number }[] = [
-    { key: 'all', label: 'Tous', count: summary.totalAchievements },
+    { key: 'all', label: t('viewerHub.all'), count: summary.totalAchievements },
     { key: 'progress', label: t('viewerHub.channelProgress'), count: inProgressCount },
     {
       key: 'completed',
@@ -497,6 +516,17 @@ function ChannelDetailView({
 
   return (
     <div className="space-y-4">
+      {/* Back button */}
+      <button
+        type="button"
+        data-testid="back-btn"
+        onClick={onBack}
+        className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white dark:text-gray-600 dark:hover:text-gray-900"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {t('viewerHub.back')}
+      </button>
+
       {/* Channel header card */}
       <div className="overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] dark:border-gray-200 dark:bg-white">
         <div className="p-6">
@@ -522,7 +552,7 @@ function ChannelDetailView({
             </div>
             <div className="flex-shrink-0 text-right">
               <div className="text-3xl font-bold text-[#9146FF]">{pct}%</div>
-              <div className="text-xs text-gray-500">complété</div>
+              <div className="text-xs text-gray-500">{t('viewerHub.channelCompleted')}</div>
             </div>
           </div>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
@@ -599,9 +629,10 @@ function FilterTabs({
 }
 
 function EmptyState() {
+  const { t } = useLanguage()
   return (
     <div className="rounded-xl border border-dashed border-[#2d2d31] p-10 text-center text-sm text-gray-500 dark:border-gray-300 dark:text-gray-400">
-      Aucun succès dans cette catégorie.
+      {t('viewerHub.emptyFilter')}
     </div>
   )
 }
@@ -720,7 +751,7 @@ function ChannelAvatar({
   const sizeClass = {
     sm: 'h-5 w-5 text-[8px]',
     md: 'h-8 w-8 text-xs',
-    lg: 'h-6 w-6 text-[9px]',
+    lg: 'h-10 w-10 text-sm',
   }[size]
 
   if (profileImageUrl) {

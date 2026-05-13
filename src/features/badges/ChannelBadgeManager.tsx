@@ -285,8 +285,6 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
               </button>
             </div>
 
-            <p className="text-sm text-gray-400 dark:text-gray-600">{t('badge.channel.form.note')}</p>
-
             <input
               ref={imageFileInputRef}
               data-testid="channel-badge-image-input"
