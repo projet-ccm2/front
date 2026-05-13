@@ -68,6 +68,14 @@ describe('ViewerHub', () => {
           })
         }
 
+        if (url.includes('/badges/user/user-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve([{ id: 'badge-1', title: 'Top Fan', image: 'https://example.com/badge.png' }]),
+          })
+        }
+
         // Twitch Helix users endpoint — return empty by default (no twitch_tokens set)
         if (url.includes('api.twitch.tv/helix/users')) {
           return Promise.resolve({
@@ -505,5 +513,66 @@ describe('ViewerHub', () => {
     expect(await screen.findByText('First Steps')).toBeInTheDocument()
     expect(screen.getByText('Chat Active')).toBeInTheDocument()
     expect(screen.getByText('Not Started')).toBeInTheDocument()
+  })
+
+  it('shows the badges section with earned badges in the overview', async () => {
+    render(<ViewerHub onOpenSidebar={vi.fn()} />)
+
+    await screen.findByRole('heading', { name: 'Hub viewer' })
+
+    // Section heading and badge title should appear
+    expect(await screen.findByText('Mes badges')).toBeInTheDocument()
+    expect(await screen.findByText('Top Fan')).toBeInTheDocument()
+    expect(screen.getByAltText('Top Fan')).toHaveAttribute('src', 'https://example.com/badge.png')
+  })
+
+  it('shows the badges empty state when no badges are returned', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/achievements/user/user-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockViewerAchievements),
+          })
+        }
+
+        if (url.includes('/badges/user/user-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve([]),
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ data: [] }),
+        })
+      })
+    )
+
+    render(<ViewerHub onOpenSidebar={vi.fn()} />)
+
+    await screen.findByRole('heading', { name: 'Hub viewer' })
+
+    expect(await screen.findByText(/Aucun badge n/i)).toBeInTheDocument()
+  })
+
+  it('hides the badges section when a channel detail is selected', async () => {
+    render(<ViewerHub onOpenSidebar={vi.fn()} />)
+
+    await screen.findByRole('heading', { name: 'Hub viewer' })
+
+    // Navigate to channel detail via desktop sidebar
+    const channelButtons = await screen.findAllByText('MyChannel')
+    fireEvent.click(channelButtons[0])
+
+    expect(await screen.findByRole('heading', { name: 'MyChannel' })).toBeInTheDocument()
+    expect(screen.queryByTestId('badges-section')).not.toBeInTheDocument()
   })
 })

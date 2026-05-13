@@ -4,10 +4,13 @@ import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
+import { useUserBadges } from '../badges/hooks/useUserBadges'
+import { BadgeThumbnail } from '../badges/components/BadgeThumbnail'
 import { useViewerHub } from './hooks/useViewerHub'
 import { buildViewerChannelSummaries } from './utils/viewerHub'
 import type { ViewerChannelSummary } from './utils/viewerHub'
 import type { UserAchievement } from '../achievements/api/achievementManagement.types'
+import type { Badge } from '../achievements/api/achievementManagement.types'
 
 interface ViewerHubProps {
   onOpenSidebar: () => void
@@ -20,6 +23,11 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const { t } = useLanguage()
   const { availableChannels } = useChannel()
   const { achievements, channelInfoById, isLoading, errorMessage } = useViewerHub()
+  const {
+    badges,
+    isLoading: areBadgesLoading,
+    errorMessage: badgesErrorMessage,
+  } = useUserBadges(user?.userId ?? null)
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [filter, setFilter] = useState<AchievementFilter>('all')
 
@@ -316,6 +324,9 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
                   getChannelName={getChannelName}
                   getChannelAvatar={getChannelAvatar}
                   onSelectChannel={setSelectedChannelId}
+                  badges={badges}
+                  areBadgesLoading={areBadgesLoading}
+                  badgesErrorMessage={badgesErrorMessage}
                   t={t}
                 />
               ) : (
@@ -352,6 +363,9 @@ function OverviewPanel({
   getChannelName,
   getChannelAvatar,
   onSelectChannel,
+  badges,
+  areBadgesLoading,
+  badgesErrorMessage,
   t,
 }: Readonly<{
   summaries: ViewerChannelSummary[]
@@ -364,6 +378,9 @@ function OverviewPanel({
   getChannelName: (id: string) => string
   getChannelAvatar: (id: string) => string | undefined
   onSelectChannel: (id: string) => void
+  badges: Badge[]
+  areBadgesLoading: boolean
+  badgesErrorMessage: string | null
   t: (key: string, params?: Record<string, string | number>) => string
 }>) {
   const tabs: { key: AchievementFilter; label: string; count: number }[] = [
@@ -374,6 +391,14 @@ function OverviewPanel({
 
   return (
     <div className="space-y-4">
+      {/* Badges */}
+      <BadgesSection
+        badges={badges}
+        isLoading={areBadgesLoading}
+        errorMessage={badgesErrorMessage}
+        t={t}
+      />
+
       {/* Channel cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {summaries.map((summary, index) => {
@@ -601,6 +626,66 @@ function ChannelDetailView({
 }
 
 // ── Shared sub-components ────────────────────────────────────
+
+// ── Badges section ──────────────────────────────────────────
+
+function BadgesSection({
+  badges,
+  isLoading,
+  errorMessage,
+  t,
+}: Readonly<{
+  badges: Badge[]
+  isLoading: boolean
+  errorMessage: string | null
+  t: (key: string, params?: Record<string, string | number>) => string
+}>) {
+  return (
+    <div
+      data-testid="badges-section"
+      className="overflow-hidden rounded-xl border border-[#2d2d31] bg-[#18181b] dark:border-gray-200 dark:bg-white"
+    >
+      <div className="border-b border-[#2d2d31] px-4 py-3 dark:border-gray-200">
+        <span className="text-sm font-semibold text-white dark:text-gray-900">
+          {t('viewerHub.badges.title')}
+        </span>
+      </div>
+
+      <div className="p-4">
+        {isLoading && (
+          <p className="text-sm text-gray-400 dark:text-gray-600">
+            {t('profile.badges.loading')}
+          </p>
+        )}
+
+        {!isLoading && errorMessage && (
+          <div className="rounded-lg border border-[#ff4444]/40 bg-[#ff4444]/10 p-3 text-sm text-[#ff8080] dark:text-[#b42318]">
+            {errorMessage}
+          </div>
+        )}
+
+        {!isLoading && !errorMessage && badges.length === 0 && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('profile.badges.empty')}
+          </p>
+        )}
+
+        {!isLoading && !errorMessage && badges.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {badges.map(badge => (
+              <div key={badge.id} className="flex flex-col items-center gap-2" title={badge.title}>
+                <BadgeThumbnail title={badge.title} image={badge.image} className="h-14 w-14" />
+                <span className="max-w-full truncate text-center text-[11px] text-gray-400 dark:text-gray-600">
+                  {badge.title}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function FilterTabs({
   tabs,
