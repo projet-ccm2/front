@@ -352,56 +352,51 @@ export function AchievementCreator({
 
         <div className="max-w-4xl mx-auto p-4 sm:p-8">
           <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl overflow-hidden">
-            <div className="border-b border-[#2d2d31] dark:border-gray-200 bg-gradient-to-br from-[#9146FF]/10 via-[#9146FF]/5 to-transparent p-5 sm:p-7">
-              {/* Header */}
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#9146FF]">
-                  <Sparkles className="h-4 w-4 text-white" />
+            <div className="border-b border-[#2d2d31] dark:border-gray-200 bg-gradient-to-r from-[#9146FF]/20 to-[#772ce8]/20 p-4 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-[#9146FF] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-white dark:text-gray-900">
-                    {t('creator.ai.title')}
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                  <p className="text-white dark:text-gray-900">{t('creator.ai.title')}</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-600">
                     {t('creator.ai.description')}
                   </p>
                 </div>
               </div>
 
-              {/* Prompt area */}
-              <div className="rounded-xl border border-[#9146FF]/25 bg-[#0e0e10] dark:bg-gray-50 dark:border-[#9146FF]/20 focus-within:border-[#9146FF]/60 transition-colors">
-                <label htmlFor="ai-prompt" className="sr-only">
-                  AI Prompt
-                </label>
-                <textarea
-                  id="ai-prompt"
-                  value={aiPrompt}
-                  onChange={event => setAiPrompt(event.target.value)}
-                  onKeyDown={event => {
-                    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-                      event.preventDefault()
-                      void handleAIGenerate()
-                    }
-                  }}
-                  placeholder={t('creator.ai.placeholder')}
-                  rows={4}
-                  className="w-full resize-none rounded-t-xl bg-transparent px-4 pt-4 pb-2 text-sm text-white dark:text-gray-900 focus:outline-none placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                />
-                <div className="flex items-center justify-between px-4 pb-3 pt-1">
-                  <span className="text-[11px] text-gray-600 dark:text-gray-400">
-                    Ctrl + Enter pour générer
-                  </span>
-                  <button
-                    onClick={() => void handleAIGenerate()}
-                    disabled={isGenerating}
-                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium bg-[#9146FF] hover:bg-[#772ce8] text-white transition-colors ${
-                      isGenerating ? 'opacity-60 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {isGenerating ? t('creator.ai.generating') : t('creator.ai.generate')}
-                  </button>
-                </div>
+              <label htmlFor="ai-prompt" className="sr-only">
+                AI Prompt
+              </label>
+              <textarea
+                id="ai-prompt"
+                value={aiPrompt}
+                onChange={event => setAiPrompt(event.target.value)}
+                onKeyDown={event => {
+                  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                    event.preventDefault()
+                    void handleAIGenerate()
+                  }
+                }}
+                placeholder={t('creator.ai.placeholder')}
+                rows={4}
+                className="mb-3 w-full resize-none px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors placeholder:text-gray-500"
+              />
+
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Ctrl + Enter
+                </span>
+                <button
+                  onClick={() => void handleAIGenerate()}
+                  disabled={isGenerating}
+                  className={`flex items-center gap-2 px-5 py-2.5 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors text-sm ${
+                    isGenerating ? 'opacity-60 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {isGenerating ? t('creator.ai.generating') : t('creator.ai.generate')}
+                </button>
               </div>
 
               {aiError && (

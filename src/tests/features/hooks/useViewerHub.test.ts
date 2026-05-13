@@ -2,6 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook, waitFor, act } from '../../utils/test-utils'
 import { useViewerHub, fetchChannelInfosForIds } from '../../../features/viewer/hooks/useViewerHub'
 
+vi.mock('../../../config/environment', () => ({
+  TWITCH_CLIENT_ID: 'test-client-id',
+  AUTH_SERVICE_URL: 'http://localhost:3000',
+  ACHIEVEMENT_MANAGEMENT_SERVICE_URL: 'http://localhost:3001',
+  API_SERVICE_URL: 'http://localhost:3000',
+  FRONT_URL: '',
+  MOBILE_REDIRECT_URI: '/mobile-callback.html',
+}))
+
 const authUser = {
   userId: 'viewer-1',
   username: 'viewer',

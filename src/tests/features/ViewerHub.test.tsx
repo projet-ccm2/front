@@ -3,6 +3,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '../utils/test-utils'
 import { ViewerHub } from '../../features/viewer/ViewerHub'
 
+vi.mock('../../config/environment', () => ({
+  TWITCH_CLIENT_ID: 'test-client-id',
+  AUTH_SERVICE_URL: 'http://localhost:3000',
+  ACHIEVEMENT_MANAGEMENT_SERVICE_URL: 'http://localhost:3001',
+  API_SERVICE_URL: 'http://localhost:3000',
+  FRONT_URL: '',
+  MOBILE_REDIRECT_URI: '/mobile-callback.html',
+}))
+
 const authUser = {
   userId: 'user-1',
   username: 'streamer',
