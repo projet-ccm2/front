@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook, waitFor, act } from '../../utils/test-utils'
-import { useViewerHub } from '../../../features/viewer/hooks/useViewerHub'
+import { useViewerHub, fetchChannelInfosForIds } from '../../../features/viewer/hooks/useViewerHub'
 
 const authUser = {
   userId: 'viewer-1',
@@ -96,6 +96,23 @@ describe('useViewerHub', () => {
 
     expect(result.current.achievements).toEqual(mockAchievements)
     expect(result.current.errorMessage).toBeNull()
+  })
+
+
+  it('returns empty channelInfoById when no twitch_tokens are stored', async () => {
+    localStorage.setItem('twitch_user', JSON.stringify(authUser))
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockAchievements),
+    } as Response)
+
+    const { result } = renderHook(() => useViewerHub())
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    expect(result.current.channelInfoById).toEqual({})
   })
 
   it('maps a 400 error to the invalid request message', async () => {
@@ -204,6 +221,67 @@ describe('useViewerHub', () => {
 
     await act(async () => {
       rejecter(new Error('Network failure'))
+    })
+  })
+})
+
+describe('fetchChannelInfosForIds', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    localStorage.clear()
+  })
+
+  it('returns {} when channelIds is empty', async () => {
+    const result = await fetchChannelInfosForIds([])
+    expect(result).toEqual({})
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('returns {} when twitch_tokens are not in localStorage', async () => {
+    const result = await fetchChannelInfosForIds(['chan-1'])
+    expect(result).toEqual({})
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('returns {} when twitch_tokens JSON is malformed', async () => {
+    localStorage.setItem('twitch_tokens', 'not-json')
+    const result = await fetchChannelInfosForIds(['chan-1'])
+    expect(result).toEqual({})
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('returns {} when the Helix response is not ok', async () => {
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'tok' }))
+    vi.mocked(fetch).mockResolvedValue({ ok: false, status: 401 } as Response)
+
+    const result = await fetchChannelInfosForIds(['chan-1'])
+    expect(result).toEqual({})
+  })
+
+  it('maps Helix response to channelInfo by id', async () => {
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'tok' }))
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          data: [
+            { id: 'chan-1', display_name: 'ChanOne', profile_image_url: 'https://img/1.png' },
+            { id: 'chan-2', display_name: 'ChanTwo', profile_image_url: 'https://img/2.png' },
+          ],
+        }),
+    } as Response)
+
+    const result = await fetchChannelInfosForIds(['chan-1', 'chan-2'])
+
+    expect(result).toEqual({
+      'chan-1': { name: 'ChanOne', avatarUrl: 'https://img/1.png' },
+      'chan-2': { name: 'ChanTwo', avatarUrl: 'https://img/2.png' },
     })
   })
 })

@@ -19,7 +19,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const { user } = useAuth()
   const { t } = useLanguage()
   const { availableChannels } = useChannel()
-  const { achievements, isLoading, errorMessage } = useViewerHub()
+  const { achievements, channelInfoById, isLoading, errorMessage } = useViewerHub()
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [filter, setFilter] = useState<AchievementFilter>('all')
 
@@ -52,6 +52,8 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   })()
 
   const getChannelName = (channelId: string): string => {
+    const helixInfo = channelInfoById[channelId]
+    if (helixInfo) return helixInfo.name
     const direct = availableChannels.find(c => c.id === channelId)
     if (direct) return direct.name
     const asMod = availableChannels.find(c => c.id === `mod-${channelId}`)
@@ -60,6 +62,8 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   }
 
   const getChannelAvatar = (channelId: string): string | undefined => {
+    const helixInfo = channelInfoById[channelId]
+    if (helixInfo?.avatarUrl) return helixInfo.avatarUrl
     const candidates = [
       availableChannels.find(c => c.id === channelId),
       availableChannels.find(c => c.id === `mod-${channelId}`),

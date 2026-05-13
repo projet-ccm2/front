@@ -68,6 +68,15 @@ describe('ViewerHub', () => {
           })
         }
 
+        // Twitch Helix users endpoint — return empty by default (no twitch_tokens set)
+        if (url.includes('api.twitch.tv/helix/users')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ data: [] }),
+          })
+        }
+
         return Promise.resolve({
           ok: false,
           status: 500,
@@ -289,6 +298,60 @@ describe('ViewerHub', () => {
     // (enrichment from Helix only happens when twitch_tokens are in localStorage)
     // The channel should still appear (name matches channelId before enrichment)
     expect(screen.getAllByText('channel-2').length).toBeGreaterThan(0)
+  })
+
+  it('enriches channel names and avatars via Twitch Helix when twitch_tokens are present', async () => {
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'tok-abc' }))
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+
+        if (url.includes('/achievements/user/user-1')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockViewerAchievements),
+          })
+        }
+
+        if (url.includes('api.twitch.tv/helix/users')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({
+                data: [
+                  {
+                    id: 'channel-1',
+                    display_name: 'MyChannel',
+                    profile_image_url: 'https://example.com/avatar1.png',
+                  },
+                  {
+                    id: 'channel-2',
+                    display_name: 'StreamerTwo',
+                    profile_image_url: 'https://example.com/avatar2.png',
+                  },
+                ],
+              }),
+          })
+        }
+
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({ message: `Unhandled: ${url}` }),
+          text: () => Promise.resolve(`Unhandled: ${url}`),
+        })
+      })
+    )
+
+    render(<ViewerHub onOpenSidebar={vi.fn()} />)
+
+    // Helix enrichment → channel-2 shows as "StreamerTwo" instead of raw ID
+    expect(await screen.findAllByText('StreamerTwo')).not.toHaveLength(0)
+    expect(screen.queryByText('channel-2')).not.toBeInTheDocument()
   })
 
   it('navigates to channel detail and filters by completed (line 586)', async () => {
