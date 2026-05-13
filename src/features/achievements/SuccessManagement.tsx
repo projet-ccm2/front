@@ -9,14 +9,6 @@ import { useChannelAchievements } from './hooks/useChannelAchievements'
 import { AchievementThumbnail } from './components/AchievementThumbnail'
 import { ChannelBadgeManager } from '../badges/ChannelBadgeManager'
 import { ApiCallerEndpointInfo } from './components/ApiCallerEndpointInfo'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../components/ui/dialog'
 
 interface SuccessManagementProps {
   onNavigate: (page: string) => void
@@ -385,32 +377,49 @@ export function SuccessManagement({
         </div>
       </div>
 
-      <Dialog open={achievementToDelete !== null} onOpenChange={() => setAchievementToDelete(null)}>
-        <DialogContent className="bg-[#18181b] border-[#2d2d31] text-white dark:bg-white dark:border-gray-200 dark:text-gray-900">
-          <DialogHeader>
-            <DialogTitle>{t('management.delete.title')}</DialogTitle>
-            <DialogDescription className="text-gray-400 dark:text-gray-600">
-              {achievementToDelete
-                ? t('management.delete.description', { title: achievementToDelete.title })
-                : ''}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button
-              onClick={() => setAchievementToDelete(null)}
-              className="px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-[#3d3d41] dark:hover:bg-gray-200 transition-colors"
+      {achievementToDelete !== null && (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-50 bg-black/60 cursor-default"
+            onClick={() => setAchievementToDelete(null)}
+            aria-label={t('management.delete.cancel')}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+            className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#2d2d31] dark:border-gray-200 bg-[#18181b] dark:bg-white p-6 shadow-2xl"
+          >
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#ff4444]/15">
+              <Trash2 className="h-6 w-6 text-[#ff4444]" />
+            </div>
+            <h2
+              id="delete-dialog-title"
+              className="mb-2 text-lg font-semibold text-white dark:text-gray-900"
             >
-              {t('management.delete.cancel')}
-            </button>
-            <button
-              onClick={() => void confirmDelete()}
-              className="px-4 py-2 bg-[#ff4444] hover:bg-[#cc3333] text-white rounded-lg transition-colors"
-            >
-              {t('management.delete.confirm')}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {t('management.delete.title')}
+            </h2>
+            <p className="mb-6 text-sm text-gray-400 dark:text-gray-600">
+              {t('management.delete.description', { title: achievementToDelete.title })}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setAchievementToDelete(null)}
+                className="px-4 py-2 rounded-lg bg-[#2d2d31] dark:bg-gray-100 text-sm text-white dark:text-gray-900 hover:bg-[#3d3d41] dark:hover:bg-gray-200 transition-colors"
+              >
+                {t('management.delete.cancel')}
+              </button>
+              <button
+                onClick={() => void confirmDelete()}
+                className="px-4 py-2 rounded-lg bg-[#ff4444] hover:bg-[#cc3333] text-sm font-medium text-white transition-colors"
+              >
+                {t('management.delete.confirm')}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
