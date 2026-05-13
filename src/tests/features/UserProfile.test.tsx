@@ -60,14 +60,6 @@ const mockUserAchievements = [
   },
 ]
 
-const mockUserBadges = [
-  {
-    id: 'badge-1',
-    title: 'Top Fan',
-    image: 'https://example.com/badge.png',
-  },
-]
-
 describe('UserProfile', () => {
   const mockOnOpenSidebar = vi.fn()
 
@@ -106,14 +98,6 @@ describe('UserProfile', () => {
           })
         }
 
-        if (url.includes('/badges/user/user-1')) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve(mockUserBadges),
-          })
-        }
-
         return Promise.resolve({
           ok: false,
           status: 500,
@@ -132,7 +116,6 @@ describe('UserProfile', () => {
   it('should render user profile with username', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
     expect(screen.getByRole('heading', { name: 'streamer' })).toBeInTheDocument()
-    expect(await screen.findByRole('heading', { name: /Badges du compte/i })).toBeInTheDocument()
   })
 
   it('should toggle sidebar on mobile', async () => {
@@ -149,17 +132,13 @@ describe('UserProfile', () => {
 
   it('should show stats cards', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    expect(screen.getByText('Temps de visionnage total')).toBeInTheDocument()
-    expect(screen.getByText('--')).toBeInTheDocument()
     expect(screen.getByText(/Succ.*d.*bloqu.*s/i)).toBeInTheDocument()
     expect(await screen.findByText('1 / 2')).toBeInTheDocument()
   })
 
-  it('should display achievement badges', async () => {
+  it('should display the leaderboard section heading', async () => {
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
-    expect(screen.getByRole('heading', { name: /Badges du compte/i })).toBeInTheDocument()
-    expect(await screen.findByText('Top Fan')).toBeInTheDocument()
-    expect(screen.getByAltText('Top Fan')).toHaveAttribute('src', 'https://example.com/badge.png')
+    expect(await screen.findByRole('heading', { name: 'Classement' })).toBeInTheDocument()
   })
 
   it('should show account leaderboard summary', async () => {
@@ -189,17 +168,17 @@ describe('UserProfile', () => {
     expect(screen.getByText('0 / 0')).toBeInTheDocument()
   })
 
-  it('should show an empty state when no badges are returned', async () => {
+  it('should show an empty leaderboard state when no entries are returned', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input)
 
-        if (url.includes('/achievements/user/user-1/channel/channel-1')) {
+        if (url.includes('/leaderboard')) {
           return Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve(mockUserAchievements),
+            json: () => Promise.resolve([]),
           })
         }
 
@@ -208,14 +187,6 @@ describe('UserProfile', () => {
             ok: true,
             status: 200,
             json: () => Promise.resolve(mockUserAchievements),
-          })
-        }
-
-        if (url.includes('/badges/user/user-1')) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve([]),
           })
         }
 
@@ -230,7 +201,9 @@ describe('UserProfile', () => {
 
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(await screen.findByText(/Aucun badge n’a été trouvé/i)).toBeInTheDocument()
+    expect(
+      await screen.findByText(/Pas encore de donn.*es de classement|No leaderboard data yet/i)
+    ).toBeInTheDocument()
   })
 
   it('should show an error state when the backend fails', async () => {
@@ -297,14 +270,6 @@ describe('UserProfile', () => {
             ok: true,
             status: 200,
             json: () => Promise.resolve(mockUserAchievements),
-          })
-        }
-
-        if (url.includes('/badges/user/user-1')) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve([]),
           })
         }
 

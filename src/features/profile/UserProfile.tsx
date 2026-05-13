@@ -1,11 +1,9 @@
-import { Trophy, Clock, TrendingUp, Menu } from 'lucide-react'
+import { Trophy, TrendingUp, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { useUserAchievements } from './hooks/useUserAchievements'
 import { useChannelLeaderboard } from './hooks/useChannelLeaderboard'
-import { useUserBadges } from '../badges/hooks/useUserBadges'
-import { BadgeThumbnail } from '../badges/components/BadgeThumbnail'
 import { getRealChannelId } from '../achievements/utils/achievementManagementChannel'
 
 const XP_PER_LEVEL = 250
@@ -19,12 +17,6 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
   const { selectedChannel } = useChannel()
   const { t } = useLanguage()
   const { achievements, isLoading, errorMessage } = useUserAchievements()
-  const {
-    badges,
-    isLoading: areBadgesLoading,
-    errorMessage: badgesErrorMessage,
-  } = useUserBadges(user?.userId ?? null)
-
   const leaderboardChannelId = selectedChannel
     ? getRealChannelId(selectedChannel.id)
     : (user?.channel.id ?? null)
@@ -124,19 +116,7 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
             </div>
           )}
 
-          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-[#9146FF]/20 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-[#9146FF]" />
-                </div>
-                <div className="text-sm text-gray-400 dark:text-gray-600">
-                  {t('profile.totalWatchTime')}
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl text-white dark:text-gray-900">--</div>
-            </div>
-
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 bg-[#00f593]/20 rounded-lg flex items-center justify-center">
@@ -162,50 +142,6 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
               </div>
               <div className="text-2xl sm:text-3xl text-white dark:text-gray-900">{currentXP}</div>
             </div>
-          </div>
-
-          <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl text-white dark:text-gray-900 mb-4 sm:mb-6">
-              {t('profile.section.badges')}
-            </h2>
-
-            {areBadgesLoading && (
-              <div className="text-gray-400 dark:text-gray-600">{t('profile.badges.loading')}</div>
-            )}
-
-            {!areBadgesLoading && badgesErrorMessage && (
-              <div className="rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-[#ff8080] dark:text-[#b42318]">
-                {badgesErrorMessage}
-              </div>
-            )}
-
-            {!areBadgesLoading && !badgesErrorMessage && badges.length === 0 && (
-              <div className="rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600">
-                {t('profile.badges.empty')}
-              </div>
-            )}
-
-            {!areBadgesLoading && !badgesErrorMessage && badges.length > 0 && (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {badges.map(badge => (
-                  <article
-                    key={badge.id}
-                    className="rounded-2xl border border-[#2d2d31] bg-[#0f0f12] p-3 transition-transform hover:-translate-y-0.5 hover:border-[#9146FF] dark:border-gray-200 dark:bg-gray-50"
-                    title={badge.title}
-                  >
-                    <BadgeThumbnail title={badge.title} image={badge.image} className="h-24 w-full" />
-                    <div className="mt-3 space-y-1 text-center">
-                      <div className="text-sm font-medium text-white dark:text-gray-900">
-                        {badge.title}
-                      </div>
-                      <div className="text-xs text-gray-400 dark:text-gray-600">
-                        {t('profile.badges.item')}
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-xl p-4 sm:p-8 mb-6 sm:mb-8">

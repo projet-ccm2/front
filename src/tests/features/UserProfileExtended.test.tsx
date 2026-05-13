@@ -39,10 +39,6 @@ const mockUserAchievements = [
   },
 ]
 
-const mockBadges = [
-  { id: 'badge-1', title: 'First Steps', image: 'https://example.com/badge.png' },
-]
-
 const mockLeaderboard = [
   { username: 'streamer', userId: 'user-1', xp: 500 },
   { username: 'viewer1', userId: 'user-2', xp: 350 },
@@ -65,14 +61,6 @@ describe('UserProfile - Function Coverage', () => {
           })
         }
 
-        if (url.includes('/badges/user/')) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve(mockBadges),
-          })
-        }
-
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -90,29 +78,21 @@ describe('UserProfile - Function Coverage', () => {
   it('should render user profile with correct user info', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
     expect(screen.getAllByText('streamer').length).toBeGreaterThan(0)
-    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
+    // Achievement XP is reflected in the XP bar once data loads
+    expect(await screen.findByText(/50 \/ 250 XP/)).toBeInTheDocument()
   })
 
   it('should render stats cards', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
-    await screen.findAllByText('First Steps')
-    expect(screen.getByText('Temps de visionnage total')).toBeInTheDocument()
+    expect(await screen.findByText(/1 \/ 1/)).toBeInTheDocument()
     expect(screen.getByText(/Succ.*d.*bloqu.*s/i)).toBeInTheDocument()
     expect(screen.getByText(/XP de succ.*s/i)).toBeInTheDocument()
-  })
-
-  it('should render badges section', async () => {
-    render(<UserProfile onOpenSidebar={() => {}} />)
-
-    expect(screen.getByRole('heading', { name: /Badges du compte/i })).toBeInTheDocument()
-    expect((await screen.findAllByText('First Steps')).length).toBeGreaterThan(0)
   })
 
   it('should render account leaderboard section with real data', async () => {
     render(<UserProfile onOpenSidebar={() => {}} />)
 
-    await screen.findAllByText('First Steps')
     expect(screen.getByText('Classement')).toBeInTheDocument()
 
     await waitFor(() => {

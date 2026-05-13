@@ -12,7 +12,9 @@
       "Bash(rtk git *)",
       "Bash(rtk grep *)",
       "Bash(npx vitest:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const content = fs.readFileSync\\('src/tests/features/UserProfile.test.tsx', 'utf8'\\); const lines = content.split\\('\\\\n'\\); lines.forEach\\(\\(line, i\\) => { for\\(let j=0; j<line.length; j++\\) { const code = line.charCodeAt\\(j\\); if\\(code > 127\\) console.log\\('Line ' + \\(i+1\\) + ' col ' + j + ': ' + code + ' \\(' + line[j] + '\\)'\\); } }\\);\")"
     ]
   }
 }
