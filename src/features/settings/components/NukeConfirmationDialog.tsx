@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { AlertTriangle, X, RefreshCw } from 'lucide-react'
+import { AlertTriangle, X, RefreshCw, Trash2 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useLanguage } from '../../../context/LanguageContext'
 import { useAuth } from '../../../context/AuthContext'
@@ -94,20 +94,32 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
   const prevStep: Step = step === 3 ? 2 : 1
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
       <dialog
         open
         aria-modal="true"
         aria-labelledby="nuke-dialog-title"
         className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-2xl w-full max-w-md shadow-2xl p-0 m-0"
       >
+        {/* Step indicator */}
+        <div className="flex items-center gap-1.5 px-6 pt-5">
+          {([1, 2, 3] as const).map(s => (
+            <div
+              key={s}
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                s <= step ? 'bg-red-500' : 'bg-[#2d2d31] dark:bg-gray-200'
+              }`}
+            />
+          ))}
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#2d2d31] dark:border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/15">
               <AlertTriangle className="w-5 h-5 text-red-400" />
             </div>
-            <h2 id="nuke-dialog-title" className="font-semibold text-[#efeff1] dark:text-gray-900">
+            <h2 id="nuke-dialog-title" className="font-semibold text-white dark:text-gray-900">
               {stepTitles[step]}
             </h2>
           </div>
@@ -115,22 +127,25 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
             onClick={onClose}
             disabled={isDeleting || isRefreshing}
             aria-label={t('settings.nuke.dialog.cancel')}
-            className="text-gray-500 hover:text-gray-300 dark:text-gray-400 dark:hover:text-gray-700 disabled:opacity-40 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-[#2d2d31] hover:text-gray-300 dark:hover:bg-gray-100 dark:hover:text-gray-700 disabled:opacity-40"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
+        {/* Divider */}
+        <div className="border-t border-[#2d2d31] dark:border-gray-200" />
+
         {/* Body */}
-        <div className="p-5 space-y-4">
+        <div className="px-6 py-5 space-y-4">
           {step === 1 && (
             <>
-              <p className="text-gray-400 dark:text-gray-600 text-sm">
+              <p className="text-sm text-gray-400 dark:text-gray-600 leading-relaxed">
                 {t('settings.nuke.dialog.step1.description')}
               </p>
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-2.5 text-sm">
                 {(['item1', 'item2', 'item3', 'item4'] as const).map(item => (
-                  <li key={item} className="flex items-center gap-2 text-gray-300 dark:text-gray-700">
+                  <li key={item} className="flex items-center gap-2.5 text-gray-300 dark:text-gray-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
                     {t(`settings.nuke.dialog.step1.${item}`)}
                   </li>
@@ -141,7 +156,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
 
           {step === 2 && (
             <>
-              <p className="text-gray-400 dark:text-gray-600 text-sm">
+              <p className="text-sm text-gray-400 dark:text-gray-600 leading-relaxed">
                 {t('settings.nuke.dialog.step2.description')}
               </p>
               <input
@@ -149,7 +164,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
                 value={usernameInput}
                 onChange={e => setUsernameInput(e.target.value)}
                 placeholder={t('settings.nuke.dialog.step2.placeholder')}
-                className="w-full bg-[#0f0f12] dark:bg-gray-100 border border-[#2d2d31] dark:border-gray-300 rounded-xl px-4 py-2.5 text-sm text-[#efeff1] dark:text-gray-900 placeholder-gray-600 focus:outline-none focus:border-red-500 transition-colors"
+                className="w-full bg-[#0f0f12] dark:bg-gray-100 border border-[#2d2d31] dark:border-gray-300 rounded-xl px-4 py-3 text-sm text-white dark:text-gray-900 placeholder-gray-600 focus:outline-none focus:border-red-500 transition-colors"
                 autoComplete="off"
                 data-testid="username-input"
               />
@@ -158,7 +173,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
 
           {step === 3 && (
             <>
-              <p className="text-gray-400 dark:text-gray-600 text-sm">
+              <p className="text-sm text-gray-400 dark:text-gray-600 leading-relaxed">
                 {t('settings.nuke.dialog.step3.description')}
               </p>
               {isRefreshing && (
@@ -182,23 +197,23 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-5 border-t border-[#2d2d31] dark:border-gray-200 gap-3">
-          <div className="flex gap-2">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[#2d2d31] dark:border-gray-200 gap-3">
+          <div>
             {step > 1 && !isDeleting && !isRefreshing && (
               <button
                 onClick={() => setStep(prevStep)}
-                className="px-4 py-2 text-sm text-gray-500 hover:text-gray-300 dark:text-gray-500 dark:hover:text-gray-700 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 dark:text-gray-500 dark:hover:text-gray-700 transition-colors rounded-lg hover:bg-[#2d2d31] dark:hover:bg-gray-100"
               >
                 {t('settings.nuke.dialog.back')}
               </button>
             )}
           </div>
 
-          <div className="flex gap-2 ml-auto">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={onClose}
               disabled={isDeleting || isRefreshing}
-              className="px-4 py-2 text-sm rounded-xl border border-[#2d2d31] dark:border-gray-200 text-gray-400 dark:text-gray-600 hover:bg-[#2d2d31] dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              className="px-5 py-2.5 text-sm font-medium rounded-xl border border-[#2d2d31] dark:border-gray-300 text-gray-300 dark:text-gray-700 hover:bg-[#2d2d31] dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
             >
               {t('settings.nuke.dialog.cancel')}
             </button>
@@ -206,7 +221,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
             {step === 1 && (
               <button
                 onClick={() => setStep(2)}
-                className="px-4 py-2 text-sm rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-900/40 transition-all active:scale-95"
               >
                 {t('settings.nuke.dialog.step1.continue')}
               </button>
@@ -216,7 +231,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
               <button
                 onClick={handleConfirmStep2}
                 disabled={usernameInput.toLowerCase() !== user?.username?.toLowerCase()}
-                className="px-4 py-2 text-sm rounded-xl bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-900/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {t('settings.nuke.dialog.step2.confirm')}
               </button>
@@ -226,16 +241,22 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
               <button
                 onClick={handleNuke}
                 disabled={countdown > 0 || isDeleting || isRefreshing}
-                className="px-4 py-2 text-sm rounded-xl bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-900/40 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {isRefreshing ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />
                 ) : isDeleting ? (
-                  t('settings.nuke.deleting')
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    {t('settings.nuke.deleting')}
+                  </>
                 ) : countdown > 0 ? (
                   t('settings.nuke.dialog.step3.countdown').replace('{seconds}', String(countdown))
                 ) : (
-                  t('settings.nuke.dialog.step3.confirm')
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    {t('settings.nuke.dialog.step3.confirm')}
+                  </>
                 )}
               </button>
             )}
