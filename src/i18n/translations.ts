@@ -500,6 +500,8 @@ const EN_TRANSLATIONS: TranslationMap = {
   'settings.nuke.dialog.back': 'Back',
   'settings.nuke.deleting': 'Deleting...',
   'settings.nuke.error': 'An error occurred while deleting your data. Please try again.',
+  'settings.nuke.sessionExpired': 'Your session has expired. Sign out and sign back in to delete your account.',
+  'settings.nuke.signOut': 'Sign out',
 }
 
 const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
@@ -976,6 +978,8 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'settings.nuke.dialog.back': 'Retour',
   'settings.nuke.deleting': 'Suppression...',
   'settings.nuke.error': 'Une erreur est survenue lors de la suppression. Veuillez réessayer.',
+  'settings.nuke.sessionExpired': 'Votre session a expiré. Déconnectez-vous et reconnectez-vous pour supprimer votre compte.',
+  'settings.nuke.signOut': 'Se déconnecter',
 }
 
 export const TRANSLATIONS: Record<Language, TranslationMap> = {

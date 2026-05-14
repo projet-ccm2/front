@@ -6,6 +6,17 @@ import { useNukeAccount } from '../hooks/useNukeAccount'
 
 const COUNTDOWN_SECONDS = 5
 
+function isIdTokenExpired(idToken: string): boolean {
+  try {
+    const payload = idToken.split('.')[1]
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { exp?: number }
+    if (typeof decoded.exp !== 'number') return false
+    return decoded.exp < Math.floor(Date.now() / 1000)
+  } catch {
+    return false
+  }
+}
+
 interface NukeConfirmationDialogProps {
   readonly onClose: () => void
   readonly onNuked: () => void
@@ -13,12 +24,13 @@ interface NukeConfirmationDialogProps {
 
 export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDialogProps) {
   const { t } = useLanguage()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { nuke, isDeleting, error } = useNukeAccount()
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [usernameInput, setUsernameInput] = useState('')
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS)
+  const [sessionExpired, setSessionExpired] = useState(false)
 
   useEffect(() => {
     if (step !== 3) return
@@ -56,7 +68,16 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
     } catch {
       return
     }
+    if (isIdTokenExpired(parsedTokens.idToken)) {
+      setSessionExpired(true)
+      return
+    }
     await nuke(parsedTokens, onNuked)
+  }
+
+  const handleSignOut = () => {
+    logout()
+    onClose()
   }
 
   const stepTitles: Record<1 | 2 | 3, string> = {
@@ -131,7 +152,21 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
               <p className="text-gray-300 dark:text-gray-700 text-sm">
                 {t('settings.nuke.dialog.step3.description')}
               </p>
-              {error && (
+              {sessionExpired && (
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30" role="alert">
+                  <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-yellow-300 text-sm">{t('settings.nuke.sessionExpired')}</p>
+                    <button
+                      onClick={handleSignOut}
+                      className="mt-2 text-sm font-medium text-yellow-400 hover:text-yellow-300 underline"
+                    >
+                      {t('settings.nuke.signOut')}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {error && !sessionExpired && (
                 <p className="text-red-400 text-sm" role="alert">
                   {t('settings.nuke.error')}
                 </p>
@@ -184,7 +219,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
             {step === 3 && (
               <button
                 onClick={handleNuke}
-                disabled={countdown > 0 || isDeleting}
+                disabled={countdown > 0 || isDeleting || sessionExpired}
                 className="px-4 py-2 text-sm rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {isDeleting
