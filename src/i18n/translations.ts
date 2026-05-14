@@ -472,6 +472,7 @@ const EN_TRANSLATIONS: TranslationMap = {
   'creator.moderator.banner':
     'Moderator view — you are creating or editing achievements for another channel.',
   'settings.title': 'Settings',
+  'settings.subtitle': 'Manage your account and privacy settings.',
   'settings.dangerZone.title': 'Danger Zone',
   'settings.dangerZone.description':
     'These actions are permanent and cannot be undone. Proceed with extreme caution.',
@@ -500,8 +501,7 @@ const EN_TRANSLATIONS: TranslationMap = {
   'settings.nuke.dialog.back': 'Back',
   'settings.nuke.deleting': 'Deleting...',
   'settings.nuke.error': 'An error occurred while deleting your data. Please try again.',
-  'settings.nuke.sessionExpired': 'Your session has expired. Sign out and sign back in to delete your account.',
-  'settings.nuke.signOut': 'Sign out',
+  'settings.nuke.refreshing': 'Redirecting to Twitch to refresh your session...',
 }
 
 const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
@@ -950,6 +950,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'creator.moderator.banner':
     'Vue modérateur — vous créez ou modifiez des succès pour une autre chaîne.',
   'settings.title': 'Paramètres',
+  'settings.subtitle': 'Gérez les paramètres de votre compte et de confidentialité.',
   'settings.dangerZone.title': 'Zone dangereuse',
   'settings.dangerZone.description':
     'Ces actions sont permanentes et irréversibles. Procédez avec une extrême prudence.',
@@ -978,8 +979,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'settings.nuke.dialog.back': 'Retour',
   'settings.nuke.deleting': 'Suppression...',
   'settings.nuke.error': 'Une erreur est survenue lors de la suppression. Veuillez réessayer.',
-  'settings.nuke.sessionExpired': 'Votre session a expiré. Déconnectez-vous et reconnectez-vous pour supprimer votre compte.',
-  'settings.nuke.signOut': 'Se déconnecter',
+  'settings.nuke.refreshing': 'Redirection vers Twitch pour renouveler votre session...',
 }
 
 export const TRANSLATIONS: Record<Language, TranslationMap> = {

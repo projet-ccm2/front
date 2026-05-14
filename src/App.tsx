@@ -83,7 +83,17 @@ export function AppContent() {
           state,
         })
         globalThis.history?.replaceState({}, document.title, globalThis.location.pathname)
-        setCurrentScreen('dashboard')
+        const returnToScreen = Capacitor.isNativePlatform()
+          ? localStorage.getItem('return_to_screen')
+          : sessionStorage.getItem('return_to_screen')
+        if (returnToScreen) {
+          Capacitor.isNativePlatform()
+            ? localStorage.removeItem('return_to_screen')
+            : sessionStorage.removeItem('return_to_screen')
+          setCurrentScreen(returnToScreen as Screen)
+        } else {
+          setCurrentScreen('dashboard')
+        }
         setSidebarOpen(false)
       } catch (error) {
         console.error('Auth completion failed', error)
