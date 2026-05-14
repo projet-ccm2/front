@@ -179,8 +179,8 @@ describe('useChannelAchievements', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useChannelAchievements('channel-1'))
-
+    const { result, unmount } = renderHook(() => useChannelAchievements('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {
@@ -197,8 +197,8 @@ describe('useChannelAchievements', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useChannelAchievements('channel-1'))
-
+    const { result, unmount } = renderHook(() => useChannelAchievements('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {

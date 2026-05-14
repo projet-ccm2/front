@@ -385,11 +385,11 @@ export function SuccessManagement({
             onClick={() => setAchievementToDelete(null)}
             aria-label={t('management.delete.cancel')}
           />
-          <div
-            role="dialog"
+          <dialog
+            open
             aria-modal="true"
             aria-labelledby="delete-dialog-title"
-            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#2d2d31] dark:border-gray-200 bg-[#18181b] dark:bg-white shadow-2xl overflow-hidden"
+            className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#2d2d31] dark:border-gray-200 bg-[#18181b] dark:bg-white shadow-2xl overflow-hidden p-0 m-0"
           >
             {/* Header */}
             <div className="flex flex-col items-center gap-4 px-8 pt-10 pb-7 text-center">
@@ -423,7 +423,7 @@ export function SuccessManagement({
                 {t('management.delete.confirm')}
               </button>
             </div>
-          </div>
+          </dialog>
         </>
       )}
     </div>

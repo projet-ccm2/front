@@ -97,7 +97,7 @@ describe('Layout Components', () => {
     it('should render', () => {
       render(<Separator orientation="horizontal" />)
       // Radix separator usually has role="separator" or none, checking element existence via class or just non-crash
-      expect(true).toBeTruthy() // Rendered successfully
+      expect(document.querySelector('[data-orientation]') ?? document.querySelector('[role="separator"]')).toBeTruthy()
       // Separator from radix usually has role separator.
       // If not found, it might be the way it's rendered in JSDOM or component impl.
       // Let's check simply that it renders without error for now if role is missing.

@@ -8,7 +8,7 @@ import { Sidebar } from './components/layout/Sidebar'
 import { ThemeProvider } from './context/ThemeContext'
 import { ChannelProvider } from './context/ChannelContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { LanguageProvider } from './context/LanguageContext'
+import { LanguageProvider, useLanguage } from './context/LanguageContext'
 import { AchievementCreator } from './features/achievements/AchievementCreator'
 import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
@@ -25,7 +25,6 @@ import {
 } from './features/overlay/utils/publicPanelLink'
 import { isTwitchExtensionPanelPath } from './features/overlay/utils/twitchExtensionLink'
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
-import { useLanguage } from './context/LanguageContext'
 import { Toaster } from './components/ui/sonner'
 import { addUrlOpenListener, closeExternalUrl, getLaunchUrl } from './utils/browserRuntime'
 
@@ -87,9 +86,11 @@ export function AppContent() {
           ? localStorage.getItem('return_to_screen')
           : sessionStorage.getItem('return_to_screen')
         if (returnToScreen) {
-          Capacitor.isNativePlatform()
-            ? localStorage.removeItem('return_to_screen')
-            : sessionStorage.removeItem('return_to_screen')
+          if (Capacitor.isNativePlatform()) {
+            localStorage.removeItem('return_to_screen')
+          } else {
+            sessionStorage.removeItem('return_to_screen')
+          }
           setCurrentScreen(returnToScreen as Screen)
         } else {
           setCurrentScreen('dashboard')

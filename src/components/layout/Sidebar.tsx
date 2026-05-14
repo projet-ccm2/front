@@ -21,7 +21,7 @@ import { useChannel } from '../../context/ChannelContext'
 import { LanguageSwitcher } from '../ui/LanguageSwitcher'
 import { useApkDownload } from '../../features/apk/hooks/useApkDownload'
 
-const MODERATOR_HIDDEN_PAGES = ['profile', 'viewerHub', 'discord']
+const MODERATOR_HIDDEN_PAGES = new Set(['profile', 'viewerHub', 'discord'])
 
 interface SidebarProps {
   readonly currentPage: string
@@ -39,7 +39,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
   const isModerator = selectedChannel?.role === 'Moderator'
 
   useEffect(() => {
-    if (isModerator && MODERATOR_HIDDEN_PAGES.includes(currentPage)) {
+    if (isModerator && MODERATOR_HIDDEN_PAGES.has(currentPage)) {
       onNavigate('dashboard')
     }
   }, [isModerator, currentPage, onNavigate])
@@ -55,7 +55,7 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
   ]
 
   const visibleMenuItems = isModerator
-    ? menuItems.filter(item => !MODERATOR_HIDDEN_PAGES.includes(item.id))
+    ? menuItems.filter(item => !MODERATOR_HIDDEN_PAGES.has(item.id))
     : menuItems
 
   const handleNavigation = (page: string) => {

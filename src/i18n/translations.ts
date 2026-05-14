@@ -1,8 +1,6 @@
 ﻿export type Language = 'en' | 'fr'
 
-type TranslationValue = string
-
-type TranslationMap = Record<string, TranslationValue>
+type TranslationMap = Record<string, string>
 
 const EN_OWNER_ONLY_MESSAGE = 'Only the channel owner can publish or edit achievements.'
 const EN_OWNER_ONLY_DASHBOARD_MESSAGE =
@@ -1001,8 +999,8 @@ export function resolveTranslation(
   return Object.entries(params).reduce(
     (accumulator, [paramKey, paramValue]) =>
       accumulator
-        .replace(new RegExp(`\\{\\{${paramKey}\\}\\}`, 'g'), String(paramValue))
-        .replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramValue)),
+        .replace(new RegExp(String.raw`\{\{${paramKey}\}\}`, 'g'), String(paramValue))
+        .replace(new RegExp(String.raw`\{${paramKey}\}`, 'g'), String(paramValue)),
     template
   )
 }

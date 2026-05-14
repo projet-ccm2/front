@@ -33,7 +33,7 @@ describe('Feedback Components', () => {
   describe('Sonner', () => {
     it('should render toaster', () => {
       render(<Toaster />)
-      expect(true).toBeTruthy() // Rendered successfully
+      expect(document.body).not.toBeEmptyDOMElement()
     })
   })
 

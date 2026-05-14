@@ -7,6 +7,8 @@ import { useNukeAccount } from '../hooks/useNukeAccount'
 
 const COUNTDOWN_SECONDS = 5
 
+type Step = 1 | 2 | 3
+
 function isIdTokenExpired(idToken: string): boolean {
   try {
     const payload = idToken.split('.')[1]
@@ -30,7 +32,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
   const { user, login } = useAuth()
   const { nuke, isDeleting, error } = useNukeAccount()
 
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<Step>(1)
   const [usernameInput, setUsernameInput] = useState('')
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -89,14 +91,16 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
     3: t('settings.nuke.dialog.step3.title'),
   }
 
+  const prevStep: Step = step === 3 ? 2 : 1
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="nuke-dialog-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-    >
-      <div className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-2xl w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <dialog
+        open
+        aria-modal="true"
+        aria-labelledby="nuke-dialog-title"
+        className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-2xl w-full max-w-md shadow-2xl p-0 m-0"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#2d2d31] dark:border-gray-200">
           <div className="flex items-center gap-3">
@@ -182,7 +186,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
           <div className="flex gap-2">
             {step > 1 && !isDeleting && !isRefreshing && (
               <button
-                onClick={() => setStep(s => (s === 3 ? 2 : 1) as 1 | 2 | 3)}
+                onClick={() => setStep(prevStep)}
                 className="px-4 py-2 text-sm text-gray-500 hover:text-gray-300 dark:text-gray-500 dark:hover:text-gray-700 transition-colors"
               >
                 {t('settings.nuke.dialog.back')}
@@ -237,7 +241,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
             )}
           </div>
         </div>
-      </div>
+      </dialog>
     </div>
   )
 }

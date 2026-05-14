@@ -1,5 +1,4 @@
-import type { UserAchievement } from '../api/achievementManagement.types'
-import type { Achievement } from '../api/achievementManagement.types'
+import type { UserAchievement, Achievement } from '../api/achievementManagement.types'
 
 type Translate = (key: string, params?: Record<string, string | number>) => string
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { toast } from 'sonner'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
@@ -16,9 +16,19 @@ import {
   normalizeAchievementTriggerLabel,
 } from './forms/achievementFormModel'
 import type { Achievement, AchievementTriggerLabel } from './api/achievementManagement.types'
+import type {
+  AchievementFormValues,
+  AchievementImageUploadFormValue,
+} from './forms/achievementFormModel'
 import { isRenderableImageSource } from './utils/achievementImage'
 import { isOwnerAchievementChannelId } from './utils/achievementManagementChannel'
 import { useTwitchChannelRewards } from './hooks/useTwitchChannelRewards'
+
+function toStringValue(v: unknown): string {
+  if (typeof v === 'string') return v
+  if (typeof v === 'number') return String(v)
+  return ''
+}
 
 function getTriggerFieldConfig(label: AchievementTriggerLabel, t: (key: string) => string) {
   const showDetail = label === 'contentMessage' || label === 'countRedeemChannelPoint'
@@ -35,94 +45,36 @@ function getTriggerFieldConfig(label: AchievementTriggerLabel, t: (key: string) 
   return { showDetail, detailLabel, goalLabel }
 }
 
-interface AchievementCreatorProps {
-  achievementId?: string | null
-  templateAchievement?: Achievement | null
-  onOpenSidebar: () => void
-}
+type SetFormValues = (
+  value: AchievementFormValues | ((prev: AchievementFormValues) => AchievementFormValues)
+) => void
 
-const TRIGGER_TYPES_REQUIRING_DATA: AchievementTriggerLabel[] = [
-  'contentMessage',
-  'countRedeemChannelPoint',
-]
-
-function getPublishValidationError(
-  selectedChannel: { id: string } | null,
-  t: (key: string) => string,
-  formValues: {
-    title: string
-    description: string
-    type: { label: AchievementTriggerLabel; data: unknown }
-  }
-): string | null {
-  if (!selectedChannel) {
-    return t('creator.validation.noChannel')
-  }
-  if (!formValues.title.trim() || !formValues.description.trim()) {
-    return t('creator.validation.missingFields')
-  }
-  if (TRIGGER_TYPES_REQUIRING_DATA.includes(formValues.type.label) && !formValues.type.data) {
-    return t('creator.validation.missingDetail')
-  }
-  return null
-}
-
-export function AchievementCreator({
-  achievementId = null,
-  templateAchievement = null,
-  onOpenSidebar,
-}: Readonly<AchievementCreatorProps>) {
-  const { selectedChannel } = useChannel()
-  const { language, t } = useLanguage()
-  const isModeratorChannel = selectedChannel
-    ? !isOwnerAchievementChannelId(selectedChannel.id)
-    : false
-  const {
-    rewards,
-    isLoading: isLoadingRewards,
-    error: rewardsError,
-  } = useTwitchChannelRewards(selectedChannel?.id ?? null)
-  const achievementTriggerOptions = getAchievementTriggerOptions(language)
-  const [mode, setMode] = useState<'simple' | 'api'>('simple')
-  const [formValues, setFormValues] = useState(defaultAchievementFormValues)
-  const [aiPrompt, setAiPrompt] = useState(() => t('creator.ai.defaultPrompt'))
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [aiError, setAiError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingAchievement, setIsLoadingAchievement] = useState(false)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [templateMessage, setTemplateMessage] = useState<string | null>(null)
+function useImageUpload(
+  setFormValues: SetFormValues,
+  t: (key: string, params?: Record<string, string | number>) => string
+) {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null)
   const [imageUploadSuccess, setImageUploadSuccess] = useState<string | null>(null)
   const [isPreparingImageUpload, setIsPreparingImageUpload] = useState(false)
-  const [selectedImageUpload, setSelectedImageUpload] = useState<{
-    fileName: string
-    mimeType: string
-    contentBase64: string
-  } | null>(null)
+  const [selectedImageUpload, setSelectedImageUpload] =
+    useState<AchievementImageUploadFormValue | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const imageFileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const updateField = <K extends keyof typeof formValues>(
-    field: K,
-    value: (typeof formValues)[K]
-  ) => {
-    setFormValues(current => ({
-      ...current,
-      [field]: value,
-    }))
-  }
+  const clearImageState = useCallback(() => {
+    setSelectedImageUpload(null)
+    setImagePreviewUrl(null)
+    setImageUploadSuccess(null)
+    setImageUploadError(null)
+  }, [])
 
   const handleOpenImagePicker = () => {
     imageFileInputRef.current?.click()
   }
 
   const handleImageClear = () => {
-    setSelectedImageUpload(null)
-    setImagePreviewUrl(null)
-    updateField('image', null)
-    setImageUploadError(null)
-    setImageUploadSuccess(null)
+    clearImageState()
+    setFormValues(current => ({ ...current, image: null }))
     if (imageFileInputRef.current) {
       imageFileInputRef.current.value = ''
     }
@@ -132,9 +84,7 @@ export function AchievementCreator({
     const file = event.target.files?.[0]
     event.target.value = ''
 
-    if (!file) {
-      return
-    }
+    if (!file) return
 
     const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
     const MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -156,10 +106,9 @@ export function AchievementCreator({
 
     try {
       const uploadValue = await createImageUploadFormValue(file)
-
       setSelectedImageUpload(uploadValue)
       setImagePreviewUrl(uploadValue.contentBase64)
-      updateField('image', null)
+      setFormValues(current => ({ ...current, image: null }))
       setImageUploadSuccess(t('creator.image.ready', { name: uploadValue.fileName }))
     } catch {
       setImageUploadError(t('creator.image.error.prepare'))
@@ -167,6 +116,29 @@ export function AchievementCreator({
       setIsPreparingImageUpload(false)
     }
   }
+
+  return {
+    imageUploadError,
+    imageUploadSuccess,
+    isPreparingImageUpload,
+    selectedImageUpload,
+    imagePreviewUrl,
+    imageFileInputRef,
+    handleOpenImagePicker,
+    handleImageClear,
+    handleImageChange,
+    clearImageState,
+  }
+}
+
+function useAiSuggestion(
+  setFormValues: SetFormValues,
+  setMode: (value: 'simple' | 'api') => void,
+  t: (key: string, params?: Record<string, string | number>) => string
+) {
+  const [aiPrompt, setAiPrompt] = useState(() => t('creator.ai.defaultPrompt'))
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
 
   const handleAIGenerate = async () => {
     if (!aiPrompt.trim()) {
@@ -197,25 +169,125 @@ export function AchievementCreator({
     }
   }
 
+  return { aiPrompt, setAiPrompt, isGenerating, aiError, handleAIGenerate }
+}
+
+function buildPublishPayload(
+  formValues: AchievementFormValues,
+  selectedImageUpload: AchievementImageUploadFormValue | null
+) {
+  const normalizedTypeData =
+    formValues.type.label === 'countCostChannelPoint'
+      ? 1
+      : (formValues.type.data ?? 'dummy label')
+  return {
+    ...formValues,
+    title: formValues.title.trim(),
+    description: formValues.description.trim(),
+    label: toStringValue(normalizedTypeData),
+    type: { ...formValues.type, data: normalizedTypeData },
+    image: selectedImageUpload ? null : normalizeAchievementImage(formValues.image),
+    imageUpload: selectedImageUpload ?? null,
+  }
+}
+
+interface AchievementCreatorProps {
+  achievementId?: string | null
+  templateAchievement?: Achievement | null
+  onOpenSidebar: () => void
+}
+
+const TRIGGER_TYPES_REQUIRING_DATA = new Set<AchievementTriggerLabel>([
+  'contentMessage',
+  'countRedeemChannelPoint',
+])
+
+function getPublishValidationError(
+  selectedChannel: { id: string } | null,
+  t: (key: string) => string,
+  formValues: {
+    title: string
+    description: string
+    type: { label: AchievementTriggerLabel; data: unknown }
+  }
+): string | null {
+  if (!selectedChannel) {
+    return t('creator.validation.noChannel')
+  }
+  if (!formValues.title.trim() || !formValues.description.trim()) {
+    return t('creator.validation.missingFields')
+  }
+  if (TRIGGER_TYPES_REQUIRING_DATA.has(formValues.type.label) && !formValues.type.data) {
+    return t('creator.validation.missingDetail')
+  }
+  return null
+}
+
+export function AchievementCreator({
+  achievementId = null,
+  templateAchievement = null,
+  onOpenSidebar,
+}: Readonly<AchievementCreatorProps>) {
+  const { selectedChannel } = useChannel()
+  const { language, t } = useLanguage()
+  const isModeratorChannel = selectedChannel
+    ? !isOwnerAchievementChannelId(selectedChannel.id)
+    : false
+  const {
+    rewards,
+    isLoading: isLoadingRewards,
+    error: rewardsError,
+  } = useTwitchChannelRewards(selectedChannel?.id ?? null)
+  const achievementTriggerOptions = getAchievementTriggerOptions(language)
+  const [mode, setMode] = useState<'simple' | 'api'>('simple')
+  const [formValues, setFormValues] = useState(defaultAchievementFormValues)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingAchievement, setIsLoadingAchievement] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [templateMessage, setTemplateMessage] = useState<string | null>(null)
+
+  const {
+    imageUploadError,
+    imageUploadSuccess,
+    isPreparingImageUpload,
+    selectedImageUpload,
+    imagePreviewUrl,
+    imageFileInputRef,
+    handleOpenImagePicker,
+    handleImageClear,
+    handleImageChange,
+    clearImageState,
+  } = useImageUpload(setFormValues, t)
+
+  const { aiPrompt, setAiPrompt, isGenerating, aiError, handleAIGenerate } = useAiSuggestion(
+    setFormValues,
+    setMode,
+    t
+  )
+
+  const updateField = <K extends keyof typeof formValues>(
+    field: K,
+    value: (typeof formValues)[K]
+  ) => {
+    setFormValues(current => ({
+      ...current,
+      [field]: value,
+    }))
+  }
+
   useEffect(() => {
     if (!achievementId) {
       setFormValues(defaultAchievementFormValues)
       setIsLoadingAchievement(false)
       setLoadError(null)
-      setImageUploadError(null)
-      setImageUploadSuccess(null)
-      setSelectedImageUpload(null)
-      setImagePreviewUrl(null)
+      clearImageState()
       return
     }
 
     let isMounted = true
     setIsLoadingAchievement(true)
     setLoadError(null)
-    setImageUploadError(null)
-    setImageUploadSuccess(null)
-    setSelectedImageUpload(null)
-    setImagePreviewUrl(null)
+    clearImageState()
 
     const loadAchievement = async () => {
       try {
@@ -245,7 +317,7 @@ export function AchievementCreator({
     return () => {
       isMounted = false
     }
-  }, [achievementId, t])
+  }, [achievementId, t, clearImageState])
 
   useEffect(() => {
     if (achievementId || !templateAchievement) {
@@ -255,12 +327,9 @@ export function AchievementCreator({
     setFormValues(createFormValuesFromAchievement(templateAchievement))
     setMode('simple')
     setLoadError(null)
-    setImageUploadError(null)
-    setImageUploadSuccess(null)
-    setSelectedImageUpload(null)
-    setImagePreviewUrl(null)
+    clearImageState()
     setTemplateMessage(t('creator.template.loaded', { title: templateAchievement.title }))
-  }, [achievementId, templateAchievement, t])
+  }, [achievementId, templateAchievement, t, clearImageState])
 
   const handlePublish = async () => {
     const validationError = getPublishValidationError(selectedChannel, t, formValues)
@@ -272,43 +341,25 @@ export function AchievementCreator({
     setIsSubmitting(true)
 
     try {
-      const normalizedTypeData =
-        formValues.type.label === 'countCostChannelPoint'
-          ? 1
-          : (formValues.type.data ?? 'dummy label')
-      const normalizedPayload = {
-        ...formValues,
-        title: formValues.title.trim(),
-        description: formValues.description.trim(),
-        label: String(normalizedTypeData),
-        type: { ...formValues.type, data: normalizedTypeData },
-        image: selectedImageUpload ? null : normalizeAchievementImage(formValues.image),
-        imageUpload: selectedImageUpload ?? null,
-      }
+      const payload = buildPublishPayload(formValues, selectedImageUpload)
 
       if (achievementId) {
         const updatedAchievement = await achievementManagementClient.updateAchievement(
           achievementId,
-          normalizedPayload
+          payload
         )
         setFormValues(createFormValuesFromAchievement(updatedAchievement))
-        setSelectedImageUpload(null)
-        setImagePreviewUrl(null)
-        setImageUploadSuccess(null)
-        setImageUploadError(null)
-        toast.success(t('creator.toast.updated', { title: normalizedPayload.title }))
+        clearImageState()
+        toast.success(t('creator.toast.updated', { title: payload.title }))
       } else {
         await achievementManagementClient.createAchievement({
-          ...normalizedPayload,
+          ...payload,
           channelId: selectedChannel!.id,
         })
         setFormValues(defaultAchievementFormValues)
         setMode('simple')
-        setSelectedImageUpload(null)
-        setImagePreviewUrl(null)
-        setImageUploadSuccess(null)
-        setImageUploadError(null)
-        toast.success(t('creator.toast.published', { title: normalizedPayload.title }))
+        clearImageState()
+        toast.success(t('creator.toast.published', { title: payload.title }))
       }
     } catch {
       toast.error(
@@ -318,6 +369,53 @@ export function AchievementCreator({
       setIsSubmitting(false)
     }
   }
+
+  const imageContent = imagePreviewUrl ? (
+    <img
+      src={imagePreviewUrl}
+      alt="Selected achievement preview"
+      className="h-full w-full object-cover"
+    />
+  ) : formValues.image && isRenderableImageSource(formValues.image.trim()) ? (
+    <img
+      src={formValues.image.trim()}
+      alt="Current achievement"
+      className="h-full w-full object-cover"
+      onError={e => {
+        e.currentTarget.style.display = 'none'
+      }}
+    />
+  ) : formValues.image ? (
+    <div className="flex h-full w-full items-center justify-center text-center px-3 text-xs text-gray-300 dark:text-gray-600 break-all">
+      <span>{formValues.image}</span>
+    </div>
+  ) : (
+    <Upload className="w-8 h-8 text-gray-500" />
+  )
+
+  const imageInfoText = selectedImageUpload ? (
+    <span className="break-all">
+      {t('creator.image.selected')}{' '}
+      <span className="text-white dark:text-gray-900">
+        {selectedImageUpload.fileName}
+      </span>
+    </span>
+  ) : formValues.image ? (
+    <span className="break-all">
+      {t('creator.image.stored')}{' '}
+      <span className="text-white dark:text-gray-900">{formValues.image}</span>
+    </span>
+  ) : (
+    <span>{t('creator.image.empty')}</span>
+  )
+
+  const submitLabel = isSubmitting
+    ? achievementId
+      ? t('creator.action.saving')
+      : t('creator.action.publishing')
+    : achievementId
+      ? t('creator.action.update')
+      : t('creator.action.publish')
 
   return (
     <div className="flex flex-col">
@@ -452,28 +550,7 @@ export function AchievementCreator({
                       isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
                     }`}
                   >
-                    {imagePreviewUrl ? (
-                      <img
-                        src={imagePreviewUrl}
-                        alt="Selected achievement image preview"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : formValues.image && isRenderableImageSource(formValues.image.trim()) ? (
-                      <img
-                        src={formValues.image.trim()}
-                        alt="Current achievement image"
-                        className="h-full w-full object-cover"
-                        onError={e => {
-                          ;(e.currentTarget as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
-                    ) : formValues.image ? (
-                      <div className="flex h-full w-full items-center justify-center text-center px-3 text-xs text-gray-300 dark:text-gray-600 break-all">
-                        <span>{formValues.image}</span>
-                      </div>
-                    ) : (
-                      <Upload className="w-8 h-8 text-gray-500" />
-                    )}
+                    {imageContent}
                   </button>
                   <div className="flex-1 w-full text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -519,21 +596,7 @@ export function AchievementCreator({
                       className="hidden"
                     />
                     <div className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600">
-                      {selectedImageUpload ? (
-                        <span className="break-all">
-                          {t('creator.image.selected')}{' '}
-                          <span className="text-white dark:text-gray-900">
-                            {selectedImageUpload.fileName}
-                          </span>
-                        </span>
-                      ) : formValues.image ? (
-                        <span className="break-all">
-                          {t('creator.image.stored')}{' '}
-                          <span className="text-white dark:text-gray-900">{formValues.image}</span>
-                        </span>
-                      ) : (
-                        <span>{t('creator.image.empty')}</span>
-                      )}
+                      {imageInfoText}
                     </div>
                   </div>
                 </div>
@@ -739,11 +802,7 @@ export function AchievementCreator({
                                 )}
                                 <select
                                   id="achievement-trigger-data"
-                                  value={
-                                    formValues.type.data === null
-                                      ? ''
-                                      : String(formValues.type.data)
-                                  }
+                                  value={toStringValue(formValues.type.data)}
                                   onChange={event =>
                                     setFormValues(current => ({
                                       ...current,
@@ -762,10 +821,12 @@ export function AchievementCreator({
                                     </option>
                                   ))}
                                   {formValues.type.data !== null &&
-                                    !rewards.some(r => r.id === String(formValues.type.data)) && (
-                                      <option value={String(formValues.type.data)} disabled>
+                                    !rewards.some(
+                                      r => r.id === toStringValue(formValues.type.data)
+                                    ) && (
+                                      <option value={toStringValue(formValues.type.data)} disabled>
                                         {t('achievement.trigger.rewards.unknown', {
-                                          id: String(formValues.type.data),
+                                          id: toStringValue(formValues.type.data),
                                         })}
                                       </option>
                                     )}
@@ -775,11 +836,7 @@ export function AchievementCreator({
                               <input
                                 id="achievement-trigger-data"
                                 type="text"
-                                value={
-                                  formValues.type.data === null
-                                    ? ''
-                                    : String(formValues.type.data ?? '')
-                                }
+                                value={toStringValue(formValues.type.data)}
                                 onChange={event =>
                                   setFormValues(current => ({
                                     ...current,
@@ -838,13 +895,7 @@ export function AchievementCreator({
                   }`}
                 >
                   <Send className="w-4 h-4" />
-                  {isSubmitting
-                    ? achievementId
-                      ? t('creator.action.saving')
-                      : t('creator.action.publishing')
-                    : achievementId
-                      ? t('creator.action.update')
-                      : t('creator.action.publish')}
+                  {submitLabel}
                 </button>
               </div>
               {isSubmitting && (

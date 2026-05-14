@@ -19,8 +19,13 @@ import { BadgeThumbnail } from '../badges/components/BadgeThumbnail'
 import { useViewerHub } from './hooks/useViewerHub'
 import { buildViewerChannelSummaries } from './utils/viewerHub'
 import type { ViewerChannelSummary } from './utils/viewerHub'
-import type { UserAchievement } from '../achievements/api/achievementManagement.types'
-import type { Badge } from '../achievements/api/achievementManagement.types'
+import type { UserAchievement, Badge } from '../achievements/api/achievementManagement.types'
+
+function sortScore(a: UserAchievement): number {
+  if (a.userState.finished) return 0
+  if (a.userState.progressCount > 0) return 1
+  return 2
+}
 
 interface ViewerHubProps {
   onOpenSidebar: () => void
@@ -62,11 +67,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
           ? channelAchievements.filter(a => a.userState.finished)
           : [...channelAchievements]
 
-    return base.sort((a, b) => {
-      const scoreA = a.userState.finished ? 0 : a.userState.progressCount > 0 ? 1 : 2
-      const scoreB = b.userState.finished ? 0 : b.userState.progressCount > 0 ? 1 : 2
-      return scoreA - scoreB
-    })
+    return base.sort((a, b) => sortScore(a) - sortScore(b))
   })()
 
   const getChannelName = (channelId: string): string => {
@@ -419,14 +420,11 @@ function OverviewPanel({
               ? Math.round((summary.unlockedAchievements / summary.totalAchievements) * 100)
               : 0
 
-          const rankColor =
-            rank === 1
-              ? 'text-[#ffd700]'
-              : rank === 2
-                ? 'text-gray-400'
-                : rank === 3
-                  ? 'text-[#cd7f32]'
-                  : 'text-gray-500'
+          let rankColor: string
+          if (rank === 1) rankColor = 'text-[#ffd700]'
+          else if (rank === 2) rankColor = 'text-gray-400'
+          else if (rank === 3) rankColor = 'text-[#cd7f32]'
+          else rankColor = 'text-gray-500'
 
           return (
             <button
@@ -779,13 +777,17 @@ function AchievementRow({
     : Math.min(100, (achievement.userState.progressCount / Math.max(achievement.goal, 1)) * 100)
   const src = getAchievementVisualSource(achievement)
 
-  const borderClass = isCompleted
-    ? 'border-[#00f593]/30'
-    : isInProgress
-      ? 'border-[#9146FF]/30'
-      : 'border-[#2d2d31] dark:border-gray-200'
+  let borderClass: string
+  if (isCompleted) borderClass = 'border-[#00f593]/30'
+  else if (isInProgress) borderClass = 'border-[#9146FF]/30'
+  else borderClass = 'border-[#2d2d31] dark:border-gray-200'
 
   const barColor = isCompleted ? 'bg-[#00f593]' : 'bg-[#9146FF]'
+
+  let progressLabel: string
+  if (isCompleted) progressLabel = '100%'
+  else if (hidden) progressLabel = t('viewerHub.achievement.locked')
+  else progressLabel = `${achievement.userState.progressCount} / ${achievement.goal}`
 
   return (
     <div
@@ -820,11 +822,7 @@ function AchievementRow({
             <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
           </div>
           <span className="flex-shrink-0 text-[11px] text-gray-500">
-            {isCompleted
-              ? '100%'
-              : hidden
-                ? t('viewerHub.achievement.locked')
-                : `${achievement.userState.progressCount} / ${achievement.goal}`}
+            {progressLabel}
           </span>
         </div>
       </div>
@@ -870,7 +868,7 @@ function ChannelAvatar({
       .join('')
       .slice(0, 2) || '?'
 
-  const hue = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360
+  const hue = name.split('').reduce((acc, c) => acc + (c.codePointAt(0) ?? 0), 0) % 360
 
   return (
     <div
@@ -885,14 +883,11 @@ function ChannelAvatar({
 // ── Rank number ──────────────────────────────────────────────
 
 function RankNumber({ rank }: Readonly<{ rank: number }>) {
-  const cls =
-    rank === 1
-      ? 'text-[#ffd700]'
-      : rank === 2
-        ? 'text-gray-400'
-        : rank === 3
-          ? 'text-[#cd7f32]'
-          : 'text-gray-500 dark:text-gray-400'
+  let cls: string
+  if (rank === 1) cls = 'text-[#ffd700]'
+  else if (rank === 2) cls = 'text-gray-400'
+  else if (rank === 3) cls = 'text-[#cd7f32]'
+  else cls = 'text-gray-500 dark:text-gray-400'
   return <span className={`font-bold ${cls}`}>{rank}</span>
 }
 
@@ -903,7 +898,7 @@ function getChannelDisplayName(
   channel?: { id: string; name: string }
 ): string {
   if (!channelId || channelId === 'unknown') return 'Unknown channel'
-  if (channel && channel.id === channelId) return channel.name
+  if (channel?.id === channelId) return channel.name
   return channelId
 }
 
@@ -941,13 +936,11 @@ function buildFallbackAchievementArtwork(achievement: {
     .join('')
     .slice(0, 2)
 
-  const colors = achievement.userState.finished
-    ? ['#0a2e25', '#00f593']
-    : achievement.userState.progressCount > 0
-      ? ['#1a0a33', '#9146FF']
-      : achievement.secret
-        ? ['#1c1c1f', '#3a3a3f']
-        : ['#0e0e10', '#2d2d31']
+  let colors: string[]
+  if (achievement.userState.finished) colors = ['#0a2e25', '#00f593']
+  else if (achievement.userState.progressCount > 0) colors = ['#1a0a33', '#9146FF']
+  else if (achievement.secret) colors = ['#1c1c1f', '#3a3a3f']
+  else colors = ['#0e0e10', '#2d2d31']
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">

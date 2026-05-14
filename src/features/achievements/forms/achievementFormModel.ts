@@ -173,7 +173,7 @@ export function createFormValuesFromAchievement(
 export function normalizeAchievementImage(image: string | null | undefined) {
   const trimmedImage = image?.trim()
 
-  return trimmedImage ? trimmedImage : null
+  return trimmedImage || null
 }
 
 export async function createImageUploadFormValue(
@@ -183,7 +183,8 @@ export async function createImageUploadFormValue(
     const reader = new FileReader()
 
     reader.onload = () => {
-      resolve(String(reader.result ?? ''))
+      if (typeof reader.result === 'string') resolve(reader.result)
+      else reject(new Error('Unexpected FileReader result type'))
     }
     reader.onerror = () => {
       reject(new Error('Unable to read the selected image file.'))

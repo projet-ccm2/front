@@ -48,7 +48,7 @@ export function useTwitchChannelRewards(channelId: string | null): {
         )
 
         if (!response.ok) {
-          throw new Error()
+          throw new Error('Failed to fetch channel rewards')
         }
 
         const json = (await response.json()) as { data: TwitchCustomReward[] }

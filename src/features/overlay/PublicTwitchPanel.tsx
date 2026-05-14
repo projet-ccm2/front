@@ -56,7 +56,7 @@ export function PublicTwitchPanel({
   )
 
   const panelUrl =
-    typeof window === 'undefined' ? '' : buildPublicPanelUrl(channelId, window.location.origin)
+    typeof globalThis.window === 'undefined' ? '' : buildPublicPanelUrl(channelId, globalThis.location.origin)
   const entries = buildPublicPanelEntries(achievements, t)
   const viewerEntries = buildPanelAchievementEntries(viewerAchievements, t)
   const activeCount = achievements.filter(achievement => achievement.active).length
@@ -298,17 +298,13 @@ function PanelAchievementCard({
   progressPercent,
 }: Readonly<PanelCardProps>) {
   const hasProgress = typeof progressPercent === 'number'
+  const cardBorderClass =
+    !hasProgress && isHidden
+      ? 'border-[#2d2d31] bg-[#0f0f12] dark:bg-gray-50'
+      : 'border-[#9146FF]/50 bg-[#9146FF]/10'
 
   return (
-    <div
-      className={`rounded-2xl border p-4 ${
-        hasProgress
-          ? 'border-[#9146FF]/50 bg-[#9146FF]/10'
-          : isHidden
-            ? 'border-[#2d2d31] bg-[#0f0f12] dark:bg-gray-50'
-            : 'border-[#9146FF]/50 bg-[#9146FF]/10'
-      }`}
-    >
+    <div className={`rounded-2xl border p-4 ${cardBorderClass}`}>
       <div className="flex items-start gap-4">
         {isHidden ? (
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl font-semibold bg-[#2d2d31] text-white dark:bg-gray-200 dark:text-gray-900">

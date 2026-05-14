@@ -249,8 +249,8 @@ describe('useUserAchievements', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useUserAchievements())
-
+    const { result, unmount } = renderHook(() => useUserAchievements())
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {
@@ -269,8 +269,8 @@ describe('useUserAchievements', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useUserAchievements())
-
+    const { result, unmount } = renderHook(() => useUserAchievements())
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {

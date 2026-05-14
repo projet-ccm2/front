@@ -182,8 +182,8 @@ describe('usePublicViewerAchievements', () => {
       pending as never
     )
 
-    const { unmount } = renderHook(() => usePublicViewerAchievements('channel-1', 'viewer-1'))
-
+    const { result, unmount } = renderHook(() => usePublicViewerAchievements('channel-1', 'viewer-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {

@@ -35,7 +35,7 @@ describe('UI Exports Coverage', () => {
     safeRender(Command.CommandShortcut)
     safeRender(Command.CommandSeparator)
     safeRender(Command.CommandDialog)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all ContextMenu sub-components', () => {
@@ -54,7 +54,7 @@ describe('UI Exports Coverage', () => {
     safeRender(ContextMenu.ContextMenuSubContent)
     safeRender(ContextMenu.ContextMenuSubTrigger)
     safeRender(ContextMenu.ContextMenuRadioGroup)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all DropdownMenu sub-components', () => {
@@ -73,7 +73,7 @@ describe('UI Exports Coverage', () => {
     safeRender(DropdownMenu.DropdownMenuSubContent)
     safeRender(DropdownMenu.DropdownMenuSubTrigger)
     safeRender(DropdownMenu.DropdownMenuRadioGroup)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all Menubar sub-components', () => {
@@ -93,7 +93,7 @@ describe('UI Exports Coverage', () => {
     safeRender(Menubar.MenubarGroup)
     safeRender(Menubar.MenubarSub)
     safeRender(Menubar.MenubarShortcut)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all Sheet sub-components', () => {
@@ -107,7 +107,7 @@ describe('UI Exports Coverage', () => {
     safeRender(Sheet.SheetDescription)
     safeRender(Sheet.SheetPortal)
     safeRender(Sheet.SheetOverlay)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all Drawer sub-components', () => {
@@ -121,7 +121,7 @@ describe('UI Exports Coverage', () => {
     safeRender(Drawer.DrawerDescription)
     safeRender(Drawer.DrawerPortal)
     safeRender(Drawer.DrawerOverlay)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all Table sub-components', () => {
@@ -133,7 +133,7 @@ describe('UI Exports Coverage', () => {
     safeRender(Table.TableRow)
     safeRender(Table.TableCell)
     safeRender(Table.TableCaption)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all Popover sub-components', () => {
@@ -141,7 +141,7 @@ describe('UI Exports Coverage', () => {
     safeRender(Popover.PopoverTrigger)
     safeRender(Popover.PopoverContent)
     safeRender(Popover.PopoverAnchor)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 
   it('should render all NavigationMenu sub-components', () => {
@@ -153,6 +153,6 @@ describe('UI Exports Coverage', () => {
     safeRender(NavigationMenu.NavigationMenuLink)
     safeRender(NavigationMenu.NavigationMenuIndicator)
     safeRender(NavigationMenu.NavigationMenuViewport)
-    expect(true).toBeTruthy()
+    expect(document.body).not.toBeEmptyDOMElement()
   })
 })

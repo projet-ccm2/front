@@ -48,8 +48,8 @@ describe('ApiCallerEndpointInfo', () => {
     })
 
     render(<ApiCallerEndpointInfo achievementId="ach-1" />)
+    expect(screen.getByRole('button', { name: /Copier|Copy/i })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Copier|Copy/i }))
-    // Should not throw
   })
 
   it('handles clipboard writeText rejection gracefully', async () => {

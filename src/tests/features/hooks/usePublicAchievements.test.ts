@@ -148,8 +148,8 @@ describe('usePublicAchievements', () => {
         })
     )
 
-    const { unmount } = renderHook(() => usePublicAchievements())
-
+    const { result, unmount } = renderHook(() => usePublicAchievements())
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {
@@ -166,8 +166,8 @@ describe('usePublicAchievements', () => {
         })
     )
 
-    const { unmount } = renderHook(() => usePublicAchievements())
-
+    const { result, unmount } = renderHook(() => usePublicAchievements())
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {

@@ -1,7 +1,7 @@
 import { useLanguage } from '../../context/LanguageContext'
 
 interface LanguageSwitcherProps {
-  className?: string
+  readonly className?: string
 }
 
 export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
@@ -36,7 +36,7 @@ export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
 
       <span
         className={`text-sm font-semibold transition-colors duration-200 ${
-          !isFr ? 'text-white dark:text-gray-900' : 'text-gray-500 dark:text-gray-400'
+          isFr ? 'text-gray-500 dark:text-gray-400' : 'text-white dark:text-gray-900'
         }`}
       >
         EN

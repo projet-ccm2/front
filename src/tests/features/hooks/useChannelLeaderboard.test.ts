@@ -123,8 +123,8 @@ describe('useChannelLeaderboard', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useChannelLeaderboard('channel-1'))
-
+    const { result, unmount } = renderHook(() => useChannelLeaderboard('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {
@@ -141,8 +141,8 @@ describe('useChannelLeaderboard', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useChannelLeaderboard('channel-1'))
-
+    const { result, unmount } = renderHook(() => useChannelLeaderboard('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {

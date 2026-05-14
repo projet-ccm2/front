@@ -25,6 +25,16 @@ async function fetchTwitchUsers(
   return ((await res.json()) as { data: TwitchHelixUser[] }).data
 }
 
+async function getStoredAccessToken(): Promise<string | null> {
+  const stored = localStorage.getItem('twitch_tokens')
+  if (!stored || !TWITCH_CLIENT_ID) return null
+  try {
+    return (JSON.parse(stored) as { accessToken: string }).accessToken
+  } catch {
+    return null
+  }
+}
+
 async function fetchModeratedChannels(accessToken: string, userId: string): Promise<string[]> {
   try {
     const res = await fetch(
@@ -112,24 +122,15 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     let cancelled = false
 
     const fetchAndEnrichModChannels = async () => {
-      const stored = localStorage.getItem('twitch_tokens')
-      if (!stored || !TWITCH_CLIENT_ID) return
-      let accessToken: string
-      try {
-        accessToken = (JSON.parse(stored) as { accessToken: string }).accessToken
-      } catch {
-        return
-      }
+      const accessToken = await getStoredAccessToken()
+      if (cancelled || !accessToken) return
 
       const moderatedChannelIds = await fetchModeratedChannels(accessToken, user.userId)
       const channelIds = moderatedChannelIds.length ? moderatedChannelIds : user.channelsWhichIsMod
 
       if (cancelled || !channelIds.length) return
 
-      setModeratedChannelIdsByUserId(prev => ({
-        ...prev,
-        [user.userId]: channelIds,
-      }))
+      setModeratedChannelIdsByUserId(prev => ({ ...prev, [user.userId]: channelIds }))
 
       const helixUsers = await fetchTwitchUsers(channelIds, accessToken, TWITCH_CLIENT_ID)
       if (cancelled || !helixUsers.length) return

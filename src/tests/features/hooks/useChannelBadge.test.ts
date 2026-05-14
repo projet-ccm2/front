@@ -128,8 +128,8 @@ describe('useChannelBadge', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useChannelBadge('channel-1'))
-
+    const { result, unmount } = renderHook(() => useChannelBadge('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {
@@ -146,8 +146,8 @@ describe('useChannelBadge', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useChannelBadge('channel-1'))
-
+    const { result, unmount } = renderHook(() => useChannelBadge('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {

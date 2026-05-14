@@ -26,18 +26,14 @@ function getInitialLanguage(): Language {
 }
 
 export function LanguageProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [language, setLanguageState] = useState<Language>(getInitialLanguage)
+  const [language, setLanguage] = useState<Language>(getInitialLanguage)
 
   useEffect(() => {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
   }, [language])
 
-  const setLanguage = (nextLanguage: Language) => {
-    setLanguageState(nextLanguage)
-  }
-
   const toggleLanguage = () => {
-    setLanguageState(current => (current === 'en' ? 'fr' : 'en'))
+    setLanguage(current => (current === 'en' ? 'fr' : 'en'))
   }
 
   const value = useMemo(

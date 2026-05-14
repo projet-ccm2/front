@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { isRenderableImageSource } from '../../achievements/utils/achievementImage'
 
 interface BadgeThumbnailProps {
-  title: string
-  image?: string | null
-  className?: string
+  readonly title: string
+  readonly image?: string | null
+  readonly className?: string
 }
 
 function deriveInitials(title: string): string {

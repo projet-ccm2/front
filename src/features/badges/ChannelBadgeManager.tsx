@@ -30,7 +30,7 @@ function getBadgeErrorMessage(
 }
 
 interface ChannelBadgeManagerProps {
-  className?: string
+  readonly className?: string
 }
 
 export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps) {
@@ -191,6 +191,21 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
     )
   }
 
+  const badgeInfoText = selectedImageUpload ? (
+    <span>
+      {t('badge.channel.form.selected')}{' '}
+      <span className="font-medium text-white dark:text-gray-900">
+        {selectedImageUpload.fileName}
+      </span>
+    </span>
+  ) : currentImage ? (
+    <span className="text-white dark:text-gray-900">
+      {t('badge.channel.form.current')}
+    </span>
+  ) : (
+    <span>{t('badge.channel.form.empty')}</span>
+  )
+
   return (
     <section
       className={`rounded-xl border border-[#2d2d31] bg-[#18181b] p-4 sm:p-6 dark:border-gray-200 dark:bg-white ${className}`}
@@ -311,20 +326,7 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
 
             <div className="flex items-center gap-3 rounded-lg border border-dashed border-[#4d4d51] p-4 text-sm text-gray-400 dark:border-gray-300 dark:text-gray-600">
               <ImageIcon className="h-4 w-4 flex-shrink-0" />
-              {selectedImageUpload ? (
-                <span>
-                  {t('badge.channel.form.selected')}{' '}
-                  <span className="font-medium text-white dark:text-gray-900">
-                    {selectedImageUpload.fileName}
-                  </span>
-                </span>
-              ) : currentImage ? (
-                <span className="text-white dark:text-gray-900">
-                  {t('badge.channel.form.current')}
-                </span>
-              ) : (
-                <span>{t('badge.channel.form.empty')}</span>
-              )}
+              {badgeInfoText}
             </div>
 
             {saveError && (

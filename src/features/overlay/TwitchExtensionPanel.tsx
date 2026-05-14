@@ -35,7 +35,7 @@ export function TwitchExtensionPanel({ onOpenSidebar }: Readonly<TwitchExtension
 
   const previewChannelId = getPreviewChannelId(globalThis.location.search)
   const previewViewerId = getPreviewViewerId(globalThis.location.search)
-  const extensionUrl = typeof window === 'undefined' ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
+  const extensionUrl = typeof globalThis.window === 'undefined' ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
 
   const handleCopyLink = async () => {
     if (!extensionUrl || !navigator.clipboard?.writeText) {

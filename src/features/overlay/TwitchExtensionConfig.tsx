@@ -6,7 +6,7 @@ import { FRONT_URL } from '../../config/environment'
 
 export function TwitchExtensionConfig() {
   const { t } = useLanguage()
-  const extensionUrl = typeof window === 'undefined' ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
+  const extensionUrl = typeof globalThis.window === 'undefined' ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
 
   return (
     <div className="min-h-screen bg-[#0e0e10] text-[#efeff1] dark:bg-gray-50 dark:text-gray-900">
@@ -35,7 +35,7 @@ export function TwitchExtensionConfig() {
             icon={<ClipboardCheck className="h-5 w-5 text-[#9146FF]" />}
             title={t('overlay.extension.config.baseTitle')}
             description={t('overlay.extension.config.baseDescription')}
-            value={`${window.location.origin}/`}
+            value={`${globalThis.location.origin}/`}
           />
           <ConfigCard
             icon={<Code2 className="h-5 w-5 text-[#9146FF]" />}

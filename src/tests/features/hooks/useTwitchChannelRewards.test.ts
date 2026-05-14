@@ -134,8 +134,8 @@ describe('useTwitchChannelRewards', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useTwitchChannelRewards('channel-1'))
-
+    const { result, unmount } = renderHook(() => useTwitchChannelRewards('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {
@@ -152,8 +152,8 @@ describe('useTwitchChannelRewards', () => {
         })
     )
 
-    const { unmount } = renderHook(() => useTwitchChannelRewards('channel-1'))
-
+    const { result, unmount } = renderHook(() => useTwitchChannelRewards('channel-1'))
+    expect(result.current).toBeDefined()
     unmount()
 
     await act(async () => {
