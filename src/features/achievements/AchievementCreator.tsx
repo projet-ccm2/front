@@ -74,9 +74,14 @@ export function AchievementCreator({
 }: Readonly<AchievementCreatorProps>) {
   const { selectedChannel } = useChannel()
   const { language, t } = useLanguage()
-  const isModeratorChannel = selectedChannel ? !isOwnerAchievementChannelId(selectedChannel.id) : false
-  const { rewards, isLoading: isLoadingRewards, error: rewardsError } =
-    useTwitchChannelRewards(selectedChannel?.id ?? null)
+  const isModeratorChannel = selectedChannel
+    ? !isOwnerAchievementChannelId(selectedChannel.id)
+    : false
+  const {
+    rewards,
+    isLoading: isLoadingRewards,
+    error: rewardsError,
+  } = useTwitchChannelRewards(selectedChannel?.id ?? null)
   const achievementTriggerOptions = getAchievementTriggerOptions(language)
   const [mode, setMode] = useState<'simple' | 'api'>('simple')
   const [formValues, setFormValues] = useState(defaultAchievementFormValues)
@@ -384,9 +389,7 @@ export function AchievementCreator({
               />
 
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Ctrl + Enter
-                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Ctrl + Enter</span>
                 <button
                   onClick={() => void handleAIGenerate()}
                   disabled={isGenerating}
@@ -737,7 +740,9 @@ export function AchievementCreator({
                                 <select
                                   id="achievement-trigger-data"
                                   value={
-                                    formValues.type.data === null ? '' : String(formValues.type.data)
+                                    formValues.type.data === null
+                                      ? ''
+                                      : String(formValues.type.data)
                                   }
                                   onChange={event =>
                                     setFormValues(current => ({
@@ -809,7 +814,6 @@ export function AchievementCreator({
                     </div>
                   )
                 })()}
-
 
               <div className="mb-8 p-4 bg-[#2d2d31] dark:bg-gray-100 rounded-lg border-l-4 border-[#00f593]">
                 <div className="flex items-center gap-2 text-[#00f593] mb-1">

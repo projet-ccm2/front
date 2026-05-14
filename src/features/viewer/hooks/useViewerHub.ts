@@ -23,7 +23,7 @@ function getErrorMessage(error: unknown, language: Language) {
           : 'The viewer hub request is invalid.'
       case 404:
         return language === 'fr'
-          ? "Aucun succès n\u2019a été trouvé pour ce compte."
+          ? 'Aucun succès n\u2019a été trouvé pour ce compte.'
           : 'No achievements were found for this account.'
       case 502:
         return language === 'fr'

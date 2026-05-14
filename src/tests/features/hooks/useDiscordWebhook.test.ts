@@ -3,8 +3,9 @@ import { renderHook, act } from '../../utils/test-utils'
 import { useDiscordWebhook } from '../../../features/discord/hooks/useDiscordWebhook'
 import { DiscordWebhookError } from '../../../features/discord/api/discordWebhookClient'
 
-vi.mock('../../../features/discord/api/discordWebhookClient', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../features/discord/api/discordWebhookClient')>()
+vi.mock('../../../features/discord/api/discordWebhookClient', async importOriginal => {
+  const actual =
+    await importOriginal<typeof import('../../../features/discord/api/discordWebhookClient')>()
   return {
     ...actual,
     discordWebhookClient: {

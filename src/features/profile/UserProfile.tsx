@@ -177,11 +177,7 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                       'border-[#c0c0c0]/50',
                       'border-[#cd7f32]/50',
                     ]
-                    const bgColors = [
-                      'bg-[#ffd700]/10',
-                      'bg-[#c0c0c0]/10',
-                      'bg-[#cd7f32]/10',
-                    ]
+                    const bgColors = ['bg-[#ffd700]/10', 'bg-[#c0c0c0]/10', 'bg-[#cd7f32]/10']
                     const isCurrentUser = entry.userId === user?.userId
                     return (
                       <div
@@ -193,7 +189,9 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                           {entry.username}
                         </div>
                         {isCurrentUser && (
-                          <div className="text-xs text-[#9146FF]">({t('profile.leaderboard.you')})</div>
+                          <div className="text-xs text-[#9146FF]">
+                            ({t('profile.leaderboard.you')})
+                          </div>
                         )}
                         <div className="mt-1 text-xs text-gray-400 dark:text-gray-600">
                           {entry.xp.toLocaleString()} XP
@@ -222,7 +220,9 @@ export function UserProfile({ onOpenSidebar }: UserProfileProps) {
                           <span className="min-w-0 flex-1 truncate text-sm text-white dark:text-gray-900">
                             {entry.username}
                             {isCurrentUser && (
-                              <span className="ml-2 text-xs text-[#9146FF]">({t('profile.leaderboard.you')})</span>
+                              <span className="ml-2 text-xs text-[#9146FF]">
+                                ({t('profile.leaderboard.you')})
+                              </span>
                             )}
                           </span>
                           <span className="text-sm text-gray-400 dark:text-gray-600">

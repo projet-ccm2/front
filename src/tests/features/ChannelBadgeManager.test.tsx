@@ -206,9 +206,7 @@ describe('ChannelBadgeManager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le badge' }))
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/titre ou sélectionne une image/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/titre ou sélectionne une image/i)).toBeInTheDocument()
     })
   })
 

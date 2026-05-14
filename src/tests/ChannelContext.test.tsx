@@ -168,7 +168,9 @@ describe('ChannelContext', () => {
     expect(screen.getByTestId('selected-channel')).toHaveTextContent('MyTwitchChannel')
     expect(screen.getByTestId('available-count')).toHaveTextContent('2')
     await waitFor(() => {
-      expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,Pro Gaming Hub')
+      expect(screen.getByTestId('available-names')).toHaveTextContent(
+        'MyTwitchChannel,Pro Gaming Hub'
+      )
     })
 
     vi.unstubAllGlobals()
@@ -220,7 +222,9 @@ describe('ChannelContext', () => {
     expect(screen.getByTestId('selected-channel')).toHaveTextContent('MyTwitchChannel')
     expect(screen.getByTestId('available-count')).toHaveTextContent('2')
     await waitFor(() => {
-      expect(screen.getByTestId('available-names')).toHaveTextContent('MyTwitchChannel,Pro Gaming Hub')
+      expect(screen.getByTestId('available-names')).toHaveTextContent(
+        'MyTwitchChannel,Pro Gaming Hub'
+      )
     })
 
     vi.unstubAllGlobals()

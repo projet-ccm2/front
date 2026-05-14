@@ -107,7 +107,6 @@ describe('useViewerHub', () => {
     expect(result.current.errorMessage).toBeNull()
   })
 
-
   it('returns empty channelInfoById when no twitch_tokens are stored', async () => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
 
@@ -207,7 +206,15 @@ describe('useViewerHub', () => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
 
     let resolver!: (value: Response) => void
-    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(r => { resolver = r })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>(r => {
+            resolver = r
+          })
+      )
+    )
 
     const { unmount } = renderHook(() => useViewerHub())
 
@@ -222,7 +229,15 @@ describe('useViewerHub', () => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
 
     let rejecter!: (err: Error) => void
-    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((_, r) => { rejecter = r })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((_, r) => {
+            rejecter = r
+          })
+      )
+    )
 
     const { unmount } = renderHook(() => useViewerHub())
 

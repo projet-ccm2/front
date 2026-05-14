@@ -4,8 +4,7 @@ type TranslationValue = string
 
 type TranslationMap = Record<string, TranslationValue>
 
-const EN_OWNER_ONLY_MESSAGE =
-  'Only the channel owner can publish or edit achievements.'
+const EN_OWNER_ONLY_MESSAGE = 'Only the channel owner can publish or edit achievements.'
 const EN_OWNER_ONLY_DASHBOARD_MESSAGE =
   'Achievement management currently supports only the connected user channel. Channel metrics stay hidden for moderator channels, but your achievement progress remains visible.'
 
@@ -377,8 +376,7 @@ const EN_TRANSLATIONS: TranslationMap = {
   'badge.channel.form.saving': 'Saving...',
   'badge.channel.saved': 'Channel badge updated successfully.',
   'badge.channel.signIn': 'Sign in to manage the channel badge.',
-  'badge.channel.error.validation':
-    'Enter a title or select an image before saving the badge.',
+  'badge.channel.error.validation': 'Enter a title or select an image before saving the badge.',
   'badge.channel.image.error.type': 'Only JPEG, PNG, and WebP images are accepted.',
   'badge.channel.image.error.size': 'The image must be smaller than 10 MB.',
   'badge.channel.image.ready': 'Image "{name}" is ready to upload.',
@@ -470,10 +468,38 @@ const EN_TRANSLATIONS: TranslationMap = {
   'creator.validation.missingFields': 'Title and description are required before publishing.',
   'creator.validation.missingDetail': 'A detail value is required for this trigger type.',
   'creator.validation.invalidCost': 'Channel point cost must be a positive integer.',
-  'management.moderator.banner':
-    'Moderator view — changes you make will affect this channel.',
+  'management.moderator.banner': 'Moderator view — changes you make will affect this channel.',
   'creator.moderator.banner':
     'Moderator view — you are creating or editing achievements for another channel.',
+  'settings.title': 'Settings',
+  'settings.dangerZone.title': 'Danger Zone',
+  'settings.dangerZone.description':
+    'These actions are permanent and cannot be undone. Proceed with extreme caution.',
+  'settings.nuke.button': 'Delete all my data',
+  'settings.nuke.buttonDescription':
+    'Permanently delete your account and all associated data (GDPR).',
+  'settings.nuke.dialog.step1.title': 'Delete all your data?',
+  'settings.nuke.dialog.step1.description':
+    'This will permanently and irreversibly delete all data associated with your account:',
+  'settings.nuke.dialog.step1.item1': 'All your achievements and progress',
+  'settings.nuke.dialog.step1.item2': 'Your profile and statistics',
+  'settings.nuke.dialog.step1.item3': 'Your channel badges',
+  'settings.nuke.dialog.step1.item4': 'All your account data',
+  'settings.nuke.dialog.step1.continue': 'Continue',
+  'settings.nuke.dialog.step2.title': 'Confirm your identity',
+  'settings.nuke.dialog.step2.description':
+    'Type your Twitch username to confirm you want to delete your data:',
+  'settings.nuke.dialog.step2.placeholder': 'Your username',
+  'settings.nuke.dialog.step2.confirm': 'I understand, delete my data',
+  'settings.nuke.dialog.step3.title': 'Final confirmation',
+  'settings.nuke.dialog.step3.description':
+    'This is your last chance. Once confirmed, all your data will be permanently deleted and cannot be recovered.',
+  'settings.nuke.dialog.step3.countdown': 'Wait {seconds}s...',
+  'settings.nuke.dialog.step3.confirm': 'Permanently delete all my data',
+  'settings.nuke.dialog.cancel': 'Cancel',
+  'settings.nuke.dialog.back': 'Back',
+  'settings.nuke.deleting': 'Deleting...',
+  'settings.nuke.error': 'An error occurred while deleting your data. Please try again.',
 }
 
 const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
@@ -819,7 +845,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'badge.channel.form.preparing': 'Préparation...',
   'badge.channel.form.clear': "Effacer l'image sélectionnée",
   'badge.channel.form.selected': 'Fichier sélectionné :',
-  'badge.channel.form.current': "Image actuelle :",
+  'badge.channel.form.current': 'Image actuelle :',
   'badge.channel.form.empty': 'Aucune image sélectionnée pour le moment.',
   'badge.channel.form.save': 'Enregistrer le badge',
   'badge.channel.form.saving': 'Enregistrement...',
@@ -841,18 +867,20 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'management.apicaller.endpoint.copied': 'Copié !',
   'management.apicaller.docs.open': 'Comment utiliser cet endpoint',
   'management.apicaller.docs.title': 'Documentation API',
-  'management.apicaller.docs.subtitle': "Appelez cet endpoint pour débloquer le succès pour un utilisateur.",
+  'management.apicaller.docs.subtitle':
+    'Appelez cet endpoint pour débloquer le succès pour un utilisateur.',
   'management.apicaller.docs.method': 'Méthode',
   'management.apicaller.docs.headers': 'En-têtes',
   'management.apicaller.docs.body': 'Corps de la requête',
   'management.apicaller.docs.body.twitch_token': "Le jeton OAuth Twitch de l'utilisateur",
-  'management.apicaller.docs.body.achievement_id': 'L\'ID de ce succès',
+  'management.apicaller.docs.body.achievement_id': "L'ID de ce succès",
   'management.apicaller.docs.responses': 'Réponses',
   'management.apicaller.docs.response.200': '200 — Succès débloqué avec succès',
   'management.apicaller.docs.response.400': '400 — twitch_token ou achievement_id manquant',
   'management.apicaller.docs.response.401': '401 — Jeton Twitch invalide ou expiré',
   'management.apicaller.docs.response.409': '409 — Succès déjà débloqué pour cet utilisateur',
-  'management.apicaller.docs.response.429': '429 — Limite de requêtes dépassée (30 req / 60s par utilisateur)',
+  'management.apicaller.docs.response.429':
+    '429 — Limite de requêtes dépassée (30 req / 60s par utilisateur)',
   'viewerHub.overview': "Vue d'ensemble",
   'viewerHub.all': 'Tous',
   'viewerHub.channelTotal': '{n} succès au total',
@@ -916,10 +944,38 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'creator.validation.missingDetail':
     'Une valeur de détail est requise pour ce type de déclencheur.',
   'creator.validation.invalidCost': 'Le coût en points de chaîne doit être un entier positif.',
-  'management.moderator.banner':
-    'Vue modérateur — les modifications affecteront cette chaîne.',
+  'management.moderator.banner': 'Vue modérateur — les modifications affecteront cette chaîne.',
   'creator.moderator.banner':
     'Vue modérateur — vous créez ou modifiez des succès pour une autre chaîne.',
+  'settings.title': 'Paramètres',
+  'settings.dangerZone.title': 'Zone dangereuse',
+  'settings.dangerZone.description':
+    'Ces actions sont permanentes et irréversibles. Procédez avec une extrême prudence.',
+  'settings.nuke.button': 'Supprimer toutes mes données',
+  'settings.nuke.buttonDescription':
+    'Supprimez définitivement votre compte et toutes les données associées (RGPD).',
+  'settings.nuke.dialog.step1.title': 'Supprimer toutes vos données ?',
+  'settings.nuke.dialog.step1.description':
+    'Cette action supprimera définitivement et irrémédiablement toutes les données associées à votre compte :',
+  'settings.nuke.dialog.step1.item1': 'Tous vos succès et votre progression',
+  'settings.nuke.dialog.step1.item2': 'Votre profil et vos statistiques',
+  'settings.nuke.dialog.step1.item3': 'Vos badges de chaîne',
+  'settings.nuke.dialog.step1.item4': 'Toutes les données de votre compte',
+  'settings.nuke.dialog.step1.continue': 'Continuer',
+  'settings.nuke.dialog.step2.title': 'Confirmez votre identité',
+  'settings.nuke.dialog.step2.description':
+    'Tapez votre nom d’utilisateur Twitch pour confirmer la suppression de vos données :',
+  'settings.nuke.dialog.step2.placeholder': 'Votre nom d’utilisateur',
+  'settings.nuke.dialog.step2.confirm': 'Je comprends, supprimer mes données',
+  'settings.nuke.dialog.step3.title': 'Confirmation finale',
+  'settings.nuke.dialog.step3.description':
+    'C’est votre dernière chance. Une fois confirmé, toutes vos données seront définitivement supprimées et ne pourront pas être récupérées.',
+  'settings.nuke.dialog.step3.countdown': 'Patientez {seconds}s...',
+  'settings.nuke.dialog.step3.confirm': 'Supprimer définitivement toutes mes données',
+  'settings.nuke.dialog.cancel': 'Annuler',
+  'settings.nuke.dialog.back': 'Retour',
+  'settings.nuke.deleting': 'Suppression...',
+  'settings.nuke.error': 'Une erreur est survenue lors de la suppression. Veuillez réessayer.',
 }
 
 export const TRANSLATIONS: Record<Language, TranslationMap> = {

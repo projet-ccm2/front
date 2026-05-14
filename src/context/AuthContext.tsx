@@ -3,7 +3,12 @@ import { createContext, useContext, useState, useCallback, useMemo } from 'react
 import type { ReactNode } from 'react'
 import type { TwitchUser, AuthContextType } from '../types/twitch'
 import { addBotAsModerator } from '../features/chat/api/chatClient'
-import { AUTH_SERVICE_URL, TWITCH_CLIENT_ID, FRONT_URL, MOBILE_REDIRECT_URI } from '../config/environment'
+import {
+  AUTH_SERVICE_URL,
+  TWITCH_CLIENT_ID,
+  FRONT_URL,
+  MOBILE_REDIRECT_URI,
+} from '../config/environment'
 import { Capacitor } from '@capacitor/core'
 import { openExternalUrl } from '../utils/browserRuntime'
 
@@ -81,7 +86,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
           localStorage.setItem('twitch_tokens', JSON.stringify(tokens))
 
           // Automatically add the IRC bot as moderator — silent, non-blocking
-          addBotAsModerator(data.userId, tokens.accessToken).catch((err) => {
+          addBotAsModerator(data.userId, tokens.accessToken).catch(err => {
             console.warn('Could not add bot as moderator:', err)
           })
         } else {

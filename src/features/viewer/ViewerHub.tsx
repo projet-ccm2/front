@@ -1,4 +1,14 @@
-import { ArrowLeft, CheckCircle2, ChevronRight, Lock, Medal, Menu, Star, Trophy, Zap } from 'lucide-react'
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ChevronRight,
+  Lock,
+  Medal,
+  Menu,
+  Star,
+  Trophy,
+  Zap,
+} from 'lucide-react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
@@ -449,7 +459,9 @@ function OverviewPanel({
                   </div>
                   <div className="flex-shrink-0 text-right">
                     <div className="text-lg font-bold text-white dark:text-gray-900">{pct}%</div>
-                    <div className="text-[11px] text-gray-500">{t('viewerHub.channelCompleted')}</div>
+                    <div className="text-[11px] text-gray-500">
+                      {t('viewerHub.channelCompleted')}
+                    </div>
                   </div>
                 </div>
                 <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#2d2d31] dark:bg-gray-200">
@@ -653,9 +665,7 @@ function BadgesSection({
 
       <div className="p-4">
         {isLoading && (
-          <p className="text-sm text-gray-400 dark:text-gray-600">
-            {t('profile.badges.loading')}
-          </p>
+          <p className="text-sm text-gray-400 dark:text-gray-600">{t('profile.badges.loading')}</p>
         )}
 
         {!isLoading && errorMessage && (
@@ -665,9 +675,7 @@ function BadgesSection({
         )}
 
         {!isLoading && !errorMessage && badges.length === 0 && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('profile.badges.empty')}
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('profile.badges.empty')}</p>
         )}
 
         {!isLoading && !errorMessage && badges.length > 0 && (

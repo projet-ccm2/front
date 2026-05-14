@@ -174,7 +174,9 @@ describe('usePublicViewerAchievements', () => {
 
   it('ignores a late error after unmounting', async () => {
     let rejecter!: (err: Error) => void
-    const pending = new Promise<never>((_, reject) => { rejecter = reject })
+    const pending = new Promise<never>((_, reject) => {
+      rejecter = reject
+    })
 
     vi.mocked(achievementManagementClient.getUserChannelAchievements).mockReturnValue(
       pending as never

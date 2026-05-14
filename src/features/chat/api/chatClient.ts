@@ -18,10 +18,7 @@ export class ChatClientError extends Error {
  * Called automatically after login — silent if already mod (409).
  * Requires scope: channel:manage:moderators
  */
-export async function addBotAsModerator(
-  broadcasterId: string,
-  accessToken: string,
-): Promise<void> {
+export async function addBotAsModerator(broadcasterId: string, accessToken: string): Promise<void> {
   const url = new URL('https://api.twitch.tv/helix/moderation/moderators')
   url.searchParams.set('broadcaster_id', broadcasterId)
   url.searchParams.set('user_id', BOT_USER_ID)
@@ -39,7 +36,7 @@ export async function addBotAsModerator(
     const body = await res.json().catch(() => ({}))
     throw new ChatClientError(
       body.message ?? `Failed to add bot as moderator (${res.status})`,
-      res.status,
+      res.status
     )
   }
 }

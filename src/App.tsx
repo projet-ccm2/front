@@ -14,6 +14,7 @@ import { SuccessManagement } from './features/achievements/SuccessManagement'
 import { Marketplace } from './features/marketplace/Marketplace'
 import { UserProfile } from './features/profile/UserProfile'
 import { ViewerHub } from './features/viewer/ViewerHub'
+import { Settings } from './features/settings/Settings'
 import { DiscordWebhookScreen } from './features/discord/DiscordWebhookScreen'
 import { TwitchOverlay } from './features/overlay/TwitchOverlay'
 import { PublicTwitchPanel } from './features/overlay/PublicTwitchPanel'
@@ -38,6 +39,7 @@ type Screen =
   | 'viewerHub'
   | 'overlay'
   | 'discord'
+  | 'settings'
 
 export function AppContent() {
   const { isAuthenticated, isLoading, login, completeAuth } = useAuth()
@@ -49,45 +51,48 @@ export function AppContent() {
   const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
 
-  const handleOAuthHash = useCallback(async (hash: string) => {
-    if (!hash.includes('access_token')) return
-    const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash)
-    const accessToken = params.get('access_token')
-    const idToken = params.get('id_token')
-    const tokenType = params.get('token_type')
-    const expiresIn = Number(params.get('expires_in'))
-    const scope = params.get('scope')?.split(' ') ?? []
-    const state = params.get('state') ?? ''
+  const handleOAuthHash = useCallback(
+    async (hash: string) => {
+      if (!hash.includes('access_token')) return
+      const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash)
+      const accessToken = params.get('access_token')
+      const idToken = params.get('id_token')
+      const tokenType = params.get('token_type')
+      const expiresIn = Number(params.get('expires_in'))
+      const scope = params.get('scope')?.split(' ') ?? []
+      const state = params.get('state') ?? ''
 
-    if (!accessToken || !idToken) return
-    const savedState = Capacitor.isNativePlatform()
-      ? localStorage.getItem('twitch_auth_state')
-      : sessionStorage.getItem('twitch_auth_state')
-    if (!savedState || savedState !== state) {
-      console.error('OAuth state mismatch - aborting auth')
-      return
-    }
-    localStorage.removeItem('twitch_auth_state')
-    sessionStorage.removeItem('twitch_auth_state')
+      if (!accessToken || !idToken) return
+      const savedState = Capacitor.isNativePlatform()
+        ? localStorage.getItem('twitch_auth_state')
+        : sessionStorage.getItem('twitch_auth_state')
+      if (!savedState || savedState !== state) {
+        console.error('OAuth state mismatch - aborting auth')
+        return
+      }
+      localStorage.removeItem('twitch_auth_state')
+      sessionStorage.removeItem('twitch_auth_state')
 
-    try {
-      await completeAuth({
-        accessToken,
-        idToken,
-        tokenType: tokenType ?? 'bearer',
-        expiresIn,
-        scope,
-        state,
-      })
-      globalThis.history?.replaceState({}, document.title, globalThis.location.pathname)
-      setCurrentScreen('dashboard')
-      setSidebarOpen(false)
-    } catch (error) {
-      console.error('Auth completion failed', error)
-      const message = error instanceof Error ? error.message : String(error)
-      toast.error(`Auth backend KO: ${message}`)
-    }
-  }, [completeAuth])
+      try {
+        await completeAuth({
+          accessToken,
+          idToken,
+          tokenType: tokenType ?? 'bearer',
+          expiresIn,
+          scope,
+          state,
+        })
+        globalThis.history?.replaceState({}, document.title, globalThis.location.pathname)
+        setCurrentScreen('dashboard')
+        setSidebarOpen(false)
+      } catch (error) {
+        console.error('Auth completion failed', error)
+        const message = error instanceof Error ? error.message : String(error)
+        toast.error(`Auth backend KO: ${message}`)
+      }
+    },
+    [completeAuth]
+  )
 
   // Web: parse hash on mount
   useEffect(() => {
@@ -132,7 +137,7 @@ export function AppContent() {
       listenerRef.current = handle
     })
 
-    getLaunchUrl().then((result) => {
+    getLaunchUrl().then(result => {
       if (result?.url) {
         void processUrl(result.url)
       }
@@ -227,6 +232,9 @@ export function AppContent() {
           )}
           {currentScreen === 'discord' && (
             <DiscordWebhookScreen onOpenSidebar={() => setSidebarOpen(true)} />
+          )}
+          {currentScreen === 'settings' && (
+            <Settings onOpenSidebar={() => setSidebarOpen(true)} onNavigate={handleNavigate} />
           )}
         </main>
       </div>

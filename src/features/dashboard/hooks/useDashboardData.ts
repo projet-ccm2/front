@@ -239,9 +239,7 @@ export function useDashboardData(): DashboardDataResult {
           : achievementManagementClient.getUserAchievements(user.userId)
 
         const channelAchievementsPromise = selectedChannel
-          ? achievementManagementClient.getChannelAchievements(
-              getRealChannelId(selectedChannel.id)
-            )
+          ? achievementManagementClient.getChannelAchievements(getRealChannelId(selectedChannel.id))
           : Promise.resolve<Achievement[]>([])
 
         const [channelAchievements, userAchievements] = await Promise.all([

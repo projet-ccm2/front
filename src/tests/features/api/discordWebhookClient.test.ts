@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { discordWebhookClient, DiscordWebhookError } from '../../../features/discord/api/discordWebhookClient'
+import {
+  discordWebhookClient,
+  DiscordWebhookError,
+} from '../../../features/discord/api/discordWebhookClient'
 
 describe('discordWebhookClient', () => {
   beforeEach(() => {
@@ -44,7 +47,9 @@ describe('discordWebhookClient', () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 500,
-      json: () => { throw new Error('invalid json') },
+      json: () => {
+        throw new Error('invalid json')
+      },
       text: () => Promise.resolve('Internal Server Error'),
     } as unknown as Response)
 

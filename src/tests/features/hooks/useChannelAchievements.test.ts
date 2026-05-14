@@ -172,7 +172,12 @@ describe('useChannelAchievements', () => {
 
   it('should not update state when unmounted before fetch resolves', async () => {
     let resolver!: (value: Response) => void
-    vi.mocked(fetch).mockImplementation(() => new Promise<Response>(r => { resolver = r }))
+    vi.mocked(fetch).mockImplementation(
+      () =>
+        new Promise<Response>(r => {
+          resolver = r
+        })
+    )
 
     const { unmount } = renderHook(() => useChannelAchievements('channel-1'))
 
@@ -185,7 +190,12 @@ describe('useChannelAchievements', () => {
 
   it('should not update state when unmounted before fetch rejects', async () => {
     let rejecter!: (err: Error) => void
-    vi.mocked(fetch).mockImplementation(() => new Promise<Response>((_, r) => { rejecter = r }))
+    vi.mocked(fetch).mockImplementation(
+      () =>
+        new Promise<Response>((_, r) => {
+          rejecter = r
+        })
+    )
 
     const { unmount } = renderHook(() => useChannelAchievements('channel-1'))
 

@@ -157,7 +157,14 @@ export function Sidebar({ currentPage, onNavigate, isOpen = true, onClose }: Sid
             {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             <span>{theme === 'light' ? t('common.darkMode') : t('common.lightMode')}</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-colors">
+          <button
+            onClick={() => handleNavigation('settings')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              currentPage === 'settings'
+                ? 'bg-[#9146FF] text-white'
+                : 'text-gray-400 hover:bg-[#2d2d31] hover:text-white dark:text-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900'
+            }`}
+          >
             <Settings className="w-5 h-5" />
             <span>{t('common.settings')}</span>
           </button>

@@ -51,9 +51,7 @@ export function ApiCallerEndpointInfo({ achievementId }: Readonly<Props>) {
         </span>
         <div className="flex items-center gap-1.5 min-w-0 flex-1 bg-[#2d2d31] dark:bg-gray-100 rounded-lg px-3 py-1.5">
           <span className="text-xs font-mono text-[#9146FF] font-semibold flex-shrink-0">POST</span>
-          <span className="text-xs font-mono text-gray-300 dark:text-gray-600 truncate">
-            {url}
-          </span>
+          <span className="text-xs font-mono text-gray-300 dark:text-gray-600 truncate">{url}</span>
         </div>
         <button
           aria-label={t('management.apicaller.endpoint.copy')}

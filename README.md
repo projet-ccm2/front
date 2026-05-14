@@ -8,21 +8,21 @@ The app is also distributed as a **Twitch Extension** (panel + config page) and 
 
 ## Tech Stack
 
-| Category | Technology |
-|---|---|
-| Framework | React 19 |
-| Language | TypeScript 5.9 (strict) |
-| Build tool | Vite 7 + SWC |
-| Styling | Tailwind CSS + `tailwind-merge` + `clsx` |
+| Category      | Technology                                |
+| ------------- | ----------------------------------------- |
+| Framework     | React 19                                  |
+| Language      | TypeScript 5.9 (strict)                   |
+| Build tool    | Vite 7 + SWC                              |
+| Styling       | Tailwind CSS + `tailwind-merge` + `clsx`  |
 | UI primitives | Radix UI (full suite) + shadcn/ui pattern |
-| Icons | Lucide React |
-| Charts | Recharts |
-| Toasts | Sonner |
-| Forms | React Hook Form |
-| State | React Context + hooks (no external store) |
-| i18n | Custom (`resolveTranslation`) — EN / FR |
-| Testing | Vitest + jsdom + Testing Library |
-| Mobile | Capacitor 6 (Android) |
+| Icons         | Lucide React                              |
+| Charts        | Recharts                                  |
+| Toasts        | Sonner                                    |
+| Forms         | React Hook Form                           |
+| State         | React Context + hooks (no external store) |
+| i18n          | Custom (`resolveTranslation`) — EN / FR   |
+| Testing       | Vitest + jsdom + Testing Library          |
+| Mobile        | Capacitor 6 (Android)                     |
 
 ---
 
@@ -75,37 +75,47 @@ features/<name>/
 ## Features
 
 ### Dashboard
+
 Aggregated view of achievement stats, an engagement chart (Recharts), and a recent activity feed. Metrics are intentionally hidden when browsing a moderated channel — only the moderator's own achievement progress is shown.
 
 ### Achievement Creator
+
 Full-featured form to create or edit an achievement:
+
 - **Trigger types**: chat message count, message content match, channel point cost, channel point redemption name, API caller
 - **AI suggestion**: generates a title + description from a prompt via `POST /achievements/ai-suggestion`
 - **Image upload**: converts a file to base64 and sends it to the backend; stored URL returned on save
 - **Moderator support**: moderators can create and edit achievements on channels they moderate; a yellow banner signals the moderated context
 
 ### Achievement Management
+
 List of a channel's achievements with search, filter, activate/deactivate toggle, edit, and delete. Also available to moderators.
 
 ### Marketplace
+
 Browse public achievement templates from the community. Filter and sort, then use one as a starting point in the Creator.
 
 ### Twitch Overlay & Extension
+
 - **Live overlay** (`/overlay`): real-time viewer panel for OBS browser source
 - **Public panel**: `?channel=<id>` URL renders a public achievement board
 - **Twitch Extension Panel** (`panel.html`): embedded in the Twitch panel slot
 - **Twitch Extension Config** (`config.html`): broadcaster config page inside Twitch dashboard
 
 ### Viewer Hub
+
 Allows a logged-in viewer to track their achievement progress across multiple channels they follow in one place.
 
 ### User Profile
+
 Shows a viewer's level, XP, unlocked achievements list, and their position on the channel leaderboard.
 
 ### Discord Webhook
+
 Configure a Discord webhook URL to receive notifications when achievements are unlocked.
 
 ### Mobile (APK)
+
 Android build via Capacitor. The APK download screen lets users grab the latest mobile build directly.
 
 ---
@@ -116,11 +126,19 @@ Navigation is **purely state-driven** — no router library. `App.tsx` holds a `
 
 ```ts
 type Screen =
-  | 'landing' | 'dashboard' | 'creator' | 'management'
-  | 'marketplace' | 'profile' | 'viewerHub' | 'overlay' | 'discord'
+  | 'landing'
+  | 'dashboard'
+  | 'creator'
+  | 'management'
+  | 'marketplace'
+  | 'profile'
+  | 'viewerHub'
+  | 'overlay'
+  | 'discord'
 ```
 
 On mount, `App.tsx` checks the URL path:
+
 - Twitch extension panel path → renders `TwitchExtensionPanel` directly
 - `?channel=<id>` query param → renders `PublicTwitchPanel` directly
 - Otherwise → renders the main `AppContent` with the `currentScreen` switcher
@@ -129,12 +147,12 @@ On mount, `App.tsx` checks the URL path:
 
 ## Context Providers
 
-| Context | What it manages |
-|---|---|
-| `AuthContext` | Twitch OAuth state (`user`, `isAuthenticated`), `login()`, `logout()`, `completeAuth()` |
-| `ChannelContext` | `selectedChannel`, `availableChannels` (own + moderated), `setSelectedChannel()` |
-| `LanguageContext` | Active language (`en` / `fr`), `t(key)` translation helper |
-| `ThemeContext` | `theme` (`dark` / `light`), `toggleTheme()` |
+| Context           | What it manages                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| `AuthContext`     | Twitch OAuth state (`user`, `isAuthenticated`), `login()`, `logout()`, `completeAuth()` |
+| `ChannelContext`  | `selectedChannel`, `availableChannels` (own + moderated), `setSelectedChannel()`        |
+| `LanguageContext` | Active language (`en` / `fr`), `t(key)` translation helper                              |
+| `ThemeContext`    | `theme` (`dark` / `light`), `toggleTheme()`                                             |
 
 All providers are composed in `App.tsx`. The `<Toaster />` from Sonner is mounted once inside `AppContent`, outside the layout, and reads the active theme.
 
@@ -159,28 +177,28 @@ All backend communication goes through typed client objects. The pattern is a pl
 
 Env var: `VITE_ACHIEVEMENT_MANAGEMENT_SERVICE_URL` (default: `http://localhost:3001`)
 
-| Method | Route | Usage |
-|---|---|---|
-| GET | `/achievements/:id` | Load one achievement |
-| GET | `/achievements/channel/:channelId` | Channel achievement list |
-| GET | `/achievements/public` | Marketplace |
-| GET | `/achievements/user/:userId` | User's unlocked achievements |
-| GET | `/achievements/user/:userId/channel/:channelId` | User achievements filtered by channel |
-| POST | `/achievements` | Create |
-| PUT | `/achievements/:id` | Update |
-| DELETE | `/achievements/:id` | Delete |
-| PATCH | `/achievements/:id/activate` | Activate |
-| PATCH | `/achievements/:id/deactivate` | Deactivate |
-| POST | `/achievements/ai-suggestion` | AI generation |
+| Method | Route                                           | Usage                                 |
+| ------ | ----------------------------------------------- | ------------------------------------- |
+| GET    | `/achievements/:id`                             | Load one achievement                  |
+| GET    | `/achievements/channel/:channelId`              | Channel achievement list              |
+| GET    | `/achievements/public`                          | Marketplace                           |
+| GET    | `/achievements/user/:userId`                    | User's unlocked achievements          |
+| GET    | `/achievements/user/:userId/channel/:channelId` | User achievements filtered by channel |
+| POST   | `/achievements`                                 | Create                                |
+| PUT    | `/achievements/:id`                             | Update                                |
+| DELETE | `/achievements/:id`                             | Delete                                |
+| PATCH  | `/achievements/:id/activate`                    | Activate                              |
+| PATCH  | `/achievements/:id/deactivate`                  | Deactivate                            |
+| POST   | `/achievements/ai-suggestion`                   | AI generation                         |
 
 ### Other Services
 
-| Env var | Default | Used by |
-|---|---|---|
-| `VITE_AUTH_SERVICE_URL` | `http://localhost:3000` | Auth, channel list |
-| `VITE_API_SERVICE_URL` | `http://localhost:3000` | General API calls |
-| `VITE_TWITCH_CLIENT_ID` | — | Twitch API requests (channel points) |
-| `VITE_FRONT_URL` | — | OAuth redirect URL |
+| Env var                 | Default                 | Used by                              |
+| ----------------------- | ----------------------- | ------------------------------------ |
+| `VITE_AUTH_SERVICE_URL` | `http://localhost:3000` | Auth, channel list                   |
+| `VITE_API_SERVICE_URL`  | `http://localhost:3000` | General API calls                    |
+| `VITE_TWITCH_CLIENT_ID` | —                       | Twitch API requests (channel points) |
+| `VITE_FRONT_URL`        | —                       | OAuth redirect URL                   |
 
 At runtime, env vars are injected into `globalThis._env_` via `env.sh` (Docker). `src/config/environment.ts` resolves them with a fallback chain: `_env_` → `import.meta.env` → hardcoded default.
 
@@ -190,10 +208,10 @@ At runtime, env vars are injected into `globalThis._env_` via `env.sh` (Docker).
 
 Vite builds three separate HTML entry points:
 
-| File | Mount | Purpose |
-|---|---|---|
-| `index.html` | `src/main.tsx` | Main dashboard app |
-| `panel.html` | `src/TwitchExtensionPanelApp.tsx` | Twitch extension viewer panel |
+| File          | Mount                              | Purpose                             |
+| ------------- | ---------------------------------- | ----------------------------------- |
+| `index.html`  | `src/main.tsx`                     | Main dashboard app                  |
+| `panel.html`  | `src/TwitchExtensionPanelApp.tsx`  | Twitch extension viewer panel       |
 | `config.html` | `src/TwitchExtensionConfigApp.tsx` | Twitch extension broadcaster config |
 
 ---

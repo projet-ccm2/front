@@ -81,7 +81,10 @@ describe('ViewerHub', () => {
           return Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve([{ id: 'badge-1', title: 'Top Fan', image: 'https://example.com/badge.png' }]),
+            json: () =>
+              Promise.resolve([
+                { id: 'badge-1', title: 'Top Fan', image: 'https://example.com/badge.png' },
+              ]),
           })
         }
 
@@ -467,7 +470,11 @@ describe('ViewerHub', () => {
                   image: null,
                   channelId: 'channel-1',
                   type: { label: 'message', data: null },
-                  userState: { progressCount: 1, finished: true, acquiredDate: new Date().toISOString() },
+                  userState: {
+                    progressCount: 1,
+                    finished: true,
+                    acquiredDate: new Date().toISOString(),
+                  },
                 },
                 {
                   id: 'ach-2',

@@ -221,7 +221,9 @@ describe('UserProfile', () => {
 
     render(<UserProfile onOpenSidebar={mockOnOpenSidebar} />)
 
-    expect(await screen.findByText(/service de succès est actuellement indisponible/i)).toBeInTheDocument()
+    expect(
+      await screen.findByText(/service de succès est actuellement indisponible/i)
+    ).toBeInTheDocument()
   })
 
   it('should render the profile image when one is available', async () => {

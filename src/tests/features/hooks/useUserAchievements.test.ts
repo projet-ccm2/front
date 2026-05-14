@@ -242,7 +242,12 @@ describe('useUserAchievements', () => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
 
     let resolver!: (value: Response) => void
-    vi.mocked(fetch).mockImplementation(() => new Promise<Response>(r => { resolver = r }))
+    vi.mocked(fetch).mockImplementation(
+      () =>
+        new Promise<Response>(r => {
+          resolver = r
+        })
+    )
 
     const { unmount } = renderHook(() => useUserAchievements())
 
@@ -257,7 +262,12 @@ describe('useUserAchievements', () => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
 
     let rejecter!: (err: Error) => void
-    vi.mocked(fetch).mockImplementation(() => new Promise<Response>((_, r) => { rejecter = r }))
+    vi.mocked(fetch).mockImplementation(
+      () =>
+        new Promise<Response>((_, r) => {
+          rejecter = r
+        })
+    )
 
     const { unmount } = renderHook(() => useUserAchievements())
 

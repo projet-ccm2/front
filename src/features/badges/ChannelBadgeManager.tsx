@@ -75,7 +75,7 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
 
   const displayedTitle = useMemo(() => {
     const trimmed = draftTitle.trim()
-    return trimmed.length > 0 ? trimmed : currentBadge?.title ?? ''
+    return trimmed.length > 0 ? trimmed : (currentBadge?.title ?? '')
   }, [currentBadge?.title, draftTitle])
 
   const handleOpenImagePicker = () => {
@@ -173,7 +173,9 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
 
   if (!user) {
     return (
-      <div className={`rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600 ${className}`}>
+      <div
+        className={`rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600 ${className}`}
+      >
         {t('badge.channel.signIn')}
       </div>
     )
@@ -181,7 +183,9 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
 
   if (!selectedChannel) {
     return (
-      <div className={`rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600 ${className}`}>
+      <div
+        className={`rounded-xl border border-dashed border-[#2d2d31] p-6 text-center text-gray-400 dark:border-gray-200 dark:text-gray-600 ${className}`}
+      >
         {t('badge.channel.noChannel')}
       </div>
     )
@@ -234,9 +238,15 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
       {!isLoading && !errorMessage && hasLoadedBadge && (
         <div className="grid gap-6 lg:grid-cols-[auto,1fr]">
           <div className="flex flex-col items-center gap-4 rounded-xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50">
-            <BadgeThumbnail title={displayedTitle || currentBadge.title} image={previewImage} className="h-28 w-28" />
+            <BadgeThumbnail
+              title={displayedTitle || currentBadge.title}
+              image={previewImage}
+              className="h-28 w-28"
+            />
             <div className="text-center">
-              <div className="text-sm text-gray-400 dark:text-gray-600">{t('badge.channel.preview')}</div>
+              <div className="text-sm text-gray-400 dark:text-gray-600">
+                {t('badge.channel.preview')}
+              </div>
               <div className="mt-1 text-base text-white dark:text-gray-900">
                 {displayedTitle || currentBadge.title}
               </div>
@@ -245,7 +255,10 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="channel-badge-title" className="mb-2 block text-sm text-gray-400 dark:text-gray-600">
+              <label
+                htmlFor="channel-badge-title"
+                className="mb-2 block text-sm text-gray-400 dark:text-gray-600"
+              >
                 {t('badge.channel.form.title')}
               </label>
               <input
@@ -268,7 +281,9 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                 }`}
               >
                 <Upload className="h-4 w-4" />
-                {isPreparingImageUpload ? t('badge.channel.form.preparing') : t('badge.channel.form.upload')}
+                {isPreparingImageUpload
+                  ? t('badge.channel.form.preparing')
+                  : t('badge.channel.form.upload')}
               </button>
               <button
                 type="button"
@@ -299,10 +314,14 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
               {selectedImageUpload ? (
                 <span>
                   {t('badge.channel.form.selected')}{' '}
-                  <span className="font-medium text-white dark:text-gray-900">{selectedImageUpload.fileName}</span>
+                  <span className="font-medium text-white dark:text-gray-900">
+                    {selectedImageUpload.fileName}
+                  </span>
                 </span>
               ) : currentImage ? (
-                <span className="text-white dark:text-gray-900">{t('badge.channel.form.current')}</span>
+                <span className="text-white dark:text-gray-900">
+                  {t('badge.channel.form.current')}
+                </span>
               ) : (
                 <span>{t('badge.channel.form.empty')}</span>
               )}
