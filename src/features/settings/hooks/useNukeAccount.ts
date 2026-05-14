@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import { userManagementClient } from '../api/userManagementClient'
+import type { DeleteAccountTokens } from '../api/userManagementClient'
 
 function clearAllCookies() {
   document.cookie.split(';').forEach(cookie => {
@@ -15,11 +16,11 @@ export function useNukeAccount() {
   const [error, setError] = useState<string | null>(null)
 
   const nuke = useCallback(
-    async (accessToken: string, onSuccess: () => void) => {
+    async (tokens: DeleteAccountTokens, onSuccess: () => void) => {
       setIsDeleting(true)
       setError(null)
       try {
-        await userManagementClient.deleteAccount(accessToken)
+        await userManagementClient.deleteAccount(tokens)
         logout()
         sessionStorage.clear()
         clearAllCookies()

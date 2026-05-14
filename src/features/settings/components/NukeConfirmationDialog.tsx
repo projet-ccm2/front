@@ -41,15 +41,22 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
   }
 
   const handleNuke = async () => {
-    const tokens = localStorage.getItem('twitch_tokens')
-    if (!tokens) return
-    let accessToken: string
+    const raw = localStorage.getItem('twitch_tokens')
+    if (!raw) return
+    let parsedTokens: {
+      accessToken: string
+      idToken: string
+      tokenType?: string
+      expiresIn?: number
+      scope?: string[]
+      state?: string
+    }
     try {
-      accessToken = (JSON.parse(tokens) as { accessToken: string }).accessToken
+      parsedTokens = JSON.parse(raw)
     } catch {
       return
     }
-    await nuke(accessToken, onNuked)
+    await nuke(parsedTokens, onNuked)
   }
 
   const stepTitles: Record<1 | 2 | 3, string> = {

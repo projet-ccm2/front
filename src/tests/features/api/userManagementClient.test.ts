@@ -3,6 +3,15 @@ import {
   userManagementClient,
   UserManagementError,
 } from '../../../features/settings/api/userManagementClient'
+import type { DeleteAccountTokens } from '../../../features/settings/api/userManagementClient'
+
+const validTokens: DeleteAccountTokens = {
+  accessToken: 'access-abc',
+  idToken: 'id-token-xyz',
+  tokenType: 'bearer',
+  expiresIn: 3600,
+  scope: [],
+}
 
 describe('userManagementClient.deleteAccount', () => {
   beforeEach(() => {
@@ -19,19 +28,20 @@ describe('userManagementClient.deleteAccount', () => {
       status: 204,
     } as Response)
 
-    await expect(userManagementClient.deleteAccount('token-abc')).resolves.toBeUndefined()
+    await expect(userManagementClient.deleteAccount(validTokens)).resolves.toBeUndefined()
   })
 
-  it('sends a POST to /auth/delete-account with Authorization header', async () => {
+  it('sends a POST to /auth/delete-account with JSON body containing both tokens', async () => {
     vi.mocked(fetch).mockResolvedValue({ ok: true, status: 204 } as Response)
 
-    await userManagementClient.deleteAccount('my-token')
+    await userManagementClient.deleteAccount(validTokens)
 
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('/auth/delete-account'),
       expect.objectContaining({
         method: 'POST',
-        headers: expect.objectContaining({ Authorization: 'Bearer my-token' }),
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(validTokens),
       })
     )
   })
@@ -43,26 +53,26 @@ describe('userManagementClient.deleteAccount', () => {
       json: () => Promise.resolve({ message: 'Unauthorized' }),
     } as Response)
 
-    await expect(userManagementClient.deleteAccount('bad-token')).rejects.toThrow(
+    await expect(userManagementClient.deleteAccount(validTokens)).rejects.toThrow(
       UserManagementError
     )
 
-    await userManagementClient.deleteAccount('bad-token').catch((err: UserManagementError) => {
+    await userManagementClient.deleteAccount(validTokens).catch((err: UserManagementError) => {
       expect(err.status).toBe(401)
       expect(err.details).toEqual({ message: 'Unauthorized' })
     })
   })
 
-  it('throws UserManagementError with status 403 for forbidden', async () => {
+  it('throws UserManagementError with status 400 for bad request', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
-      status: 403,
-      json: () => Promise.resolve({ message: 'Forbidden' }),
+      status: 400,
+      json: () => Promise.resolve({ message: 'Bad Request' }),
     } as Response)
 
-    await userManagementClient.deleteAccount('token').catch((err: UserManagementError) => {
+    await userManagementClient.deleteAccount(validTokens).catch((err: UserManagementError) => {
       expect(err).toBeInstanceOf(UserManagementError)
-      expect(err.status).toBe(403)
+      expect(err.status).toBe(400)
     })
   })
 
@@ -76,7 +86,7 @@ describe('userManagementClient.deleteAccount', () => {
       text: () => Promise.resolve('Internal Server Error'),
     } as unknown as Response)
 
-    await userManagementClient.deleteAccount('token').catch((err: UserManagementError) => {
+    await userManagementClient.deleteAccount(validTokens).catch((err: UserManagementError) => {
       expect(err).toBeInstanceOf(UserManagementError)
       expect(err.status).toBe(500)
       expect(err.details).toBe('Internal Server Error')

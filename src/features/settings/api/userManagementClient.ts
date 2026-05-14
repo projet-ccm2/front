@@ -1,5 +1,14 @@
 import { AUTH_SERVICE_URL } from '../../../config/environment'
 
+export interface DeleteAccountTokens {
+  accessToken: string
+  idToken: string
+  tokenType?: string
+  expiresIn?: number
+  scope?: string[]
+  state?: string
+}
+
 export class UserManagementError extends Error {
   readonly status: number
   readonly details?: unknown
@@ -13,12 +22,13 @@ export class UserManagementError extends Error {
 }
 
 export const userManagementClient = {
-  async deleteAccount(accessToken: string): Promise<void> {
+  async deleteAccount(tokens: DeleteAccountTokens): Promise<void> {
     const response = await fetch(`${AUTH_SERVICE_URL}/auth/delete-account`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify(tokens),
     })
 
     if (!response.ok) {

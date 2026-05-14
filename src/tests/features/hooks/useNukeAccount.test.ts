@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act } from '@testing-library/react'
 import { renderHook } from '../../utils/test-utils'
 import { useNukeAccount } from '../../../features/settings/hooks/useNukeAccount'
+import type { DeleteAccountTokens } from '../../../features/settings/api/userManagementClient'
 
 vi.mock('../../../features/settings/api/userManagementClient', () => ({
   userManagementClient: {
@@ -10,6 +11,14 @@ vi.mock('../../../features/settings/api/userManagementClient', () => ({
 }))
 
 import { userManagementClient } from '../../../features/settings/api/userManagementClient'
+
+const validTokens: DeleteAccountTokens = {
+  accessToken: 'test-token',
+  idToken: 'id-token',
+  tokenType: 'bearer',
+  expiresIn: 3600,
+  scope: [],
+}
 
 describe('useNukeAccount', () => {
   const onSuccess = vi.fn()
@@ -24,18 +33,8 @@ describe('useNukeAccount', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.setItem('stream-quest_language', 'en')
-    localStorage.setItem(
-      'twitch_tokens',
-      JSON.stringify({
-        accessToken: 'test-token',
-        idToken: 'id',
-        tokenType: 'bearer',
-        expiresIn: 3600,
-        scope: [],
-      })
-    )
+    localStorage.setItem('twitch_tokens', JSON.stringify(validTokens))
     localStorage.setItem('twitch_user', JSON.stringify(fullUser))
-    vi.spyOn(sessionStorage, 'clear')
   })
 
   afterEach(() => {
@@ -55,7 +54,7 @@ describe('useNukeAccount', () => {
     const { result } = renderHook(() => useNukeAccount())
 
     await act(async () => {
-      await result.current.nuke('test-token', onSuccess)
+      await result.current.nuke(validTokens, onSuccess)
     })
 
     expect(result.current.isDeleting).toBe(false)
@@ -67,7 +66,7 @@ describe('useNukeAccount', () => {
     const { result } = renderHook(() => useNukeAccount())
 
     await act(async () => {
-      await result.current.nuke('test-token', onSuccess)
+      await result.current.nuke(validTokens, onSuccess)
     })
 
     expect(onSuccess).toHaveBeenCalledOnce()
@@ -79,7 +78,7 @@ describe('useNukeAccount', () => {
     const { result } = renderHook(() => useNukeAccount())
 
     await act(async () => {
-      await result.current.nuke('test-token', onSuccess)
+      await result.current.nuke(validTokens, onSuccess)
     })
 
     expect(localStorage.getItem('twitch_user')).toBeNull()
@@ -93,7 +92,7 @@ describe('useNukeAccount', () => {
     const { result } = renderHook(() => useNukeAccount())
 
     await act(async () => {
-      await result.current.nuke('bad-token', onSuccess).catch(() => {})
+      await result.current.nuke(validTokens, onSuccess).catch(() => {})
     })
 
     expect(result.current.error).toBe('Server error')
@@ -107,7 +106,7 @@ describe('useNukeAccount', () => {
     const { result } = renderHook(() => useNukeAccount())
 
     await act(async () => {
-      await result.current.nuke('bad-token', onSuccess).catch(() => {})
+      await result.current.nuke(validTokens, onSuccess).catch(() => {})
     })
 
     expect(result.current.error).toBe('Oops')
