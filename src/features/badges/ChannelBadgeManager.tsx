@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { useAuth } from '../../context/AuthContext'
 import { useChannel } from '../../context/ChannelContext'
 import { useLanguage } from '../../context/LanguageContext'
+import { useTheme } from '../../context/ThemeContext'
 import { achievementManagementClient } from '../achievements/api/achievementManagementClient'
 import type {
   AchievementImageUpload,
@@ -37,6 +38,8 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
   const { user } = useAuth()
   const { selectedChannel } = useChannel()
   const { language, t } = useLanguage()
+  const { theme } = useTheme()
+  const isLightAppearance = theme === 'dark'
   const isOwnerChannel = selectedChannel ? isOwnerAchievementChannelId(selectedChannel.id) : false
   const channelId = isOwnerChannel ? (selectedChannel?.id ?? null) : null
   const { badge, isLoading, errorMessage, isNotFound } = useChannelBadge(channelId)
@@ -264,8 +267,10 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
             className="rounded-xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50"
             style={{
               background:
-                'linear-gradient(145deg, rgba(145, 70, 255, 0.14), rgba(15, 15, 18, 0.98) 42%)',
-              border: '1px solid #2d2d31',
+                isLightAppearance
+                  ? 'linear-gradient(145deg, rgba(145, 70, 255, 0.12), #ffffff 42%)'
+                  : 'linear-gradient(145deg, rgba(145, 70, 255, 0.14), rgba(15, 15, 18, 0.98) 42%)',
+              border: isLightAppearance ? '1px solid #e5e7eb' : '1px solid #2d2d31',
               borderRadius: '16px',
               display: 'flex',
               flex: '0 1 280px',
@@ -279,7 +284,7 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
             <div>
               <div
                 style={{
-                  color: '#b9a7ff',
+                  color: isLightAppearance ? '#7c3aed' : '#b9a7ff',
                   fontSize: '0.75rem',
                   letterSpacing: '0.08em',
                   marginBottom: '0.75rem',
@@ -303,17 +308,31 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
 
             <div
               style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.24)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                backgroundColor: isLightAppearance ? '#f8fafc' : 'rgba(0, 0, 0, 0.24)',
+                border: isLightAppearance
+                  ? '1px solid #e5e7eb'
+                  : '1px solid rgba(255, 255, 255, 0.08)',
                 borderRadius: '12px',
                 padding: '0.75rem',
                 textAlign: 'center',
               }}
             >
-              <div style={{ color: '#ffffff', fontSize: '1rem', fontWeight: 700 }}>
+              <div
+                style={{
+                  color: isLightAppearance ? '#111827' : '#ffffff',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                }}
+              >
                 {displayedTitle || currentBadge.title}
               </div>
-              <div style={{ color: '#a1a1aa', fontSize: '0.75rem', marginTop: '0.125rem' }}>
+              <div
+                style={{
+                  color: isLightAppearance ? '#64748b' : '#a1a1aa',
+                  fontSize: '0.75rem',
+                  marginTop: '0.125rem',
+                }}
+              >
                 {selectedChannel.name}
               </div>
             </div>
@@ -330,7 +349,12 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
               <label
                 htmlFor="channel-badge-title"
                 className="mb-2 block text-sm text-gray-400 dark:text-gray-600"
-                style={{ color: '#b7b7c5', display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}
+                style={{
+                  color: isLightAppearance ? '#475569' : '#b7b7c5',
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  marginBottom: '0.5rem',
+                }}
               >
                 {t('badge.channel.form.title')}
               </label>
@@ -342,10 +366,10 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                 placeholder={t('badge.channel.form.titlePlaceholder')}
                 className="w-full rounded-lg border border-transparent bg-[#2d2d31] px-4 py-3 text-white placeholder:text-gray-500 focus:border-[#9146FF] focus:outline-none dark:bg-gray-100 dark:text-gray-900"
                 style={{
-                  backgroundColor: '#2d2d31',
-                  border: '1px solid transparent',
+                  backgroundColor: isLightAppearance ? '#f3f4f6' : '#2d2d31',
+                  border: isLightAppearance ? '1px solid #e5e7eb' : '1px solid transparent',
                   borderRadius: '12px',
-                  color: '#ffffff',
+                  color: isLightAppearance ? '#111827' : '#ffffff',
                   fontSize: '1rem',
                   outline: 'none',
                   padding: '0.875rem 1rem',
@@ -371,10 +395,10 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                 }`}
                 style={{
                   alignItems: 'center',
-                  backgroundColor: '#2d2d31',
-                  border: '1px solid #3d3d41',
+                  backgroundColor: isLightAppearance ? '#f3f4f6' : '#2d2d31',
+                  border: isLightAppearance ? '1px solid #e5e7eb' : '1px solid #3d3d41',
                   borderRadius: '10px',
-                  color: '#ffffff',
+                  color: isLightAppearance ? '#111827' : '#ffffff',
                   display: 'inline-flex',
                   fontSize: '0.875rem',
                   fontWeight: 600,
@@ -401,12 +425,28 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                 }`}
                 style={{
                   alignItems: 'center',
-                  backgroundColor: selectedImageUpload ? 'rgba(255, 68, 68, 0.14)' : '#232327',
+                  backgroundColor: selectedImageUpload
+                    ? isLightAppearance
+                      ? 'rgba(220, 38, 38, 0.08)'
+                      : 'rgba(255, 68, 68, 0.14)'
+                    : isLightAppearance
+                      ? '#f3f4f6'
+                      : '#232327',
                   border: selectedImageUpload
-                    ? '1px solid rgba(255, 68, 68, 0.25)'
-                    : '1px solid #2d2d31',
+                    ? isLightAppearance
+                      ? '1px solid rgba(220, 38, 38, 0.2)'
+                      : '1px solid rgba(255, 68, 68, 0.25)'
+                    : isLightAppearance
+                      ? '1px solid #e5e7eb'
+                      : '1px solid #2d2d31',
                   borderRadius: '10px',
-                  color: selectedImageUpload ? '#ff9a9a' : '#71717a',
+                  color: selectedImageUpload
+                    ? isLightAppearance
+                      ? '#b42318'
+                      : '#ff9a9a'
+                    : isLightAppearance
+                      ? '#94a3b8'
+                      : '#71717a',
                   display: 'inline-flex',
                   fontSize: '0.875rem',
                   fontWeight: 600,
@@ -434,9 +474,9 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
               className="flex items-center gap-3 rounded-lg border border-dashed border-[#4d4d51] p-4 text-sm text-gray-400 dark:border-gray-300 dark:text-gray-600"
               style={{
                 alignItems: 'center',
-                border: '1px dashed #4d4d51',
+                border: isLightAppearance ? '1px dashed #cbd5e1' : '1px dashed #4d4d51',
                 borderRadius: '12px',
-                color: '#a1a1aa',
+                color: isLightAppearance ? '#475569' : '#a1a1aa',
                 display: 'flex',
                 fontSize: '0.875rem',
                 gap: '0.75rem',
@@ -448,13 +488,37 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
             </div>
 
             {saveError && (
-              <div className="rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+              <div
+                className="rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]"
+                style={{
+                  backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                  border: '1px solid rgba(255, 68, 68, 0.4)',
+                  borderRadius: '12px',
+                  color: isLightAppearance ? '#b42318' : '#ff9a9a',
+                  fontSize: '0.875rem',
+                  padding: '1rem',
+                }}
+              >
                 {saveError}
               </div>
             )}
 
             {saveSuccess && !saveError && (
-              <div className="rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00c27a] dark:text-[#008f52]">
+              <div
+                className="rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00c27a] dark:text-[#008f52]"
+                style={{
+                  backgroundColor: isLightAppearance
+                    ? 'rgba(2, 122, 72, 0.08)'
+                    : 'rgba(0, 245, 147, 0.12)',
+                  border: isLightAppearance
+                    ? '1px solid rgba(2, 122, 72, 0.22)'
+                    : '1px solid rgba(0, 245, 147, 0.35)',
+                  borderRadius: '12px',
+                  color: isLightAppearance ? '#027a48' : '#00f593',
+                  fontSize: '0.875rem',
+                  padding: '1rem',
+                }}
+              >
                 {saveSuccess}
               </div>
             )}
