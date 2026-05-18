@@ -239,8 +239,25 @@ export function Settings({ onOpenSidebar, onNavigate }: SettingsProps) {
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => setShowNukeDialog(true)}
                   className="flex-shrink-0 inline-flex items-center justify-center gap-2 self-start sm:self-center rounded-lg bg-[#ff4444]/20 px-5 py-3 text-sm font-semibold text-[#ff4444] transition-colors hover:bg-[#ff4444]/30"
+                  style={{
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 68, 68, 0.12)',
+                    border: '1px solid rgba(255, 68, 68, 0.28)',
+                    borderRadius: '10px',
+                    color: '#ff6b6b',
+                    display: 'inline-flex',
+                    flexDirection: 'row',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    gap: '0.5rem',
+                    justifyContent: 'center',
+                    lineHeight: 1.2,
+                    padding: '0.75rem 1rem',
+                    whiteSpace: 'nowrap',
+                  }}
                 >
                   <Trash2 className="h-4 w-4" />
                   {t('settings.nuke.action')}

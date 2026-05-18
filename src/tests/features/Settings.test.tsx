@@ -47,7 +47,7 @@ const defaultHookReturn = {
 }
 
 function openDialogToStep3() {
-  const buttons = screen.getAllByText('Start deletion')
+  const buttons = screen.getAllByText('Delete data')
   fireEvent.click(buttons[buttons.length - 1])
   fireEvent.click(screen.getByText('Continue'))
   fireEvent.change(screen.getByTestId('username-input'), { target: { value: 'streamer' } })
@@ -75,12 +75,12 @@ describe('Settings', () => {
   it('renders the danger zone section', () => {
     render(<Settings onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} />)
     expect(screen.getByText('Data and privacy')).toBeInTheDocument()
-    expect(screen.getAllByText('Start deletion').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Delete data').length).toBeGreaterThan(0)
   })
 
   it('nuke button opens the dialog at step 1', () => {
     render(<Settings onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} />)
-    const buttons = screen.getAllByText('Start deletion')
+    const buttons = screen.getAllByText('Delete data')
     fireEvent.click(buttons[buttons.length - 1])
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Delete all your data?')).toBeInTheDocument()
@@ -88,7 +88,7 @@ describe('Settings', () => {
 
   it('cancel button closes the dialog', () => {
     render(<Settings onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} />)
-    const buttons = screen.getAllByText('Start deletion')
+    const buttons = screen.getAllByText('Delete data')
     fireEvent.click(buttons[buttons.length - 1])
     fireEvent.click(screen.getByText('Cancel'))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -96,7 +96,7 @@ describe('Settings', () => {
 
   it('step 1 → Continue → shows step 2', () => {
     render(<Settings onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} />)
-    const buttons = screen.getAllByText('Start deletion')
+    const buttons = screen.getAllByText('Delete data')
     fireEvent.click(buttons[buttons.length - 1])
     fireEvent.click(screen.getByText('Continue'))
     expect(screen.getByText('Confirm your identity')).toBeInTheDocument()
@@ -105,7 +105,7 @@ describe('Settings', () => {
 
   it('step 2 confirm button is disabled until correct username is typed', () => {
     render(<Settings onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} />)
-    const buttons = screen.getAllByText('Start deletion')
+    const buttons = screen.getAllByText('Delete data')
     fireEvent.click(buttons[buttons.length - 1])
     fireEvent.click(screen.getByText('Continue'))
 

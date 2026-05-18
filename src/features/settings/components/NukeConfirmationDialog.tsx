@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import type { CSSProperties } from 'react'
 import { AlertTriangle, X, RefreshCw, Trash2 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useLanguage } from '../../../context/LanguageContext'
@@ -8,6 +9,62 @@ import { useNukeAccount } from '../hooks/useNukeAccount'
 const COUNTDOWN_SECONDS = 5
 
 type Step = 1 | 2 | 3
+
+const overlayStyle: CSSProperties = {
+  alignItems: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.72)',
+  display: 'flex',
+  inset: 0,
+  justifyContent: 'center',
+  padding: '1rem',
+  position: 'fixed',
+  zIndex: 50,
+}
+
+const dialogStyle: CSSProperties = {
+  background: '#18181b',
+  border: '1px solid #2d2d31',
+  borderRadius: '18px',
+  boxShadow: '0 24px 80px rgba(0, 0, 0, 0.55)',
+  color: '#ffffff',
+  display: 'block',
+  margin: 0,
+  maxHeight: 'calc(100vh - 2rem)',
+  maxWidth: '460px',
+  overflow: 'hidden',
+  padding: 0,
+  position: 'relative',
+  width: 'min(460px, calc(100vw - 2rem))',
+}
+
+const secondaryButtonStyle: CSSProperties = {
+  alignItems: 'center',
+  backgroundColor: 'transparent',
+  border: '1px solid #3d3d41',
+  borderRadius: '10px',
+  color: '#d7d7de',
+  display: 'inline-flex',
+  fontSize: '0.875rem',
+  fontWeight: 600,
+  justifyContent: 'center',
+  minHeight: '40px',
+  padding: '0.625rem 1rem',
+}
+
+const primaryButtonStyle: CSSProperties = {
+  alignItems: 'center',
+  backgroundColor: '#ff4444',
+  border: '1px solid #ff4444',
+  borderRadius: '10px',
+  color: '#ffffff',
+  display: 'inline-flex',
+  fontSize: '0.875rem',
+  fontWeight: 700,
+  gap: '0.5rem',
+  justifyContent: 'center',
+  minHeight: '40px',
+  padding: '0.625rem 1rem',
+}
 
 function isIdTokenExpired(idToken: string): boolean {
   try {
@@ -92,61 +149,117 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
   }
 
   const prevStep: Step = step === 3 ? 2 : 1
+  const primaryDisabled =
+    (step === 2 && usernameInput.toLowerCase() !== user?.username?.toLowerCase()) ||
+    (step === 3 && (countdown > 0 || isDeleting || isRefreshing))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+    <div style={overlayStyle}>
       <dialog
         open
         aria-modal="true"
         aria-labelledby="nuke-dialog-title"
-        className="bg-[#18181b] dark:bg-white border border-[#2d2d31] dark:border-gray-200 rounded-2xl w-full max-w-md shadow-2xl p-0 m-0"
+        style={dialogStyle}
       >
-        {/* Step indicator */}
-        <div className="flex items-center gap-1.5 px-6 pt-5">
+        <div style={{ display: 'flex', gap: '0.375rem', padding: '1.25rem 1.25rem 0' }}>
           {([1, 2, 3] as const).map(s => (
             <div
               key={s}
-              className={`h-1 flex-1 rounded-full transition-colors ${
-                s <= step ? 'bg-red-500' : 'bg-[#2d2d31] dark:bg-gray-200'
-              }`}
+              style={{
+                backgroundColor: s <= step ? '#ff4444' : '#2d2d31',
+                borderRadius: '999px',
+                flex: 1,
+                height: '4px',
+              }}
             />
           ))}
         </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/15">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
+        <div
+          style={{
+            alignItems: 'flex-start',
+            display: 'flex',
+            gap: '0.875rem',
+            justifyContent: 'space-between',
+            padding: '1.125rem 1.25rem',
+          }}
+        >
+          <div style={{ alignItems: 'center', display: 'flex', gap: '0.75rem', minWidth: 0 }}>
+            <div
+              style={{
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 68, 68, 0.14)',
+                borderRadius: '12px',
+                display: 'flex',
+                flexShrink: 0,
+                height: '40px',
+                justifyContent: 'center',
+                width: '40px',
+              }}
+            >
+              <AlertTriangle className="w-5 h-5 text-[#ff4444]" />
             </div>
-            <h2 id="nuke-dialog-title" className="font-semibold text-white dark:text-gray-900">
-              {stepTitles[step]}
-            </h2>
+            <div style={{ minWidth: 0 }}>
+              <h2
+                id="nuke-dialog-title"
+                style={{ color: '#ffffff', fontSize: '1rem', fontWeight: 700, margin: 0 }}
+              >
+                {stepTitles[step]}
+              </h2>
+              <p style={{ color: '#9ca3af', fontSize: '0.8125rem', margin: '0.125rem 0 0' }}>
+                {t('settings.nuke.dialog.subtitle')}
+              </p>
+            </div>
           </div>
+
           <button
+            type="button"
             onClick={onClose}
             disabled={isDeleting || isRefreshing}
             aria-label={t('settings.nuke.dialog.cancel')}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-[#2d2d31] hover:text-gray-300 dark:hover:bg-gray-100 dark:hover:text-gray-700 disabled:opacity-40"
+            style={{
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+              border: 0,
+              color: '#8b8b98',
+              display: 'flex',
+              height: '32px',
+              justifyContent: 'center',
+              opacity: isDeleting || isRefreshing ? 0.45 : 1,
+              width: '32px',
+            }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-[#2d2d31] dark:border-gray-200" />
-
-        {/* Body */}
-        <div className="px-6 py-5 space-y-4">
+        <div style={{ borderTop: '1px solid #2d2d31', padding: '1.25rem' }}>
           {step === 1 && (
             <>
-              <p className="text-sm text-gray-400 dark:text-gray-600 leading-relaxed">
+              <p style={{ color: '#b7b7c5', fontSize: '0.875rem', lineHeight: 1.55, margin: 0 }}>
                 {t('settings.nuke.dialog.step1.description')}
               </p>
-              <ul className="space-y-2.5 text-sm">
+              <ul style={{ display: 'grid', gap: '0.625rem', margin: '1rem 0 0', padding: 0 }}>
                 {(['item1', 'item2', 'item3', 'item4'] as const).map(item => (
-                  <li key={item} className="flex items-center gap-2.5 text-gray-300 dark:text-gray-700">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <li
+                    key={item}
+                    style={{
+                      alignItems: 'center',
+                      color: '#e6e6ee',
+                      display: 'flex',
+                      fontSize: '0.875rem',
+                      gap: '0.625rem',
+                    }}
+                  >
+                    <span
+                      style={{
+                        backgroundColor: '#ff4444',
+                        borderRadius: '999px',
+                        flexShrink: 0,
+                        height: '6px',
+                        width: '6px',
+                      }}
+                    />
                     {t(`settings.nuke.dialog.step1.${item}`)}
                   </li>
                 ))}
@@ -156,7 +269,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
 
           {step === 2 && (
             <>
-              <p className="text-sm text-gray-400 dark:text-gray-600 leading-relaxed">
+              <p style={{ color: '#b7b7c5', fontSize: '0.875rem', lineHeight: 1.55, margin: 0 }}>
                 {t('settings.nuke.dialog.step2.description')}
               </p>
               <input
@@ -164,30 +277,60 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
                 value={usernameInput}
                 onChange={e => setUsernameInput(e.target.value)}
                 placeholder={t('settings.nuke.dialog.step2.placeholder')}
-                className="w-full bg-[#0f0f12] dark:bg-gray-100 border border-[#2d2d31] dark:border-gray-300 rounded-xl px-4 py-3 text-sm text-white dark:text-gray-900 placeholder-gray-600 focus:outline-none focus:border-red-500 transition-colors"
                 autoComplete="off"
                 data-testid="username-input"
+                style={{
+                  backgroundColor: '#0e0e10',
+                  border: '1px solid #3d3d41',
+                  borderRadius: '10px',
+                  color: '#ffffff',
+                  fontSize: '0.875rem',
+                  marginTop: '1rem',
+                  outline: 'none',
+                  padding: '0.75rem 0.875rem',
+                  width: '100%',
+                }}
               />
             </>
           )}
 
           {step === 3 && (
             <>
-              <p className="text-sm text-gray-400 dark:text-gray-600 leading-relaxed">
+              <p style={{ color: '#b7b7c5', fontSize: '0.875rem', lineHeight: 1.55, margin: 0 }}>
                 {t('settings.nuke.dialog.step3.description')}
               </p>
               {isRefreshing && (
-                <div className="flex items-center gap-3 rounded-xl bg-[#9146FF]/10 border border-[#9146FF]/30 px-4 py-3" role="status">
+                <div
+                  role="status"
+                  style={{
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(145, 70, 255, 0.1)',
+                    border: '1px solid rgba(145, 70, 255, 0.3)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    marginTop: '1rem',
+                    padding: '0.75rem 0.875rem',
+                  }}
+                >
                   <RefreshCw className="w-4 h-4 text-[#9146FF] animate-spin flex-shrink-0" />
-                  <p className="text-sm text-[#c9a4ff] dark:text-[#7c3aed]">
+                  <p style={{ color: '#c9a4ff', fontSize: '0.875rem', margin: 0 }}>
                     {t('settings.nuke.refreshing')}
                   </p>
                 </div>
               )}
               {error && !isRefreshing && (
                 <p
-                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 dark:text-red-600"
                   role="alert"
+                  style={{
+                    backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                    border: '1px solid rgba(255, 68, 68, 0.3)',
+                    borderRadius: '12px',
+                    color: '#ff8080',
+                    fontSize: '0.875rem',
+                    margin: '1rem 0 0',
+                    padding: '0.75rem 0.875rem',
+                  }}
                 >
                   {t('settings.nuke.error')}
                 </p>
@@ -196,42 +339,51 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[#2d2d31] dark:border-gray-200 gap-3">
-          <div>
-            {step > 1 && !isDeleting && !isRefreshing && (
-              <button
-                onClick={() => setStep(prevStep)}
-                className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 dark:text-gray-500 dark:hover:text-gray-700 transition-colors rounded-lg hover:bg-[#2d2d31] dark:hover:bg-gray-100"
-              >
-                {t('settings.nuke.dialog.back')}
-              </button>
-            )}
-          </div>
+        <div
+          style={{
+            alignItems: 'center',
+            borderTop: '1px solid #2d2d31',
+            display: 'flex',
+            gap: '0.75rem',
+            justifyContent: step > 1 ? 'space-between' : 'flex-end',
+            padding: '1rem 1.25rem',
+          }}
+        >
+          {step > 1 && !isDeleting && !isRefreshing && (
+            <button type="button" onClick={() => setStep(prevStep)} style={secondaryButtonStyle}>
+              {t('settings.nuke.dialog.back')}
+            </button>
+          )}
 
-          <div className="flex items-center gap-2.5">
+          <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end' }}>
             <button
+              type="button"
               onClick={onClose}
               disabled={isDeleting || isRefreshing}
-              className="px-5 py-2.5 text-sm font-medium rounded-xl border border-[#2d2d31] dark:border-gray-300 text-gray-300 dark:text-gray-700 hover:bg-[#2d2d31] dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              style={{
+                ...secondaryButtonStyle,
+                opacity: isDeleting || isRefreshing ? 0.45 : 1,
+              }}
             >
               {t('settings.nuke.dialog.cancel')}
             </button>
 
             {step === 1 && (
-              <button
-                onClick={() => setStep(2)}
-                className="px-5 py-2.5 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-900/40 transition-all active:scale-95"
-              >
+              <button type="button" onClick={() => setStep(2)} style={primaryButtonStyle}>
                 {t('settings.nuke.dialog.step1.continue')}
               </button>
             )}
 
             {step === 2 && (
               <button
+                type="button"
                 onClick={handleConfirmStep2}
-                disabled={usernameInput.toLowerCase() !== user?.username?.toLowerCase()}
-                className="px-5 py-2.5 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-900/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+                disabled={primaryDisabled}
+                style={{
+                  ...primaryButtonStyle,
+                  cursor: primaryDisabled ? 'not-allowed' : 'pointer',
+                  opacity: primaryDisabled ? 0.45 : 1,
+                }}
               >
                 {t('settings.nuke.dialog.step2.confirm')}
               </button>
@@ -239,9 +391,14 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
 
             {step === 3 && (
               <button
+                type="button"
                 onClick={handleNuke}
-                disabled={countdown > 0 || isDeleting || isRefreshing}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-900/40 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                disabled={primaryDisabled}
+                style={{
+                  ...primaryButtonStyle,
+                  cursor: primaryDisabled ? 'not-allowed' : 'pointer',
+                  opacity: primaryDisabled ? 0.5 : 1,
+                }}
               >
                 {isRefreshing ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />

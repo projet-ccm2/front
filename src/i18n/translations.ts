@@ -490,11 +490,12 @@ const EN_TRANSLATIONS: TranslationMap = {
   'settings.dangerZone.description':
     'Account deletion is permanent. Keep this action separate from everyday settings.',
   'settings.nuke.title': 'Delete your Stream Quest data',
-  'settings.nuke.action': 'Start deletion',
+  'settings.nuke.action': 'Delete data',
   'settings.nuke.button': 'Delete my data',
   'settings.nuke.buttonDescription':
     'Permanently delete your account, achievements, progression, badges, and related GDPR data.',
   'settings.nuke.dialog.step1.title': 'Delete all your data?',
+  'settings.nuke.dialog.subtitle': 'Protected action',
   'settings.nuke.dialog.step1.description':
     'This will permanently and irreversibly delete all data associated with your account:',
   'settings.nuke.dialog.step1.item1': 'All your achievements and progress',
@@ -985,11 +986,12 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'settings.dangerZone.description':
     'La suppression du compte est définitive. Elle reste séparée des réglages du quotidien.',
   'settings.nuke.title': 'Supprimer vos données Stream Quest',
-  'settings.nuke.action': 'Lancer la suppression',
+  'settings.nuke.action': 'Supprimer',
   'settings.nuke.button': 'Supprimer mes données',
   'settings.nuke.buttonDescription':
     'Supprime définitivement votre compte, vos succès, votre progression, vos badges et les données RGPD associées.',
   'settings.nuke.dialog.step1.title': 'Supprimer toutes vos données ?',
+  'settings.nuke.dialog.subtitle': 'Action protégée',
   'settings.nuke.dialog.step1.description':
     'Cette action supprimera définitivement et irrémédiablement toutes les données associées à votre compte :',
   'settings.nuke.dialog.step1.item1': 'Tous vos succès et votre progression',
