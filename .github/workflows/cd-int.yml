@@ -28,6 +28,7 @@ jobs:
       environment: integration
       cloud-run-service-name: front-int
       cloud-run-port: '4173'
+      service_type: "front"
     secrets:
       GCP_SA_KEY: ${{ secrets.INT_GCP_SA_KEY }}
       GCP_PROJECT_ID: ${{ secrets.INT_GCP_PROJECT_ID }}
