@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useMemo, useEffect } from 'react'
+import { createContext, useContext, useState, useMemo, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import type { Channel } from '../types/twitch'
@@ -127,6 +127,10 @@ export const ChannelContext = createContext<ChannelContextType | undefined>(unde
 
 export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
   const { user, login } = useAuth()
+  const loginRef = useRef(login)
+  useEffect(() => {
+    loginRef.current = login
+  }, [login])
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [moderatorInfoByUserId, setModeratorInfoByUserId] = useState<
     Record<string, Record<string, TwitchHelixUser>>
@@ -163,7 +167,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     let cancelled = false
 
     const fetchAndEnrichModChannels = async () => {
-      const channelData = await loadModeratedChannelData(user, login)
+      const channelData = await loadModeratedChannelData(user, () => loginRef.current())
 
       if (cancelled || !channelData) return
 
@@ -181,7 +185,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     return () => {
       cancelled = true
     }
-  }, [user, login])
+  }, [user])
 
   const selectedChannel = useMemo(() => {
     if (selectedChannelId) {
