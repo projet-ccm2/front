@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useMemo, useEffect, useRef } from 'react'
+import { createContext, useContext, useState, useMemo, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import type { Channel } from '../types/twitch'
@@ -85,8 +85,7 @@ function buildInitialChannels(
 }
 
 async function loadModeratedChannelData(
-  user: NonNullable<ReturnType<typeof useAuth>['user']>,
-  onExpired: () => Promise<void>
+  user: NonNullable<ReturnType<typeof useAuth>['user']>
 ) {
   const stored = localStorage.getItem('twitch_tokens')
   if (!stored || !TWITCH_CLIENT_ID) return null
@@ -99,12 +98,7 @@ async function loadModeratedChannelData(
   }
 
   const { accessToken, idToken } = tokens
-  if (!idToken) return null
-
-  if (isJwtExpired(idToken)) {
-    await onExpired()
-    return null
-  }
+  if (!idToken || isJwtExpired(idToken)) return null
 
   const moderatedChannelIds = await fetchModeratedChannels(idToken, user.userId)
   const channelIds = moderatedChannelIds.length ? moderatedChannelIds : user.channelsWhichIsMod
@@ -126,11 +120,7 @@ export interface ChannelContextType {
 export const ChannelContext = createContext<ChannelContextType | undefined>(undefined)
 
 export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const { user, login } = useAuth()
-  const loginRef = useRef(login)
-  useEffect(() => {
-    loginRef.current = login
-  }, [login])
+  const { user } = useAuth()
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [moderatorInfoByUserId, setModeratorInfoByUserId] = useState<
     Record<string, Record<string, TwitchHelixUser>>
@@ -167,7 +157,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     let cancelled = false
 
     const fetchAndEnrichModChannels = async () => {
-      const channelData = await loadModeratedChannelData(user, () => loginRef.current())
+      const channelData = await loadModeratedChannelData(user)
 
       if (cancelled || !channelData) return
 
