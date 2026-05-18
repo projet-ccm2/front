@@ -10,8 +10,12 @@ describe('Imports de modules', () => {
     await expect(import('../App')).resolves.toBeDefined()
   }, 20000)
 
-  it('devrait avoir une structure de module valide pour main', () => {
-    expect(true).toBe(true)
+  it('devrait pouvoir importer le point d’entrée sans erreur', async () => {
+    const root = document.createElement('div')
+    root.id = 'root'
+    document.body.appendChild(root)
+
+    await expect(import('../main')).resolves.toBeDefined()
   })
 
   it('devrait exporter App comme export par défaut', async () => {

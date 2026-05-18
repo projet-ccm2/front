@@ -13,31 +13,35 @@ interface UsePublicAchievementsResult {
   errorMessage: string | null
 }
 
+const PUBLIC_ACHIEVEMENT_FALLBACK_MESSAGES: Record<Language, string> = {
+  fr: 'Impossible de charger les succès de la marketplace.',
+  en: 'Unable to load marketplace achievements.',
+}
+
+const PUBLIC_ACHIEVEMENT_ERROR_MESSAGES: Record<number, Record<Language, string>> = {
+  400: {
+    fr: 'La requête de marketplace est invalide.',
+    en: 'The marketplace request is invalid.',
+  },
+  404: {
+    fr: 'Aucune route de succès publics n’a été trouvée.',
+    en: 'No public achievements route was found.',
+  },
+  502: {
+    fr: 'Le service de succès est actuellement indisponible.',
+    en: 'The achievement service is currently unavailable.',
+  },
+}
+
 function getErrorMessage(error: unknown, language: Language) {
-  if (error instanceof AchievementManagementError) {
-    switch (error.status) {
-      case 400:
-        return language === 'fr'
-          ? 'La requête de marketplace est invalide.'
-          : 'The marketplace request is invalid.'
-      case 404:
-        return language === 'fr'
-          ? 'Aucune route de succès publics n’a été trouvée.'
-          : 'No public achievements route was found.'
-      case 502:
-        return language === 'fr'
-          ? 'Le service de succès est actuellement indisponible.'
-          : 'The achievement service is currently unavailable.'
-      default:
-        return language === 'fr'
-          ? 'Impossible de charger les succès de la marketplace.'
-          : 'Unable to load marketplace achievements.'
-    }
+  if (!(error instanceof AchievementManagementError)) {
+    return PUBLIC_ACHIEVEMENT_FALLBACK_MESSAGES[language]
   }
 
-  return language === 'fr'
-    ? 'Impossible de charger les succès de la marketplace.'
-    : 'Unable to load marketplace achievements.'
+  return (
+    PUBLIC_ACHIEVEMENT_ERROR_MESSAGES[error.status]?.[language] ??
+    PUBLIC_ACHIEVEMENT_FALLBACK_MESSAGES[language]
+  )
 }
 
 export function usePublicAchievements(): UsePublicAchievementsResult {

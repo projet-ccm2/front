@@ -56,7 +56,9 @@ export function PublicTwitchPanel({
   )
 
   const panelUrl =
-    typeof globalThis.window === 'undefined' ? '' : buildPublicPanelUrl(channelId, globalThis.location.origin)
+    globalThis.window === undefined
+      ? ''
+      : buildPublicPanelUrl(channelId, globalThis.location.origin)
   const entries = buildPublicPanelEntries(achievements, t)
   const viewerEntries = buildPanelAchievementEntries(viewerAchievements, t)
   const activeCount = achievements.filter(achievement => achievement.active).length

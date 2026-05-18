@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, act } from './utils/test-utils'
+import { render, screen, act, waitFor } from './utils/test-utils'
 import { render as rawRender } from '@testing-library/react'
 import { ThemeProvider, useTheme } from '../context/ThemeContext'
 import React from 'react'
@@ -69,6 +69,63 @@ describe('ThemeContext', () => {
       await button.click()
     })
     expect(button).toHaveTextContent('light')
+  })
+
+  it('should persist the selected theme in localStorage', async () => {
+    const TestComponent = () => {
+      const { theme, toggleTheme } = useTheme()
+      return <button onClick={toggleTheme}>{theme}</button>
+    }
+
+    rawRender(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    )
+
+    const button = screen.getByRole('button')
+
+    await act(async () => {
+      await button.click()
+    })
+
+    await waitFor(() => {
+      expect(localStorage.getItem('stream-quest_theme')).toBe('dark')
+    })
+  })
+
+  it('should restore the saved theme from localStorage', () => {
+    localStorage.setItem('stream-quest_theme', 'dark')
+
+    const TestComponent = () => {
+      const { theme } = useTheme()
+      return <div>Current theme: {theme}</div>
+    }
+
+    rawRender(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    )
+
+    expect(screen.getByText('Current theme: dark')).toBeInTheDocument()
+  })
+
+  it('should ignore invalid saved themes', () => {
+    localStorage.setItem('stream-quest_theme', 'sepia')
+
+    const TestComponent = () => {
+      const { theme } = useTheme()
+      return <div>Current theme: {theme}</div>
+    }
+
+    rawRender(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    )
+
+    expect(screen.getByText('Current theme: light')).toBeInTheDocument()
   })
 
   it('should throw error when useTheme is used outside provider', () => {

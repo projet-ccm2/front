@@ -223,6 +223,8 @@ describe('useViewerHub', () => {
     await act(async () => {
       resolver({ ok: true, status: 200, json: () => Promise.resolve([]) } as Response)
     })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 
   it('should not update state when unmounted before fetch rejects', async () => {
@@ -246,6 +248,8 @@ describe('useViewerHub', () => {
     await act(async () => {
       rejecter(new Error('Network failure'))
     })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })
 

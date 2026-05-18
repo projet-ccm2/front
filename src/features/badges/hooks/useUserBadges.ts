@@ -13,31 +13,32 @@ interface UseUserBadgesResult {
   errorMessage: string | null
 }
 
+const USER_BADGE_FALLBACK_MESSAGES: Record<Language, string> = {
+  fr: 'Impossible de charger les badges du compte.',
+  en: 'Unable to load account badges.',
+}
+
+const USER_BADGE_ERROR_MESSAGES: Record<number, Record<Language, string>> = {
+  400: {
+    fr: 'La requête des badges utilisateur est invalide.',
+    en: 'The user badges request is invalid.',
+  },
+  404: {
+    fr: 'Aucun badge n’a été trouvé pour ce compte.',
+    en: 'No badges were found for this account.',
+  },
+  502: {
+    fr: 'Le service des badges est actuellement indisponible.',
+    en: 'The badge service is currently unavailable.',
+  },
+}
+
 function getErrorMessage(error: unknown, language: Language) {
-  if (error instanceof AchievementManagementError) {
-    switch (error.status) {
-      case 400:
-        return language === 'fr'
-          ? 'La requête des badges utilisateur est invalide.'
-          : 'The user badges request is invalid.'
-      case 404:
-        return language === 'fr'
-          ? 'Aucun badge n’a été trouvé pour ce compte.'
-          : 'No badges were found for this account.'
-      case 502:
-        return language === 'fr'
-          ? 'Le service des badges est actuellement indisponible.'
-          : 'The badge service is currently unavailable.'
-      default:
-        return language === 'fr'
-          ? 'Impossible de charger les badges du compte.'
-          : 'Unable to load account badges.'
-    }
+  if (!(error instanceof AchievementManagementError)) {
+    return USER_BADGE_FALLBACK_MESSAGES[language]
   }
 
-  return language === 'fr'
-    ? 'Impossible de charger les badges du compte.'
-    : 'Unable to load account badges.'
+  return USER_BADGE_ERROR_MESSAGES[error.status]?.[language] ?? USER_BADGE_FALLBACK_MESSAGES[language]
 }
 
 export function useUserBadges(userId: string | null): UseUserBadgesResult {

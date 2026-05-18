@@ -22,7 +22,7 @@ export interface AuthContextType {
   user: TwitchUser | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: () => void
+  login: () => Promise<void>
   logout: () => void
   completeAuth: (tokens: {
     accessToken: string

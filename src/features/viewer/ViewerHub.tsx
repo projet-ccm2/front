@@ -33,6 +33,21 @@ interface ViewerHubProps {
 
 type AchievementFilter = 'all' | 'progress' | 'completed'
 
+function filterAchievements(
+  achievements: UserAchievement[],
+  filter: AchievementFilter
+): UserAchievement[] {
+  if (filter === 'progress') {
+    return achievements.filter(a => !a.userState.finished && a.userState.progressCount > 0)
+  }
+
+  if (filter === 'completed') {
+    return achievements.filter(a => a.userState.finished)
+  }
+
+  return [...achievements]
+}
+
 export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const { user } = useAuth()
   const { t } = useLanguage()
@@ -60,13 +75,7 @@ export function ViewerHub({ onOpenSidebar }: Readonly<ViewerHubProps>) {
   const channelAchievements = selectedSummary?.achievements ?? achievements
 
   const filteredAchievements = (() => {
-    const base =
-      filter === 'progress'
-        ? channelAchievements.filter(a => !a.userState.finished && a.userState.progressCount > 0)
-        : filter === 'completed'
-          ? channelAchievements.filter(a => a.userState.finished)
-          : [...channelAchievements]
-
+    const base = filterAchievements(channelAchievements, filter)
     return base.sort((a, b) => sortScore(a) - sortScore(b))
   })()
 

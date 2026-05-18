@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { AlertTriangle, X, RefreshCw, Trash2 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useLanguage } from '../../../context/LanguageContext'
@@ -69,7 +69,7 @@ const primaryButtonStyle: CSSProperties = {
 function isIdTokenExpired(idToken: string): boolean {
   try {
     const payload = idToken.split('.')[1]
-    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as {
+    const decoded = JSON.parse(atob(payload.replaceAll('-', '+').replaceAll('_', '/'))) as {
       exp?: number
     }
     if (typeof decoded.exp !== 'number') return false
@@ -82,6 +82,44 @@ function isIdTokenExpired(idToken: string): boolean {
 interface NukeConfirmationDialogProps {
   readonly onClose: () => void
   readonly onNuked: () => void
+}
+
+interface StepThreePrimaryContentProps {
+  readonly countdown: number
+  readonly isDeleting: boolean
+  readonly isRefreshing: boolean
+  readonly t: (key: string) => string
+}
+
+function getStepThreePrimaryContent({
+  countdown,
+  isDeleting,
+  isRefreshing,
+  t,
+}: StepThreePrimaryContentProps): ReactNode {
+  if (isRefreshing) {
+    return <RefreshCw className="h-4 w-4 animate-spin" />
+  }
+
+  if (isDeleting) {
+    return (
+      <>
+        <RefreshCw className="h-4 w-4 animate-spin" />
+        {t('settings.nuke.deleting')}
+      </>
+    )
+  }
+
+  if (countdown > 0) {
+    return t('settings.nuke.dialog.step3.countdown').replace('{seconds}', String(countdown))
+  }
+
+  return (
+    <>
+      <Trash2 className="h-4 w-4" />
+      {t('settings.nuke.dialog.step3.confirm')}
+    </>
+  )
 }
 
 export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDialogProps) {
@@ -300,8 +338,8 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
                 {t('settings.nuke.dialog.step3.description')}
               </p>
               {isRefreshing && (
-                <div
-                  role="status"
+                <output
+                  aria-live="polite"
                   style={{
                     alignItems: 'center',
                     backgroundColor: 'rgba(145, 70, 255, 0.1)',
@@ -317,7 +355,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
                   <p style={{ color: '#c9a4ff', fontSize: '0.875rem', margin: 0 }}>
                     {t('settings.nuke.refreshing')}
                   </p>
-                </div>
+                </output>
               )}
               {error && !isRefreshing && (
                 <p
@@ -400,21 +438,7 @@ export function NukeConfirmationDialog({ onClose, onNuked }: NukeConfirmationDia
                   opacity: primaryDisabled ? 0.5 : 1,
                 }}
               >
-                {isRefreshing ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : isDeleting ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    {t('settings.nuke.deleting')}
-                  </>
-                ) : countdown > 0 ? (
-                  t('settings.nuke.dialog.step3.countdown').replace('{seconds}', String(countdown))
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4" />
-                    {t('settings.nuke.dialog.step3.confirm')}
-                  </>
-                )}
+                {getStepThreePrimaryContent({ countdown, isDeleting, isRefreshing, t })}
               </button>
             )}
           </div>

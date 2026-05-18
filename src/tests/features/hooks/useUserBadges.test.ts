@@ -148,7 +148,8 @@ describe('useUserBadges', () => {
     await act(async () => {
       resolver({ ok: true, status: 200, json: () => Promise.resolve([]) } as Response)
     })
-    // no error should be thrown
+
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 
   it('should not update state when unmounted before fetch rejects (error path)', async () => {
@@ -167,6 +168,7 @@ describe('useUserBadges', () => {
     await act(async () => {
       rejecter(new Error('Network failure'))
     })
-    // no error should be thrown
+
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })

@@ -54,31 +54,32 @@ const EMPTY_STATS: DashboardStats = {
   totalXpEarned: 0,
 }
 
+const DASHBOARD_FALLBACK_MESSAGES: Record<Language, string> = {
+  fr: 'Impossible de charger les succès du tableau de bord.',
+  en: 'Unable to load dashboard achievements.',
+}
+
+const DASHBOARD_ERROR_MESSAGES: Record<number, Record<Language, string>> = {
+  400: {
+    fr: 'La requête du tableau de bord est invalide.',
+    en: 'The dashboard request is invalid.',
+  },
+  404: {
+    fr: 'Aucune donnée de succès n’a été trouvée pour ce tableau de bord.',
+    en: 'No achievement data was found for this dashboard.',
+  },
+  502: {
+    fr: 'Le service de succès est actuellement indisponible.',
+    en: 'The achievement service is currently unavailable.',
+  },
+}
+
 function getErrorMessage(error: unknown, language: Language) {
-  if (error instanceof AchievementManagementError) {
-    switch (error.status) {
-      case 400:
-        return language === 'fr'
-          ? 'La requête du tableau de bord est invalide.'
-          : 'The dashboard request is invalid.'
-      case 404:
-        return language === 'fr'
-          ? 'Aucune donnée de succès n’a été trouvée pour ce tableau de bord.'
-          : 'No achievement data was found for this dashboard.'
-      case 502:
-        return language === 'fr'
-          ? 'Le service de succès est actuellement indisponible.'
-          : 'The achievement service is currently unavailable.'
-      default:
-        return language === 'fr'
-          ? 'Impossible de charger les succès du tableau de bord.'
-          : 'Unable to load dashboard achievements.'
-    }
+  if (!(error instanceof AchievementManagementError)) {
+    return DASHBOARD_FALLBACK_MESSAGES[language]
   }
 
-  return language === 'fr'
-    ? 'Impossible de charger les succès du tableau de bord.'
-    : 'Unable to load dashboard achievements.'
+  return DASHBOARD_ERROR_MESSAGES[error.status]?.[language] ?? DASHBOARD_FALLBACK_MESSAGES[language]
 }
 
 function buildEngagementData(
