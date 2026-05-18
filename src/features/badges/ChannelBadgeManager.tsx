@@ -251,28 +251,86 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
       )}
 
       {!isLoading && !errorMessage && hasLoadedBadge && (
-        <div className="grid gap-6 lg:grid-cols-[auto,1fr]">
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50">
-            <BadgeThumbnail
-              title={displayedTitle || currentBadge.title}
-              image={previewImage}
-              className="h-28 w-28"
-            />
-            <div className="text-center">
-              <div className="text-sm text-gray-400 dark:text-gray-600">
+        <div
+          className="flex flex-col gap-5 lg:flex-row"
+          style={{
+            alignItems: 'stretch',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '1.25rem',
+          }}
+        >
+          <div
+            className="rounded-xl border border-[#2d2d31] bg-[#0f0f12] p-4 dark:border-gray-200 dark:bg-gray-50"
+            style={{
+              background:
+                'linear-gradient(145deg, rgba(145, 70, 255, 0.14), rgba(15, 15, 18, 0.98) 42%)',
+              border: '1px solid #2d2d31',
+              borderRadius: '16px',
+              display: 'flex',
+              flex: '0 1 280px',
+              flexDirection: 'column',
+              gap: '1rem',
+              justifyContent: 'space-between',
+              minHeight: '260px',
+              padding: '1rem',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  color: '#b9a7ff',
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.08em',
+                  marginBottom: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
+              >
                 {t('badge.channel.preview')}
               </div>
-              <div className="mt-1 text-base text-white dark:text-gray-900">
+              <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'center' }}>
+                <BadgeThumbnail
+                  title={displayedTitle || currentBadge.title}
+                  image={previewImage}
+                  className="h-24 w-24"
+                  style={{
+                    height: '132px',
+                    width: '132px',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.24)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '0.75rem',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ color: '#ffffff', fontSize: '1rem', fontWeight: 700 }}>
                 {displayedTitle || currentBadge.title}
+              </div>
+              <div style={{ color: '#a1a1aa', fontSize: '0.75rem', marginTop: '0.125rem' }}>
+                {selectedChannel.name}
               </div>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div
+            className="space-y-4"
+            style={{
+              flex: '1 1 360px',
+              minWidth: 'min(100%, 320px)',
+            }}
+          >
             <div>
               <label
                 htmlFor="channel-badge-title"
                 className="mb-2 block text-sm text-gray-400 dark:text-gray-600"
+                style={{ color: '#b7b7c5', display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}
               >
                 {t('badge.channel.form.title')}
               </label>
@@ -283,10 +341,27 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                 onChange={event => setDraftTitle(event.target.value)}
                 placeholder={t('badge.channel.form.titlePlaceholder')}
                 className="w-full rounded-lg border border-transparent bg-[#2d2d31] px-4 py-3 text-white placeholder:text-gray-500 focus:border-[#9146FF] focus:outline-none dark:bg-gray-100 dark:text-gray-900"
+                style={{
+                  backgroundColor: '#2d2d31',
+                  border: '1px solid transparent',
+                  borderRadius: '12px',
+                  color: '#ffffff',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  padding: '0.875rem 1rem',
+                  width: '100%',
+                }}
               />
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div
+              className="flex flex-col gap-3 sm:flex-row"
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+              }}
+            >
               <button
                 type="button"
                 onClick={handleOpenImagePicker}
@@ -294,6 +369,21 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                 className={`flex items-center justify-center gap-2 rounded-lg bg-[#2d2d31] px-4 py-2 text-white transition-colors hover:bg-[#3d3d41] dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 ${
                   isPreparingImageUpload ? 'cursor-not-allowed opacity-60' : ''
                 }`}
+                style={{
+                  alignItems: 'center',
+                  backgroundColor: '#2d2d31',
+                  border: '1px solid #3d3d41',
+                  borderRadius: '10px',
+                  color: '#ffffff',
+                  display: 'inline-flex',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  gap: '0.5rem',
+                  justifyContent: 'center',
+                  minHeight: '42px',
+                  opacity: isPreparingImageUpload ? 0.6 : 1,
+                  padding: '0.625rem 1rem',
+                }}
               >
                 <Upload className="h-4 w-4" />
                 {isPreparingImageUpload
@@ -309,6 +399,22 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                     ? 'bg-[#ff4444]/15 text-[#ff8080] hover:bg-[#ff4444]/25'
                     : 'cursor-not-allowed bg-[#2d2d31] text-gray-500 dark:bg-gray-100'
                 }`}
+                style={{
+                  alignItems: 'center',
+                  backgroundColor: selectedImageUpload ? 'rgba(255, 68, 68, 0.14)' : '#232327',
+                  border: selectedImageUpload
+                    ? '1px solid rgba(255, 68, 68, 0.25)'
+                    : '1px solid #2d2d31',
+                  borderRadius: '10px',
+                  color: selectedImageUpload ? '#ff9a9a' : '#71717a',
+                  display: 'inline-flex',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  gap: '0.5rem',
+                  justifyContent: 'center',
+                  minHeight: '42px',
+                  padding: '0.625rem 1rem',
+                }}
               >
                 <X className="h-4 w-4" />
                 {t('badge.channel.form.clear')}
@@ -324,7 +430,19 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
               className="hidden"
             />
 
-            <div className="flex items-center gap-3 rounded-lg border border-dashed border-[#4d4d51] p-4 text-sm text-gray-400 dark:border-gray-300 dark:text-gray-600">
+            <div
+              className="flex items-center gap-3 rounded-lg border border-dashed border-[#4d4d51] p-4 text-sm text-gray-400 dark:border-gray-300 dark:text-gray-600"
+              style={{
+                alignItems: 'center',
+                border: '1px dashed #4d4d51',
+                borderRadius: '12px',
+                color: '#a1a1aa',
+                display: 'flex',
+                fontSize: '0.875rem',
+                gap: '0.75rem',
+                padding: '0.875rem 1rem',
+              }}
+            >
               <ImageIcon className="h-4 w-4 flex-shrink-0" />
               {badgeInfoText}
             </div>
@@ -341,7 +459,7 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
               </div>
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end" style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 type="button"
                 onClick={() => void handleSave()}
@@ -349,6 +467,22 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                 className={`inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#9146FF] to-[#772ce8] px-5 py-3 text-white transition-all hover:from-[#772ce8] hover:to-[#9146FF] ${
                   isSaving ? 'cursor-not-allowed opacity-60' : ''
                 }`}
+                style={{
+                  alignItems: 'center',
+                  background: 'linear-gradient(135deg, #9146FF, #772ce8)',
+                  border: 0,
+                  borderRadius: '12px',
+                  color: '#ffffff',
+                  display: 'inline-flex',
+                  fontSize: '0.9375rem',
+                  fontWeight: 700,
+                  gap: '0.5rem',
+                  justifyContent: 'center',
+                  minHeight: '44px',
+                  opacity: isSaving ? 0.6 : 1,
+                  padding: '0.75rem 1.125rem',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 <Save className="h-4 w-4" />
                 {isSaving ? t('badge.channel.form.saving') : t('badge.channel.form.save')}

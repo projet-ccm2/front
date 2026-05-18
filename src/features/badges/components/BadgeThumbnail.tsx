@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import { isRenderableImageSource } from '../../achievements/utils/achievementImage'
 
 interface BadgeThumbnailProps {
   readonly title: string
   readonly image?: string | null
   readonly className?: string
+  readonly style?: CSSProperties
 }
 
 function deriveInitials(title: string): string {
@@ -21,7 +23,7 @@ function deriveInitials(title: string): string {
   return safeTitle.slice(0, 2).toUpperCase()
 }
 
-export function BadgeThumbnail({ title, image, className = '' }: BadgeThumbnailProps) {
+export function BadgeThumbnail({ title, image, className = '', style }: BadgeThumbnailProps) {
   const [imgError, setImgError] = useState(false)
   const safeTitle = title?.trim() || 'Badge'
   const trimmedImage = image?.trim()
@@ -33,6 +35,7 @@ export function BadgeThumbnail({ title, image, className = '' }: BadgeThumbnailP
         src={trimmedImage}
         alt={safeTitle}
         className={`rounded-2xl object-cover flex-shrink-0 ${className}`}
+        style={style}
         onError={() => setImgError(true)}
       />
     )
@@ -41,6 +44,7 @@ export function BadgeThumbnail({ title, image, className = '' }: BadgeThumbnailP
   return (
     <div
       className={`bg-gradient-to-br from-[#9146FF] to-[#772ce8] rounded-2xl flex items-center justify-center text-xl text-white flex-shrink-0 ${className}`}
+      style={style}
     >
       {deriveInitials(safeTitle)}
     </div>
