@@ -25,22 +25,22 @@ async function fetchTwitchUsers(
   return ((await res.json()) as { data: TwitchHelixUser[] }).data
 }
 
-async function getStoredAccessToken(): Promise<string | null> {
+async function getStoredIdToken(): Promise<string | null> {
   const stored = localStorage.getItem('twitch_tokens')
   if (!stored || !TWITCH_CLIENT_ID) return null
   try {
-    return (JSON.parse(stored) as { accessToken: string }).accessToken
+    return (JSON.parse(stored) as { idToken: string }).idToken
   } catch {
     return null
   }
 }
 
-async function fetchModeratedChannels(accessToken: string, userId: string): Promise<string[]> {
+async function fetchModeratedChannels(idToken: string, userId: string): Promise<string[]> {
   try {
     const res = await fetch(
       `${AUTH_SERVICE_URL}/channels/me/moderated?userId=${encodeURIComponent(userId)}`,
       {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${idToken}` },
       }
     )
     if (!res.ok) return []
@@ -81,13 +81,20 @@ function buildInitialChannels(
 }
 
 async function loadModeratedChannelData(user: NonNullable<ReturnType<typeof useAuth>['user']>) {
-  const accessToken = await getStoredAccessToken()
+  const stored = localStorage.getItem('twitch_tokens')
+  if (!stored || !TWITCH_CLIENT_ID) return null
 
-  if (!accessToken) {
+  let tokens: { accessToken: string; idToken: string }
+  try {
+    tokens = JSON.parse(stored) as { accessToken: string; idToken: string }
+  } catch {
     return null
   }
 
-  const moderatedChannelIds = await fetchModeratedChannels(accessToken, user.userId)
+  const { accessToken, idToken } = tokens
+  if (!idToken) return null
+
+  const moderatedChannelIds = await fetchModeratedChannels(idToken, user.userId)
   const channelIds = moderatedChannelIds.length ? moderatedChannelIds : user.channelsWhichIsMod
 
   if (!channelIds.length) {
