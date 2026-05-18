@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '../utils/test-utils'
 import { UserProfile } from '../../features/profile/UserProfile'
+import { useTheme } from '../../context/ThemeContext'
 import React from 'react'
 
 const authUser = {
@@ -59,6 +60,20 @@ const mockUserAchievements = [
     },
   },
 ]
+
+function ForceLightAppearance({ children }: { readonly children: React.ReactNode }) {
+  const { theme, toggleTheme } = useTheme()
+  const toggledRef = React.useRef(false)
+
+  React.useEffect(() => {
+    if (!toggledRef.current && theme !== 'dark') {
+      toggledRef.current = true
+      toggleTheme()
+    }
+  }, [theme, toggleTheme])
+
+  return <>{children}</>
+}
 
 describe('UserProfile', () => {
   const mockOnOpenSidebar = vi.fn()
@@ -291,5 +306,17 @@ describe('UserProfile', () => {
     // current user (streamer) appears in rank 5 with highlight
     expect(screen.getByText('#5')).toBeInTheDocument()
     expect(screen.getByText('100 XP')).toBeInTheDocument()
+  })
+
+  it('should render the profile layout in light appearance', async () => {
+    render(
+      <ForceLightAppearance>
+        <UserProfile onOpenSidebar={mockOnOpenSidebar} />
+      </ForceLightAppearance>
+    )
+
+    expect(await screen.findByText(/50 \/ 250 XP/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'streamer' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Classement' })).toBeInTheDocument()
   })
 })

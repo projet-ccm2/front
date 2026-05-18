@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { ChannelBadgeManager } from '../../features/badges/ChannelBadgeManager'
+import { useTheme } from '../../context/ThemeContext'
 import React from 'react'
 
 const authUser = {
@@ -19,6 +20,20 @@ const mockBadge = {
   id: 'badge-1',
   title: 'Top Fan',
   image: 'https://example.com/badge.png',
+}
+
+function ForceLightAppearance({ children }: { readonly children: React.ReactNode }) {
+  const { theme, toggleTheme } = useTheme()
+  const toggledRef = React.useRef(false)
+
+  React.useEffect(() => {
+    if (!toggledRef.current && theme !== 'dark') {
+      toggledRef.current = true
+      toggleTheme()
+    }
+  }, [theme, toggleTheme])
+
+  return <>{children}</>
 }
 
 describe('ChannelBadgeManager', () => {
@@ -256,5 +271,20 @@ describe('ChannelBadgeManager', () => {
         screen.getByText(/Achievement-management request failed with status 500/i)
       ).toBeInTheDocument()
     })
+  })
+
+  it('renders the channel badge editor in light appearance', async () => {
+    render(
+      <ForceLightAppearance>
+        <ChannelBadgeManager />
+      </ForceLightAppearance>
+    )
+
+    expect(await screen.findByRole('heading', { name: /Badge de la cha.ne/ })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByLabelText('Titre du badge')).toHaveValue('Top Fan')
+    })
+    expect(screen.getByText(/Aper.u du badge actuel/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Enregistrer le badge' })).toBeInTheDocument()
   })
 })
