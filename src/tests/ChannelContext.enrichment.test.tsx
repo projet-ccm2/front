@@ -24,7 +24,8 @@ describe('ChannelContext moderator enrichment', () => {
       })
     )
 
-    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'token-1', idToken: 'id-token-1' }))
+    // Minimal JWT with exp=9999999999 (year 2286) — passes isJwtExpired check
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'token-1', idToken: 'h.eyJleHAiOjk5OTk5OTk5OTl9.s' }))
 
     vi.stubGlobal(
       'fetch',
