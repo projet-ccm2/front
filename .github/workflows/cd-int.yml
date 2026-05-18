@@ -1,0 +1,38 @@
+name: Deploy to Integration
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: 'Docker image tag to deploy (default: int-{sha})'
+        required: false
+        type: string
+        default: ''
+      run-tests:
+        description: 'Run integration tests after deployment'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  deploy-int:
+    name: Deploy to Integration
+    uses: projet-ccm2/shared-workflows/.github/workflows/nodejs-cd.yml@main
+    if: github.event_name != 'pull_request'
+    with:
+      docker-image-name: front-int
+      docker-tag: ${{ github.event.inputs.image-tag || format('int-{0}', github.sha) }}
+      artifact-registry-repository: 'front-docker-int'
+      environment: integration
+      cloud-run-service-name: front-int
+      cloud-run-port: '4173'
+    secrets:
+      GCP_SA_KEY: ${{ secrets.INT_GCP_SA_KEY }}
+      GCP_PROJECT_ID: ${{ secrets.INT_GCP_PROJECT_ID }}
+      TWITCH_CLIENT_ID: ${{ secrets.INT_TWITCH_CLIENT_ID }}
+      AUTH_SERVICE_URL: ${{ secrets.INT_AUTH_SERVICE_URL }}
+      ACHIEVEMENT_MANAGEMENT_SERVICE_URL: ${{ secrets.INT_ACHIEVEMENT_MANAGEMENT_SERVICE_URL }}
+      API_SERVICE_URL: ${{ secrets.INT_API_SERVICE_URL }}
+      FRONT_URL: ${{ secrets.INT_FRONT_URL }}

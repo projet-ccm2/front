@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk vitest:*)",
+      "Bash(rtk tsc:*)",
+      "Bash(rtk lint:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(rtk gh *)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(i['path']\\) for i in data.get\\('tree',[]\\) if i['type']=='blob']\")",
+      "Bash(rtk git *)",
+      "Bash(rtk grep *)",
+      "Bash(npx vitest:*)",
+      "Bash(npx eslint:*)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const content = fs.readFileSync\\('src/tests/features/UserProfile.test.tsx', 'utf8'\\); const lines = content.split\\('\\\\n'\\); lines.forEach\\(\\(line, i\\) => { for\\(let j=0; j<line.length; j++\\) { const code = line.charCodeAt\\(j\\); if\\(code > 127\\) console.log\\('Line ' + \\(i+1\\) + ' col ' + j + ': ' + code + ' \\(' + line[j] + '\\)'\\); } }\\);\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\pvcsa_hvj9g8l\\\\WebstormProjects\\\\front\\\\src\\\\features\" -Directory)",
+      "Bash(Select-Object Name)"
+    ]
+  }
+}

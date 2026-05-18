@@ -1,0 +1,57 @@
+import { describe, it, expect } from 'vitest'
+import { render, screen, fireEvent } from '../utils/test-utils'
+import { ChannelSelector } from '../../components/ui/ChannelSelector'
+import React from 'react'
+
+describe('ChannelSelector', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    const mockUser = {
+      userId: '123456',
+      username: 'testuser',
+      channel: {
+        id: '123',
+        name: 'MyTwitchChannel',
+        description: 'Test channel',
+        profileImageUrl: 'http://example.com/image.png',
+      },
+      channelsWhichIsMod: ['ProGamingHub'],
+    }
+    localStorage.setItem('twitch_user', JSON.stringify(mockUser))
+  })
+
+  it('should result selected channel information', () => {
+    render(<ChannelSelector />)
+    expect(screen.getByText('MyTwitchChannel')).toBeInTheDocument()
+    expect(screen.getByText('Propriétaire')).toBeInTheDocument()
+  })
+
+  it('should toggle dropdown when clicked', () => {
+    render(<ChannelSelector />)
+
+    const button = screen.getByRole('button', { name: /MyTwitchChannel/i })
+    fireEvent.click(button)
+
+    // Check for dropdown content
+    expect(screen.getByText('Gérer les chaînes')).toBeInTheDocument()
+
+    // Close it
+    fireEvent.click(button)
+    expect(screen.queryByText('Gérer les chaînes')).not.toBeInTheDocument()
+  })
+
+  it('should allow selecting a different channel', () => {
+    render(<ChannelSelector />)
+
+    // Open dropdown
+    const button = screen.getByRole('button', { name: /MyTwitchChannel/i })
+    fireEvent.click(button)
+
+    // Find another channel (e.g. ProGamingHub)
+    const newChannel = screen.getByText('ProGamingHub')
+    fireEvent.click(newChannel)
+
+    // Should now show ProGamingHub as selected
+    expect(screen.getAllByText('ProGamingHub').length).toBeGreaterThan(0)
+  })
+})
