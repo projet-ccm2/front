@@ -282,7 +282,7 @@ describe('ChannelContext', () => {
     consoleSpy.mockRestore()
   })
 
-  it('should call login and skip fetch when idToken is expired', async () => {
+  it('should skip fetch when idToken is expired', async () => {
     // eyJleHAiOjF9 = {"exp":1} — expired since 1970
     localStorage.setItem(
       'twitch_tokens',
@@ -310,7 +310,7 @@ describe('ChannelContext', () => {
     vi.unstubAllGlobals()
   })
 
-  it('should call login when idToken payload is not valid JSON (corrupt JWT)', async () => {
+  it('should skip fetch when idToken payload is not valid JSON (corrupt JWT)', async () => {
     // bm90anNvbg = base64("notjson") — atob succeeds but JSON.parse throws
     localStorage.setItem(
       'twitch_tokens',
