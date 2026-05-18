@@ -502,6 +502,24 @@ export function AchievementCreator({
                   className={`flex items-center gap-2 px-5 py-2.5 bg-[#9146FF] hover:bg-[#772ce8] text-white rounded-lg transition-colors text-sm ${
                     isGenerating ? 'opacity-60 cursor-not-allowed' : ''
                   }`}
+                  style={{
+                    alignItems: 'center',
+                    background: 'linear-gradient(135deg, #9146FF, #772ce8)',
+                    border: 0,
+                    borderRadius: '10px',
+                    color: '#ffffff',
+                    display: 'inline-flex',
+                    flexDirection: 'row',
+                    fontSize: '0.875rem',
+                    fontWeight: 700,
+                    gap: '0.5rem',
+                    justifyContent: 'center',
+                    lineHeight: 1.2,
+                    minHeight: '40px',
+                    opacity: isGenerating ? 0.6 : 1,
+                    padding: '0.625rem 1rem',
+                    whiteSpace: 'nowrap',
+                  }}
                 >
                   <Sparkles className="w-4 h-4" />
                   {isGenerating ? t('creator.ai.generating') : t('creator.ai.generate')}
