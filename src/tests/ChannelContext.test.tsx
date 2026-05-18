@@ -3,6 +3,10 @@ import { describe, it, expect, vi } from 'vitest'
 // Minimal JWT with exp=9999999999 (year 2286) — passes isJwtExpired check
 const VALID_ID_TOKEN = 'h.eyJleHAiOjk5OTk5OTk5OTl9.s'
 
+vi.mock('../utils/browserRuntime', () => ({
+  openExternalUrl: vi.fn().mockResolvedValue(undefined),
+}))
+
 vi.mock('../config/environment', () => ({
   TWITCH_CLIENT_ID: 'test-client-id',
   AUTH_SERVICE_URL: 'http://localhost:3000',
@@ -276,5 +280,108 @@ describe('ChannelContext', () => {
     expect(screen.getByText('useChannel must be used within a ChannelProvider')).toBeInTheDocument()
 
     consoleSpy.mockRestore()
+  })
+
+  it('should call login and skip fetch when idToken is expired', async () => {
+    // eyJleHAiOjF9 = {"exp":1} — expired since 1970
+    localStorage.setItem(
+      'twitch_tokens',
+      JSON.stringify({ accessToken: 'access-token', idToken: 'h.eyJleHAiOjF9.s' })
+    )
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <ChannelProvider>
+        <ChannelProbe />
+      </ChannelProvider>
+    )
+
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 10))
+    })
+
+    expect(
+      fetchMock.mock.calls.some(([url]: [unknown]) =>
+        String(url).includes('/channels/me/moderated')
+      )
+    ).toBe(false)
+
+    vi.unstubAllGlobals()
+  })
+
+  it('should call login when idToken payload is not valid JSON (corrupt JWT)', async () => {
+    // bm90anNvbg = base64("notjson") — atob succeeds but JSON.parse throws
+    localStorage.setItem(
+      'twitch_tokens',
+      JSON.stringify({ accessToken: 'access-token', idToken: 'h.bm90anNvbg.s' })
+    )
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <ChannelProvider>
+        <ChannelProbe />
+      </ChannelProvider>
+    )
+
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 10))
+    })
+
+    expect(
+      fetchMock.mock.calls.some(([url]: [unknown]) =>
+        String(url).includes('/channels/me/moderated')
+      )
+    ).toBe(false)
+
+    vi.unstubAllGlobals()
+  })
+
+  it('should return empty helixUsersById when user has no moderated channels', async () => {
+    localStorage.setItem(
+      'twitch_user',
+      JSON.stringify({
+        userId: '123456',
+        username: 'testuser',
+        channel: {
+          id: '123',
+          name: 'MyTwitchChannel',
+          description: 'Test channel',
+          profileImageUrl: 'http://example.com/image.png',
+        },
+        channelsWhichIsMod: [],
+      })
+    )
+    localStorage.setItem(
+      'twitch_tokens',
+      JSON.stringify({ accessToken: 'access-token', idToken: VALID_ID_TOKEN })
+    )
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        if (String(input).includes('/channels/me/moderated')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ moderatedChannels: [] }),
+          })
+        }
+        return Promise.resolve({ ok: false, status: 500 })
+      })
+    )
+
+    render(
+      <ChannelProvider>
+        <ChannelProbe />
+      </ChannelProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('available-count')).toHaveTextContent('1')
+    })
+
+    vi.unstubAllGlobals()
   })
 })
