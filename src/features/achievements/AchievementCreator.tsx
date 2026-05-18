@@ -400,11 +400,6 @@ export function AchievementCreator({
         {selectedImageUpload.fileName}
       </span>
     </span>
-  ) : formValues.image ? (
-    <span className="break-all">
-      {t('creator.image.stored')}{' '}
-      <span className="text-white dark:text-gray-900">{formValues.image}</span>
-    </span>
   ) : (
     <span>{t('creator.image.empty')}</span>
   )
@@ -468,7 +463,20 @@ export function AchievementCreator({
                 </div>
               </div>
 
-              <label htmlFor="ai-prompt" className="sr-only">
+              <label
+                htmlFor="ai-prompt"
+                style={{
+                  border: 0,
+                  clip: 'rect(0 0 0 0)',
+                  height: '1px',
+                  margin: '-1px',
+                  overflow: 'hidden',
+                  padding: 0,
+                  position: 'absolute',
+                  whiteSpace: 'nowrap',
+                  width: '1px',
+                }}
+              >
                 AI Prompt
               </label>
               <textarea
@@ -519,19 +527,40 @@ export function AchievementCreator({
               )}
 
               {templateMessage && (
-                <div className="mb-6 rounded-xl border border-[#9146FF]/40 bg-[#9146FF]/10 p-4 text-sm text-[#c6a8ff] dark:text-[#6f42c1]">
+                <div
+                  className="mb-6 rounded-xl border border-[#9146FF]/40 bg-[#9146FF]/10 p-4 text-sm text-[#c6a8ff] dark:text-[#6f42c1]"
+                  style={{
+                    backgroundColor: 'rgba(145, 70, 255, 0.12)',
+                    border: '1px solid rgba(145, 70, 255, 0.35)',
+                    color: '#d9c3ff',
+                  }}
+                >
                   {templateMessage}
                 </div>
               )}
 
               {imageUploadError && (
-                <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+                <div
+                  className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]"
+                  style={{
+                    backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                    border: '1px solid rgba(255, 68, 68, 0.4)',
+                    color: '#ff9a9a',
+                  }}
+                >
                   {imageUploadError}
                 </div>
               )}
 
               {imageUploadSuccess && (
-                <div className="mb-6 rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00f593] dark:text-[#027a48]">
+                <div
+                  className="mb-6 rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00f593] dark:text-[#027a48]"
+                  style={{
+                    backgroundColor: 'rgba(0, 245, 147, 0.1)',
+                    border: '1px solid rgba(0, 245, 147, 0.35)',
+                    color: '#00f593',
+                  }}
+                >
                   {imageUploadSuccess}
                 </div>
               )}
@@ -561,6 +590,16 @@ export function AchievementCreator({
                         className={`px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors flex items-center justify-center gap-2 ${
                           isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : ''
                         }`}
+                        style={{
+                          alignItems: 'center',
+                          backgroundColor: '#2d2d31',
+                          borderRadius: '10px',
+                          color: '#ffffff',
+                          display: 'flex',
+                          gap: '0.5rem',
+                          justifyContent: 'center',
+                          padding: '0.625rem 1rem',
+                        }}
                       >
                         <Upload className="w-4 h-4" />
                         {isPreparingImageUpload
@@ -576,6 +615,20 @@ export function AchievementCreator({
                             ? 'bg-[#2d2d31] dark:bg-gray-100 text-gray-500 cursor-not-allowed'
                             : 'bg-[#ff4444]/15 text-[#ff8080] hover:bg-[#ff4444]/25'
                         }`}
+                        style={{
+                          alignItems: 'center',
+                          backgroundColor:
+                            !formValues.image && !selectedImageUpload
+                              ? '#2d2d31'
+                              : 'rgba(255, 68, 68, 0.14)',
+                          borderRadius: '10px',
+                          color:
+                            !formValues.image && !selectedImageUpload ? '#7b7b86' : '#ff8a8a',
+                          display: 'flex',
+                          gap: '0.5rem',
+                          justifyContent: 'center',
+                          padding: '0.625rem 1rem',
+                        }}
                       >
                         <X className="w-4 h-4" />
                         {t('creator.image.clear')}
@@ -595,9 +648,18 @@ export function AchievementCreator({
                       onChange={handleImageChange}
                       className="hidden"
                     />
-                    <div className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600">
-                      {imageInfoText}
-                    </div>
+                    {!formValues.image && (
+                      <div
+                        className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600"
+                        style={{
+                          border: '1px dashed #4d4d51',
+                          borderRadius: '10px',
+                          color: '#a1a1aa',
+                        }}
+                      >
+                        {imageInfoText}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
