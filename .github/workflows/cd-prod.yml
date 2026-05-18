@@ -22,6 +22,7 @@ jobs:
       environment: production
       cloud-run-service-name: front-prod
       cloud-run-port: '4173'
+      service_type: "front"
 
     secrets:
       GCP_SA_KEY: ${{ secrets.PROD_GCP_SA_KEY }}
