@@ -24,7 +24,7 @@ describe('ChannelContext moderator enrichment', () => {
       })
     )
 
-    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'token-1' }))
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'token-1', idToken: 'id-token-1' }))
 
     vi.stubGlobal(
       'fetch',

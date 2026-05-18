@@ -118,7 +118,7 @@ describe('ChannelContext', () => {
   })
 
   it('should keep moderator channels when the auth service rejects the request', async () => {
-    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token' }))
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token', idToken: 'id-token' }))
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
@@ -177,7 +177,7 @@ describe('ChannelContext', () => {
   })
 
   it('should keep moderator channels when the auth service throws', async () => {
-    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token' }))
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token', idToken: 'id-token' }))
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
