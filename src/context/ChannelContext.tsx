@@ -25,16 +25,6 @@ async function fetchTwitchUsers(
   return ((await res.json()) as { data: TwitchHelixUser[] }).data
 }
 
-async function getStoredIdToken(): Promise<string | null> {
-  const stored = localStorage.getItem('twitch_tokens')
-  if (!stored || !TWITCH_CLIENT_ID) return null
-  try {
-    return (JSON.parse(stored) as { idToken: string }).idToken
-  } catch {
-    return null
-  }
-}
-
 async function fetchModeratedChannels(idToken: string, userId: string): Promise<string[]> {
   try {
     const res = await fetch(
