@@ -27,100 +27,44 @@ interface ProfileAppearanceStyles {
   readonly leaderboardEmpty: CSSProperties
 }
 
-const LIGHT_PROFILE_STYLES: ProfileAppearanceStyles = {
-  page: { backgroundColor: '#f8fafc' },
-  hero: { borderBottom: '1px solid #e5e7eb' },
-  profileCard: {
-    backgroundColor: '#ffffff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '24px',
-    boxShadow: '0 18px 48px rgba(15, 23, 42, 0.08)',
-    padding: '1rem 1rem 1.25rem',
-  },
-  avatar: {
-    border: '4px solid #ffffff',
-    boxShadow: '0 18px 36px rgba(15, 23, 42, 0.18)',
-  },
-  levelBadge: {
-    backgroundColor: '#ffd700',
-    border: '4px solid #ffffff',
-    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
-  },
-  title: { color: '#111827' },
-  metadata: { color: '#475569' },
-  progressTrack: {
-    backgroundColor: '#e5e7eb',
-    border: '1px solid #d1d5db',
-    height: '12px',
-  },
-  description: { color: '#334155' },
-  statCard: {
-    backgroundColor: '#ffffff',
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 12px 32px rgba(15, 23, 42, 0.06)',
-  },
-  statLabel: { color: '#334155' },
-  statValue: { color: '#111827' },
-  leaderboardCard: {
-    backgroundColor: '#ffffff',
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 12px 32px rgba(15, 23, 42, 0.06)',
-  },
-  leaderboardEmpty: {
-    backgroundColor: '#f8fafc',
-    border: '1px dashed #cbd5e1',
-    color: '#475569',
-  },
-}
+function getProfileAppearanceStyles(isLight: boolean): ProfileAppearanceStyles {
+  const card = isLight
+    ? { backgroundColor: '#ffffff', border: '1px solid #e5e7eb', boxShadow: '0 12px 32px rgba(15, 23, 42, 0.06)' }
+    : { backgroundColor: '#18181b', border: '1px solid #2d2d31', boxShadow: 'none' }
 
-const DARK_PROFILE_STYLES: ProfileAppearanceStyles = {
-  page: { backgroundColor: '#0e0e10' },
-  hero: { borderBottom: '1px solid #2d2d31' },
-  profileCard: {
-    backgroundColor: 'transparent',
-    border: '1px solid transparent',
-    borderRadius: 0,
-    boxShadow: 'none',
-    padding: 0,
-  },
-  avatar: {
-    border: '4px solid #0e0e10',
-    boxShadow: '0 18px 36px rgba(0, 0, 0, 0.35)',
-  },
-  levelBadge: {
-    backgroundColor: '#ffd700',
-    border: '4px solid #0e0e10',
-    boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
-  },
-  title: { color: '#ffffff' },
-  metadata: { color: '#ffffff' },
-  progressTrack: {
-    backgroundColor: '#1a1a1d',
-    border: '1px solid #2d2d31',
-    height: '12px',
-  },
-  description: { color: '#d1d5db' },
-  statCard: {
-    backgroundColor: '#18181b',
-    border: '1px solid #2d2d31',
-    boxShadow: 'none',
-  },
-  statLabel: { color: '#9ca3af' },
-  statValue: { color: '#ffffff' },
-  leaderboardCard: {
-    backgroundColor: '#18181b',
-    border: '1px solid #2d2d31',
-    boxShadow: 'none',
-  },
-  leaderboardEmpty: {
-    backgroundColor: 'transparent',
-    border: '1px dashed #2d2d31',
-    color: '#9ca3af',
-  },
-}
-
-function getProfileAppearanceStyles(isLightAppearance: boolean) {
-  return isLightAppearance ? LIGHT_PROFILE_STYLES : DARK_PROFILE_STYLES
+  return {
+    page: { backgroundColor: isLight ? '#f8fafc' : '#0e0e10' },
+    hero: { borderBottom: isLight ? '1px solid #e5e7eb' : '1px solid #2d2d31' },
+    profileCard: isLight
+      ? { backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '24px', boxShadow: '0 18px 48px rgba(15, 23, 42, 0.08)', padding: '1rem 1rem 1.25rem' }
+      : { backgroundColor: 'transparent', border: '1px solid transparent', borderRadius: 0, boxShadow: 'none', padding: 0 },
+    avatar: {
+      border: isLight ? '4px solid #ffffff' : '4px solid #0e0e10',
+      boxShadow: isLight ? '0 18px 36px rgba(15, 23, 42, 0.18)' : '0 18px 36px rgba(0, 0, 0, 0.35)',
+    },
+    levelBadge: {
+      backgroundColor: '#ffd700',
+      border: isLight ? '4px solid #ffffff' : '4px solid #0e0e10',
+      boxShadow: '0 8px 18px rgba(0, 0, 0, 0.22)',
+    },
+    title: { color: isLight ? '#111827' : '#ffffff' },
+    metadata: { color: isLight ? '#475569' : '#ffffff' },
+    progressTrack: {
+      backgroundColor: isLight ? '#e5e7eb' : '#1a1a1d',
+      border: isLight ? '1px solid #d1d5db' : '1px solid #2d2d31',
+      height: '12px',
+    },
+    description: { color: isLight ? '#334155' : '#d1d5db' },
+    statCard: card,
+    statLabel: { color: isLight ? '#334155' : '#9ca3af' },
+    statValue: { color: isLight ? '#111827' : '#ffffff' },
+    leaderboardCard: card,
+    leaderboardEmpty: {
+      backgroundColor: isLight ? '#f8fafc' : 'transparent',
+      border: isLight ? '1px dashed #cbd5e1' : '1px dashed #2d2d31',
+      color: isLight ? '#475569' : '#9ca3af',
+    },
+  }
 }
 
 function getLeaderboardChannelId(
