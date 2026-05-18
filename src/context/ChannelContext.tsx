@@ -128,7 +128,9 @@ export const ChannelContext = createContext<ChannelContextType | undefined>(unde
 export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
   const { user, login } = useAuth()
   const loginRef = useRef(login)
-  loginRef.current = login
+  useEffect(() => {
+    loginRef.current = login
+  }, [login])
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [moderatorInfoByUserId, setModeratorInfoByUserId] = useState<
     Record<string, Record<string, TwitchHelixUser>>
