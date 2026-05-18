@@ -41,6 +41,20 @@ async function fetchModeratedChannels(idToken: string, userId: string): Promise<
   }
 }
 
+function isJwtExpired(token: string): boolean {
+  try {
+    const payload = token.split('.')[1]
+    if (!payload) return true
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
+    const claims = JSON.parse(atob(padded)) as { exp?: number }
+    if (typeof claims.exp !== 'number') return false
+    return claims.exp < Math.floor(Date.now() / 1000)
+  } catch {
+    return true
+  }
+}
+
 function mapHelixUsersById(users: TwitchHelixUser[]): Record<string, TwitchHelixUser> {
   return Object.fromEntries(users.map(user => [user.id, user]))
 }
@@ -70,7 +84,10 @@ function buildInitialChannels(
   return [userChannel, ...modChannels]
 }
 
-async function loadModeratedChannelData(user: NonNullable<ReturnType<typeof useAuth>['user']>) {
+async function loadModeratedChannelData(
+  user: NonNullable<ReturnType<typeof useAuth>['user']>,
+  onExpired: () => Promise<void>
+) {
   const stored = localStorage.getItem('twitch_tokens')
   if (!stored || !TWITCH_CLIENT_ID) return null
 
@@ -83,6 +100,11 @@ async function loadModeratedChannelData(user: NonNullable<ReturnType<typeof useA
 
   const { accessToken, idToken } = tokens
   if (!idToken) return null
+
+  if (isJwtExpired(idToken)) {
+    await onExpired()
+    return null
+  }
 
   const moderatedChannelIds = await fetchModeratedChannels(idToken, user.userId)
   const channelIds = moderatedChannelIds.length ? moderatedChannelIds : user.channelsWhichIsMod
@@ -104,7 +126,7 @@ export interface ChannelContextType {
 export const ChannelContext = createContext<ChannelContextType | undefined>(undefined)
 
 export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const { user } = useAuth()
+  const { user, login } = useAuth()
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [moderatorInfoByUserId, setModeratorInfoByUserId] = useState<
     Record<string, Record<string, TwitchHelixUser>>
@@ -141,7 +163,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     let cancelled = false
 
     const fetchAndEnrichModChannels = async () => {
-      const channelData = await loadModeratedChannelData(user)
+      const channelData = await loadModeratedChannelData(user, login)
 
       if (cancelled || !channelData) return
 
@@ -159,7 +181,7 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     return () => {
       cancelled = true
     }
-  }, [user])
+  }, [user, login])
 
   const selectedChannel = useMemo(() => {
     if (selectedChannelId) {

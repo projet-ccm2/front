@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 
+// Minimal JWT with exp=9999999999 (year 2286) — passes isJwtExpired check
+const VALID_ID_TOKEN = 'h.eyJleHAiOjk5OTk5OTk5OTl9.s'
+
 vi.mock('../config/environment', () => ({
   TWITCH_CLIENT_ID: 'test-client-id',
   AUTH_SERVICE_URL: 'http://localhost:3000',
@@ -118,7 +121,7 @@ describe('ChannelContext', () => {
   })
 
   it('should keep moderator channels when the auth service rejects the request', async () => {
-    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token', idToken: 'id-token' }))
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token', idToken: VALID_ID_TOKEN }))
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
@@ -177,7 +180,7 @@ describe('ChannelContext', () => {
   })
 
   it('should keep moderator channels when the auth service throws', async () => {
-    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token', idToken: 'id-token' }))
+    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'access-token', idToken: VALID_ID_TOKEN }))
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
