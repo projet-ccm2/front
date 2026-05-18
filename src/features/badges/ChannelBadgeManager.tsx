@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, CSSProperties } from 'react'
 import { Save, Upload, X, BadgeInfo, Lock, ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '../../context/AuthContext'
@@ -30,19 +30,79 @@ function getBadgeErrorMessage(
     : 'Unable to update the channel badge.'
 }
 
-interface ChannelBadgeManagerProps {
-  readonly className?: string
+function getClearButtonStyle(
+  hasSelectedImage: boolean,
+  isLightAppearance: boolean
+): CSSProperties {
+  const inactiveStyle = isLightAppearance
+    ? {
+        backgroundColor: '#f3f4f6',
+        border: '1px solid #e5e7eb',
+        color: '#94a3b8',
+      }
+    : {
+        backgroundColor: '#232327',
+        border: '1px solid #2d2d31',
+        color: '#71717a',
+      }
+
+  const activeStyle = isLightAppearance
+    ? {
+        backgroundColor: 'rgba(220, 38, 38, 0.08)',
+        border: '1px solid rgba(220, 38, 38, 0.2)',
+        color: '#b42318',
+      }
+    : {
+        backgroundColor: 'rgba(255, 68, 68, 0.14)',
+        border: '1px solid rgba(255, 68, 68, 0.25)',
+        color: '#ff9a9a',
+      }
+
+  return {
+    alignItems: 'center',
+    ...(hasSelectedImage ? activeStyle : inactiveStyle),
+    borderRadius: '10px',
+    display: 'inline-flex',
+    fontSize: '0.875rem',
+    fontWeight: 600,
+    gap: '0.5rem',
+    justifyContent: 'center',
+    minHeight: '42px',
+    padding: '0.625rem 1rem',
+  }
 }
 
-export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps) {
-  const { user } = useAuth()
-  const { selectedChannel } = useChannel()
-  const { language, t } = useLanguage()
-  const { theme } = useTheme()
-  const isLightAppearance = theme === 'dark'
-  const isOwnerChannel = selectedChannel ? isOwnerAchievementChannelId(selectedChannel.id) : false
-  const channelId = isOwnerChannel ? (selectedChannel?.id ?? null) : null
-  const { badge, isLoading, errorMessage, isNotFound } = useChannelBadge(channelId)
+function renderBadgeInfoText(
+  selectedImageUpload: AchievementImageUpload | null,
+  currentImage: string | null,
+  t: (key: string) => string
+) {
+  if (selectedImageUpload) {
+    return (
+      <span>
+        {t('badge.channel.form.selected')}{' '}
+        <span className="font-medium text-white dark:text-gray-900">
+          {selectedImageUpload.fileName}
+        </span>
+      </span>
+    )
+  }
+
+  if (currentImage) {
+    return <span className="text-white dark:text-gray-900">{t('badge.channel.form.current')}</span>
+  }
+
+  return <span>{t('badge.channel.form.empty')}</span>
+}
+
+interface ChannelBadgeEditorParams {
+  readonly badge: ChannelBadge | null
+  readonly channelId: string | null
+  readonly language: ReturnType<typeof useLanguage>['language']
+  readonly t: (key: string, params?: Record<string, string | number>) => string
+}
+
+function useChannelBadgeEditor({ badge, channelId, language, t }: ChannelBadgeEditorParams) {
   const [currentBadge, setCurrentBadge] = useState<ChannelBadge | null>(null)
   const [draftTitle, setDraftTitle] = useState('')
   const [selectedImageUpload, setSelectedImageUpload] = useState<AchievementImageUpload | null>(
@@ -71,10 +131,6 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
     setSelectedImageUpload(null)
     setImagePreviewUrl(null)
   }, [currentBadge])
-
-  const currentImage = currentBadge?.image ?? null
-  const previewImage = imagePreviewUrl ?? currentImage
-  const hasLoadedBadge = !!currentBadge
 
   const displayedTitle = useMemo(() => {
     const trimmed = draftTitle.trim()
@@ -174,6 +230,61 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
     }
   }
 
+  return {
+    currentBadge,
+    currentImage: currentBadge?.image ?? null,
+    displayedTitle,
+    draftTitle,
+    handleImageChange,
+    handleImageClear,
+    handleOpenImagePicker,
+    handleSave,
+    imageFileInputRef,
+    imagePreviewUrl,
+    isPreparingImageUpload,
+    isSaving,
+    previewImage: imagePreviewUrl ?? currentBadge?.image ?? null,
+    saveError,
+    saveSuccess,
+    selectedImageUpload,
+    setDraftTitle,
+  }
+}
+
+interface ChannelBadgeManagerProps {
+  readonly className?: string
+}
+
+export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps) {
+  const { user } = useAuth()
+  const { selectedChannel } = useChannel()
+  const { language, t } = useLanguage()
+  const { theme } = useTheme()
+  const isLightAppearance = theme === 'dark'
+  const isOwnerChannel = selectedChannel ? isOwnerAchievementChannelId(selectedChannel.id) : false
+  const channelId = isOwnerChannel ? (selectedChannel?.id ?? null) : null
+  const { badge, isLoading, errorMessage, isNotFound } = useChannelBadge(channelId)
+  const {
+    currentBadge,
+    currentImage,
+    displayedTitle,
+    draftTitle,
+    handleImageChange,
+    handleImageClear,
+    handleOpenImagePicker,
+    handleSave,
+    imageFileInputRef,
+    isPreparingImageUpload,
+    isSaving,
+    previewImage,
+    saveError,
+    saveSuccess,
+    selectedImageUpload,
+    setDraftTitle,
+  } = useChannelBadgeEditor({ badge, channelId, language, t })
+
+  const hasLoadedBadge = !!currentBadge
+
   if (!user) {
     return (
       <div
@@ -194,20 +305,7 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
     )
   }
 
-  const badgeInfoText = selectedImageUpload ? (
-    <span>
-      {t('badge.channel.form.selected')}{' '}
-      <span className="font-medium text-white dark:text-gray-900">
-        {selectedImageUpload.fileName}
-      </span>
-    </span>
-  ) : currentImage ? (
-    <span className="text-white dark:text-gray-900">
-      {t('badge.channel.form.current')}
-    </span>
-  ) : (
-    <span>{t('badge.channel.form.empty')}</span>
-  )
+  const badgeInfoText = renderBadgeInfoText(selectedImageUpload, currentImage, t)
 
   return (
     <section
@@ -423,38 +521,7 @@ export function ChannelBadgeManager({ className = '' }: ChannelBadgeManagerProps
                     ? 'bg-[#ff4444]/15 text-[#ff8080] hover:bg-[#ff4444]/25'
                     : 'cursor-not-allowed bg-[#2d2d31] text-gray-500 dark:bg-gray-100'
                 }`}
-                style={{
-                  alignItems: 'center',
-                  backgroundColor: selectedImageUpload
-                    ? isLightAppearance
-                      ? 'rgba(220, 38, 38, 0.08)'
-                      : 'rgba(255, 68, 68, 0.14)'
-                    : isLightAppearance
-                      ? '#f3f4f6'
-                      : '#232327',
-                  border: selectedImageUpload
-                    ? isLightAppearance
-                      ? '1px solid rgba(220, 38, 38, 0.2)'
-                      : '1px solid rgba(255, 68, 68, 0.25)'
-                    : isLightAppearance
-                      ? '1px solid #e5e7eb'
-                      : '1px solid #2d2d31',
-                  borderRadius: '10px',
-                  color: selectedImageUpload
-                    ? isLightAppearance
-                      ? '#b42318'
-                      : '#ff9a9a'
-                    : isLightAppearance
-                      ? '#94a3b8'
-                      : '#71717a',
-                  display: 'inline-flex',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  gap: '0.5rem',
-                  justifyContent: 'center',
-                  minHeight: '42px',
-                  padding: '0.625rem 1rem',
-                }}
+                style={getClearButtonStyle(Boolean(selectedImageUpload), isLightAppearance)}
               >
                 <X className="h-4 w-4" />
                 {t('badge.channel.form.clear')}

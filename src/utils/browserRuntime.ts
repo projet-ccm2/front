@@ -13,9 +13,11 @@ export async function getLaunchUrl() {
 export function addUrlOpenListener(
   handler: (url: string) => Promise<void> | void
 ): Promise<{ remove: () => void }> {
-  void handler
+  const listeners = new Set([handler])
+
   return Promise.resolve({
     remove() {
+      listeners.delete(handler)
       return
     },
   })

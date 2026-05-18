@@ -51,6 +51,10 @@ async function fetchModeratedChannels(accessToken: string, userId: string): Prom
   }
 }
 
+function mapHelixUsersById(users: TwitchHelixUser[]): Record<string, TwitchHelixUser> {
+  return Object.fromEntries(users.map(user => [user.id, user]))
+}
+
 function buildInitialChannels(
   user: ReturnType<typeof useAuth>['user'],
   moderatedIds: string[]
@@ -74,6 +78,24 @@ function buildInitialChannels(
   }))
 
   return [userChannel, ...modChannels]
+}
+
+async function loadModeratedChannelData(user: NonNullable<ReturnType<typeof useAuth>['user']>) {
+  const accessToken = await getStoredAccessToken()
+
+  if (!accessToken) {
+    return null
+  }
+
+  const moderatedChannelIds = await fetchModeratedChannels(accessToken, user.userId)
+  const channelIds = moderatedChannelIds.length ? moderatedChannelIds : user.channelsWhichIsMod
+
+  if (!channelIds.length) {
+    return { channelIds, helixUsersById: {} }
+  }
+
+  const helixUsers = await fetchTwitchUsers(channelIds, accessToken, TWITCH_CLIENT_ID)
+  return { channelIds, helixUsersById: mapHelixUsersById(helixUsers) }
 }
 
 export interface ChannelContextType {
@@ -122,22 +144,17 @@ export function ChannelProvider({ children }: Readonly<{ children: ReactNode }>)
     let cancelled = false
 
     const fetchAndEnrichModChannels = async () => {
-      const accessToken = await getStoredAccessToken()
-      if (cancelled || !accessToken) return
+      const channelData = await loadModeratedChannelData(user)
 
-      const moderatedChannelIds = await fetchModeratedChannels(accessToken, user.userId)
-      const channelIds = moderatedChannelIds.length ? moderatedChannelIds : user.channelsWhichIsMod
+      if (cancelled || !channelData) return
 
-      if (cancelled || !channelIds.length) return
+      setModeratedChannelIdsByUserId(prev => ({ ...prev, [user.userId]: channelData.channelIds }))
 
-      setModeratedChannelIdsByUserId(prev => ({ ...prev, [user.userId]: channelIds }))
-
-      const helixUsers = await fetchTwitchUsers(channelIds, accessToken, TWITCH_CLIENT_ID)
-      if (cancelled || !helixUsers.length) return
+      if (Object.keys(channelData.helixUsersById).length === 0) return
 
       setModeratorInfoByUserId(prev => ({
         ...prev,
-        [user.userId]: Object.fromEntries(helixUsers.map(u => [u.id, u])),
+        [user.userId]: channelData.helixUsersById,
       }))
     }
 

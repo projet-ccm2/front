@@ -18,31 +18,35 @@ interface UseChannelAchievementsResult {
   isModeratorChannel: boolean
 }
 
+const CHANNEL_ACHIEVEMENT_FALLBACK_MESSAGES: Record<Language, string> = {
+  fr: 'Impossible de charger les succès de la chaîne.',
+  en: 'Unable to load channel achievements.',
+}
+
+const CHANNEL_ACHIEVEMENT_ERROR_MESSAGES: Record<number, Record<Language, string>> = {
+  400: {
+    fr: 'La chaîne sélectionnée ne peut pas être interrogée avec cette requête.',
+    en: 'The selected channel cannot be queried with the current request.',
+  },
+  404: {
+    fr: 'Aucun succès n’a été trouvé pour cette chaîne.',
+    en: 'No achievements were found for this channel.',
+  },
+  502: {
+    fr: 'Le service de succès est actuellement indisponible.',
+    en: 'The achievement service is currently unavailable.',
+  },
+}
+
 function getErrorMessage(error: unknown, language: Language) {
-  if (error instanceof AchievementManagementError) {
-    switch (error.status) {
-      case 400:
-        return language === 'fr'
-          ? 'La chaîne sélectionnée ne peut pas être interrogée avec cette requête.'
-          : 'The selected channel cannot be queried with the current request.'
-      case 404:
-        return language === 'fr'
-          ? 'Aucun succès n’a été trouvé pour cette chaîne.'
-          : 'No achievements were found for this channel.'
-      case 502:
-        return language === 'fr'
-          ? 'Le service de succès est actuellement indisponible.'
-          : 'The achievement service is currently unavailable.'
-      default:
-        return language === 'fr'
-          ? 'Impossible de charger les succès de la chaîne.'
-          : 'Unable to load channel achievements.'
-    }
+  if (!(error instanceof AchievementManagementError)) {
+    return CHANNEL_ACHIEVEMENT_FALLBACK_MESSAGES[language]
   }
 
-  return language === 'fr'
-    ? 'Impossible de charger les succès de la chaîne.'
-    : 'Unable to load channel achievements.'
+  return (
+    CHANNEL_ACHIEVEMENT_ERROR_MESSAGES[error.status]?.[language] ??
+    CHANNEL_ACHIEVEMENT_FALLBACK_MESSAGES[language]
+  )
 }
 
 export function useChannelAchievements(channelId: string | null): UseChannelAchievementsResult {

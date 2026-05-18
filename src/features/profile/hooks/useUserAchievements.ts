@@ -16,31 +16,35 @@ interface UseUserAchievementsResult {
   errorMessage: string | null
 }
 
+const USER_ACHIEVEMENT_FALLBACK_MESSAGES: Record<Language, string> = {
+  fr: 'Impossible de charger les succès du profil.',
+  en: 'Unable to load profile achievements.',
+}
+
+const USER_ACHIEVEMENT_ERROR_MESSAGES: Record<number, Record<Language, string>> = {
+  400: {
+    fr: 'La requête du profil est invalide.',
+    en: 'The current profile request is invalid.',
+  },
+  404: {
+    fr: 'Aucune progression de succès n’a été trouvée pour ce profil.',
+    en: 'No achievement progress was found for this profile.',
+  },
+  502: {
+    fr: 'Le service de succès est actuellement indisponible.',
+    en: 'The achievement service is currently unavailable.',
+  },
+}
+
 function getErrorMessage(error: unknown, language: Language) {
-  if (error instanceof AchievementManagementError) {
-    switch (error.status) {
-      case 400:
-        return language === 'fr'
-          ? 'La requête du profil est invalide.'
-          : 'The current profile request is invalid.'
-      case 404:
-        return language === 'fr'
-          ? 'Aucune progression de succès n’a été trouvée pour ce profil.'
-          : 'No achievement progress was found for this profile.'
-      case 502:
-        return language === 'fr'
-          ? 'Le service de succès est actuellement indisponible.'
-          : 'The achievement service is currently unavailable.'
-      default:
-        return language === 'fr'
-          ? 'Impossible de charger les succès du profil.'
-          : 'Unable to load profile achievements.'
-    }
+  if (!(error instanceof AchievementManagementError)) {
+    return USER_ACHIEVEMENT_FALLBACK_MESSAGES[language]
   }
 
-  return language === 'fr'
-    ? 'Impossible de charger les succès du profil.'
-    : 'Unable to load profile achievements.'
+  return (
+    USER_ACHIEVEMENT_ERROR_MESSAGES[error.status]?.[language] ??
+    USER_ACHIEVEMENT_FALLBACK_MESSAGES[language]
+  )
 }
 
 export function useUserAchievements(): UseUserAchievementsResult {

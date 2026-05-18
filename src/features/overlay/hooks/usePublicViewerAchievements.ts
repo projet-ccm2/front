@@ -7,31 +7,32 @@ import {
 } from '../../achievements/api/achievementManagementClient'
 import type { UserAchievement } from '../../achievements/api/achievementManagement.types'
 
+const PUBLIC_VIEWER_FALLBACK_MESSAGES: Record<Language, string> = {
+  fr: 'Impossible de charger les succès du viewer.',
+  en: 'Unable to load viewer achievements.',
+}
+
+const PUBLIC_VIEWER_ERROR_MESSAGES: Record<number, Record<Language, string>> = {
+  400: {
+    fr: 'La requête du viewer est invalide.',
+    en: 'The viewer request is invalid.',
+  },
+  404: {
+    fr: 'Aucune progression de succès n’a été trouvée pour ce viewer.',
+    en: 'No achievement progress was found for this viewer.',
+  },
+  502: {
+    fr: 'Le service de succès est actuellement indisponible.',
+    en: 'The achievement service is currently unavailable.',
+  },
+}
+
 function getErrorMessage(error: unknown, language: Language) {
-  if (error instanceof AchievementManagementError) {
-    switch (error.status) {
-      case 400:
-        return language === 'fr'
-          ? 'La requête du viewer est invalide.'
-          : 'The viewer request is invalid.'
-      case 404:
-        return language === 'fr'
-          ? 'Aucune progression de succès n’a été trouvée pour ce viewer.'
-          : 'No achievement progress was found for this viewer.'
-      case 502:
-        return language === 'fr'
-          ? 'Le service de succès est actuellement indisponible.'
-          : 'The achievement service is currently unavailable.'
-      default:
-        return language === 'fr'
-          ? 'Impossible de charger les succès du viewer.'
-          : 'Unable to load viewer achievements.'
-    }
+  if (!(error instanceof AchievementManagementError)) {
+    return PUBLIC_VIEWER_FALLBACK_MESSAGES[language]
   }
 
-  return language === 'fr'
-    ? 'Impossible de charger les succès du viewer.'
-    : 'Unable to load viewer achievements.'
+  return PUBLIC_VIEWER_ERROR_MESSAGES[error.status]?.[language] ?? PUBLIC_VIEWER_FALLBACK_MESSAGES[language]
 }
 
 export function usePublicViewerAchievements(channelId: string, viewerId: string | null) {

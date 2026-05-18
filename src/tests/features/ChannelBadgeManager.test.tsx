@@ -106,7 +106,9 @@ describe('ChannelBadgeManager', () => {
       expect(screen.getByDisplayValue('Super Fan')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Badge de chaîne mis à jour avec succès.')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Badge de chaîne mis à jour avec succès.')).toBeInTheDocument()
+    })
   })
 
   it('uploads a replacement image through imageUpload', async () => {

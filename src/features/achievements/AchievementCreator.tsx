@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, ReactNode, RefObject } from 'react'
 import { toast } from 'sonner'
 import { ChannelSelector } from '../../components/ui/ChannelSelector'
 import { Sparkles, Upload, Save, Send, Menu, X, Lock } from 'lucide-react'
@@ -36,12 +36,16 @@ function getTriggerFieldConfig(label: AchievementTriggerLabel, t: (key: string) 
     label === 'countRedeemChannelPoint'
       ? t('achievement.trigger.rewards.label')
       : t('achievement.trigger.dataLabel')
-  const goalLabel =
-    label === 'countMessage'
-      ? t('achievement.goal.countMessage')
-      : label === 'countCostChannelPoint'
-        ? t('achievement.goal.countCostChannelPoint')
-        : t('achievement.goal.default')
+  let goalLabel = t('achievement.goal.default')
+
+  if (label === 'countMessage') {
+    goalLabel = t('achievement.goal.countMessage')
+  }
+
+  if (label === 'countCostChannelPoint') {
+    goalLabel = t('achievement.goal.countCostChannelPoint')
+  }
+
   return { showDetail, detailLabel, goalLabel }
 }
 
@@ -223,6 +227,606 @@ function getPublishValidationError(
   return null
 }
 
+function renderImageContent(formValues: AchievementFormValues, imagePreviewUrl: string | null) {
+  if (imagePreviewUrl) {
+    return (
+      <img
+        src={imagePreviewUrl}
+        alt="Selected achievement preview"
+        className="h-full w-full object-cover"
+      />
+    )
+  }
+
+  const trimmedImage = formValues.image?.trim()
+
+  if (trimmedImage && isRenderableImageSource(trimmedImage)) {
+    return (
+      <img
+        src={trimmedImage}
+        alt="Current achievement"
+        className="h-full w-full object-cover"
+        onError={e => {
+          e.currentTarget.style.display = 'none'
+        }}
+      />
+    )
+  }
+
+  if (formValues.image) {
+    return (
+      <div className="flex h-full w-full items-center justify-center text-center px-3 text-xs text-gray-300 dark:text-gray-600 break-all">
+        <span>{formValues.image}</span>
+      </div>
+    )
+  }
+
+  return <Upload className="w-8 h-8 text-gray-500" />
+}
+
+function getSubmitLabel(
+  isSubmitting: boolean,
+  achievementId: string | null,
+  t: (key: string) => string
+) {
+  if (!isSubmitting) {
+    return achievementId ? t('creator.action.update') : t('creator.action.publish')
+  }
+
+  return achievementId ? t('creator.action.saving') : t('creator.action.publishing')
+}
+
+interface SimpleTriggerFieldsProps {
+  readonly achievementTriggerOptions: ReturnType<typeof getAchievementTriggerOptions>
+  readonly formValues: AchievementFormValues
+  readonly isLoadingRewards: boolean
+  readonly rewards: ReadonlyArray<{ id: string; title: string; cost: number }>
+  readonly rewardsError: boolean
+  readonly setFormValues: SetFormValues
+  readonly t: (key: string, params?: Record<string, string | number>) => string
+  readonly updateField: <K extends keyof AchievementFormValues>(
+    field: K,
+    value: AchievementFormValues[K]
+  ) => void
+}
+
+function SimpleTriggerFields({
+  achievementTriggerOptions,
+  formValues,
+  isLoadingRewards,
+  rewards,
+  rewardsError,
+  setFormValues,
+  t,
+  updateField,
+}: SimpleTriggerFieldsProps) {
+  const triggerConfig = getTriggerFieldConfig(formValues.type.label, t)
+  const selectedTriggerDescription =
+    achievementTriggerOptions.find(trigger => trigger.value === formValues.type.label)
+      ?.description ?? ''
+
+  const handleTriggerLabelChange = (label: AchievementTriggerLabel) => {
+    setFormValues(current => ({
+      ...current,
+      type: { label, data: null },
+    }))
+  }
+
+  const handleTriggerDataChange = (value: string) => {
+    setFormValues(current => ({
+      ...current,
+      type: {
+        ...current.type,
+        data: value.trim() ? value : null,
+      },
+    }))
+  }
+
+  return (
+    <div className="mb-8">
+      <div className="mb-4">
+        <label
+          htmlFor="achievement-trigger-label"
+          className="block text-white dark:text-gray-900 mb-3 font-medium"
+        >
+          {t('achievement.trigger.label')}
+        </label>
+        <select
+          id="achievement-trigger-label"
+          value={formValues.type.label}
+          onChange={event => handleTriggerLabelChange(event.target.value as AchievementTriggerLabel)}
+          className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
+        >
+          {achievementTriggerOptions.map(trigger => (
+            <option key={trigger.value} value={trigger.value}>
+              {trigger.title}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">
+          {t('achievement.trigger.helper')}
+        </p>
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
+          {selectedTriggerDescription}
+        </p>
+      </div>
+      <div className={`grid gap-6 ${triggerConfig.showDetail ? 'sm:grid-cols-2' : ''}`}>
+        {triggerConfig.showDetail && (
+          <div>
+            <label
+              htmlFor="achievement-trigger-data"
+              className="block text-white dark:text-gray-900 mb-3 font-medium"
+            >
+              {triggerConfig.detailLabel}
+            </label>
+            {formValues.type.label === 'countRedeemChannelPoint' ? (
+              <>
+                {isLoadingRewards && (
+                  <p className="text-sm text-gray-400 dark:text-gray-600 mb-2">
+                    {t('achievement.trigger.rewards.loading')}
+                  </p>
+                )}
+                {!isLoadingRewards && rewardsError && (
+                  <p className="text-sm text-red-400 dark:text-red-600 mb-2">
+                    {t('achievement.trigger.rewards.error')}
+                  </p>
+                )}
+                {!isLoadingRewards && !rewardsError && rewards.length === 0 && (
+                  <p className="text-sm text-gray-400 dark:text-gray-600 mb-2">
+                    {t('achievement.trigger.rewards.empty')}
+                  </p>
+                )}
+                <select
+                  id="achievement-trigger-data"
+                  value={toStringValue(formValues.type.data)}
+                  onChange={event =>
+                    setFormValues(current => ({
+                      ...current,
+                      type: {
+                        ...current.type,
+                        data: event.target.value || null,
+                      },
+                    }))
+                  }
+                  className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
+                >
+                  <option value="">...</option>
+                  {rewards.map(reward => (
+                    <option key={reward.id} value={reward.id}>
+                      {reward.title} — {reward.cost} pts
+                    </option>
+                  ))}
+                  {formValues.type.data !== null &&
+                    !rewards.some(r => r.id === toStringValue(formValues.type.data)) && (
+                      <option value={toStringValue(formValues.type.data)} disabled>
+                        {t('achievement.trigger.rewards.unknown', {
+                          id: toStringValue(formValues.type.data),
+                        })}
+                      </option>
+                    )}
+                </select>
+              </>
+            ) : (
+              <input
+                id="achievement-trigger-data"
+                type="text"
+                value={toStringValue(formValues.type.data)}
+                onChange={event => handleTriggerDataChange(event.target.value)}
+                placeholder="..."
+                className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
+              />
+            )}
+          </div>
+        )}
+        <div>
+          <label
+            htmlFor="achievement-goal"
+            className="block text-white dark:text-gray-900 mb-3 font-medium"
+          >
+            {triggerConfig.goalLabel}
+          </label>
+          <input
+            id="achievement-goal"
+            type="number"
+            value={formValues.goal}
+            onChange={event => updateField('goal', Number(event.target.value) || 0)}
+            className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function getHeaderText(achievementId: string | null, t: (key: string) => string) {
+  if (achievementId) {
+    return {
+      title: t('creator.title.edit'),
+      subtitle: t('creator.subtitle.edit'),
+    }
+  }
+
+  return {
+    title: t('creator.title.create'),
+    subtitle: t('creator.subtitle.create'),
+  }
+}
+
+function getImageInfoText(
+  selectedImageUpload: AchievementImageUploadFormValue | null,
+  t: (key: string) => string
+) {
+  if (!selectedImageUpload) {
+    return <span>{t('creator.image.empty')}</span>
+  }
+
+  return (
+    <span className="break-all">
+      {t('creator.image.selected')}{' '}
+      <span className="text-white dark:text-gray-900">{selectedImageUpload.fileName}</span>
+    </span>
+  )
+}
+
+function getClearImageButtonClassName(hasImage: boolean) {
+  if (!hasImage) {
+    return 'bg-[#2d2d31] dark:bg-gray-100 text-gray-500 cursor-not-allowed'
+  }
+
+  return 'bg-[#ff4444]/15 text-[#ff8080] hover:bg-[#ff4444]/25'
+}
+
+function getClearImageButtonStyle(hasImage: boolean) {
+  return {
+    alignItems: 'center',
+    backgroundColor: hasImage ? 'rgba(255, 68, 68, 0.14)' : '#2d2d31',
+    borderRadius: '10px',
+    color: hasImage ? '#ff8a8a' : '#7b7b86',
+    display: 'flex',
+    gap: '0.5rem',
+    justifyContent: 'center',
+    padding: '0.625rem 1rem',
+  }
+}
+
+function CreatorHeader({
+  achievementId,
+  onOpenSidebar,
+  t,
+}: Readonly<{
+  achievementId: string | null
+  onOpenSidebar: () => void
+  t: (key: string) => string
+}>) {
+  const headerText = getHeaderText(achievementId, t)
+
+  return (
+    <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          <button
+            onClick={onOpenSidebar}
+            data-testid="mobile-menu-btn"
+            className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
+              {headerText.title}
+            </h1>
+            <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
+              {headerText.subtitle}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative hidden sm:block flex-shrink-0">
+          <ChannelSelector />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CreatorFeedback({
+  imageUploadError,
+  imageUploadSuccess,
+  isLoadingAchievement,
+  loadError,
+  templateMessage,
+  t,
+}: Readonly<{
+  imageUploadError: string | null
+  imageUploadSuccess: string | null
+  isLoadingAchievement: boolean
+  loadError: string | null
+  templateMessage: string | null
+  t: (key: string) => string
+}>) {
+  return (
+    <>
+      {isLoadingAchievement && (
+        <div className="mb-6 rounded-xl border border-[#2d2d31] bg-[#2d2d31] p-4 text-sm text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600">
+          {t('creator.loading')}
+        </div>
+      )}
+
+      {loadError && (
+        <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
+          {loadError}
+        </div>
+      )}
+
+      {templateMessage && (
+        <div
+          className="mb-6 rounded-xl border border-[#9146FF]/40 bg-[#9146FF]/10 p-4 text-sm text-[#c6a8ff] dark:text-[#6f42c1]"
+          style={{
+            backgroundColor: 'rgba(145, 70, 255, 0.12)',
+            border: '1px solid rgba(145, 70, 255, 0.35)',
+            color: '#d9c3ff',
+          }}
+        >
+          {templateMessage}
+        </div>
+      )}
+
+      {imageUploadError && (
+        <div
+          className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]"
+          style={{
+            backgroundColor: 'rgba(255, 68, 68, 0.1)',
+            border: '1px solid rgba(255, 68, 68, 0.4)',
+            color: '#ff9a9a',
+          }}
+        >
+          {imageUploadError}
+        </div>
+      )}
+
+      {imageUploadSuccess && (
+        <div
+          className="mb-6 rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00f593] dark:text-[#027a48]"
+          style={{
+            backgroundColor: 'rgba(0, 245, 147, 0.1)',
+            border: '1px solid rgba(0, 245, 147, 0.35)',
+            color: '#00f593',
+          }}
+        >
+          {imageUploadSuccess}
+        </div>
+      )}
+    </>
+  )
+}
+
+function AchievementImagePicker({
+  formValues,
+  handleImageChange,
+  handleImageClear,
+  handleOpenImagePicker,
+  imageContent,
+  imageFileInputRef,
+  imageInfoText,
+  isPreparingImageUpload,
+  selectedImageUpload,
+  t,
+}: Readonly<{
+  formValues: AchievementFormValues
+  handleImageChange: (event: ChangeEvent<HTMLInputElement>) => Promise<void>
+  handleImageClear: () => void
+  handleOpenImagePicker: () => void
+  imageContent: ReactNode
+  imageFileInputRef: RefObject<HTMLInputElement | null>
+  imageInfoText: ReactNode
+  isPreparingImageUpload: boolean
+  selectedImageUpload: AchievementImageUploadFormValue | null
+  t: (key: string) => string
+}>) {
+  const hasImage = Boolean(formValues.image || selectedImageUpload)
+
+  return (
+    <div className="mb-8">
+      <div className="block text-white dark:text-gray-900 mb-3 font-medium">
+        {t('creator.image.label')}
+      </div>
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        <button
+          type="button"
+          onClick={handleOpenImagePicker}
+          disabled={isPreparingImageUpload}
+          aria-label={`${t('creator.image.upload')} ${t('creator.image.preview')}`}
+          className={`w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden ${
+            isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+          }`}
+        >
+          {imageContent}
+        </button>
+        <div className="flex-1 w-full text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <button
+              type="button"
+              onClick={handleOpenImagePicker}
+              disabled={isPreparingImageUpload}
+              className={`px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
+              style={{
+                alignItems: 'center',
+                backgroundColor: '#2d2d31',
+                borderRadius: '10px',
+                color: '#ffffff',
+                display: 'flex',
+                gap: '0.5rem',
+                justifyContent: 'center',
+                padding: '0.625rem 1rem',
+              }}
+            >
+              <Upload className="w-4 h-4" />
+              {isPreparingImageUpload ? t('creator.image.preparing') : t('creator.image.upload')}
+            </button>
+            <button
+              type="button"
+              onClick={handleImageClear}
+              disabled={!hasImage}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getClearImageButtonClassName(hasImage)}`}
+              style={getClearImageButtonStyle(hasImage)}
+            >
+              <X className="w-4 h-4" />
+              {t('creator.image.clear')}
+            </button>
+          </div>
+          <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">{t('creator.image.hint')}</p>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">{t('creator.image.note')}</p>
+          <input
+            ref={imageFileInputRef}
+            data-testid="achievement-image-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+          {!formValues.image && (
+            <div
+              className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600"
+              style={{
+                border: '1px dashed #4d4d51',
+                borderRadius: '10px',
+                color: '#a1a1aa',
+              }}
+            >
+              {imageInfoText}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ToggleOption({
+  active,
+  description,
+  onClick,
+  title,
+}: Readonly<{
+  active: boolean
+  description: string
+  onClick: () => void
+  title: string
+}>) {
+  const activeClassName = 'border-[#9146FF] bg-[#9146FF]/15 text-white dark:text-gray-900'
+  const inactiveClassName =
+    'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-lg border px-4 py-4 text-left transition-colors ${
+        active ? activeClassName : inactiveClassName
+      }`}
+    >
+      <div className="font-medium">{title}</div>
+      <div className="mt-1 text-sm">{description}</div>
+    </button>
+  )
+}
+
+function VisibilityOptions({
+  formValues,
+  updateField,
+  t,
+}: Readonly<{
+  formValues: AchievementFormValues
+  updateField: <K extends keyof AchievementFormValues>(
+    field: K,
+    value: AchievementFormValues[K]
+  ) => void
+  t: (key: string) => string
+}>) {
+  return (
+    <div className="grid sm:grid-cols-3 gap-4">
+      <ToggleOption
+        active={formValues.public}
+        description={t('creator.toggle.public.description')}
+        onClick={() => updateField('public', !formValues.public)}
+        title={t('creator.toggle.public.title')}
+      />
+      <ToggleOption
+        active={formValues.active}
+        description={t('creator.toggle.active.description')}
+        onClick={() => updateField('active', !formValues.active)}
+        title={t('creator.toggle.active.title')}
+      />
+      <ToggleOption
+        active={formValues.secret}
+        description={t('creator.toggle.secret.description')}
+        onClick={() => updateField('secret', !formValues.secret)}
+        title={t('creator.toggle.secret.title')}
+      />
+    </div>
+  )
+}
+
+function ModeSwitch({
+  formValues,
+  mode,
+  setFormValues,
+  setMode,
+  t,
+}: Readonly<{
+  formValues: AchievementFormValues
+  mode: 'simple' | 'api'
+  setFormValues: SetFormValues
+  setMode: (value: 'simple' | 'api') => void
+  t: (key: string) => string
+}>) {
+  const handleSimpleMode = () => {
+    setMode('simple')
+    if (formValues.type.label === 'apicaller') {
+      setFormValues(current => ({
+        ...current,
+        type: { label: 'countMessage', data: null },
+      }))
+    }
+  }
+
+  const handleApiMode = () => {
+    setMode('api')
+    setFormValues(current => ({
+      ...current,
+      goal: 1,
+      type: { label: 'apicaller', data: null },
+    }))
+  }
+
+  return (
+    <div className="flex items-center gap-4">
+      <button
+        onClick={handleSimpleMode}
+        className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
+          mode === 'simple'
+            ? 'bg-[#9146FF] text-white'
+            : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
+        }`}
+      >
+        {t('creator.mode.simple')}
+      </button>
+      <button
+        onClick={handleApiMode}
+        className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
+          mode === 'api'
+            ? 'bg-[#9146FF] text-white'
+            : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
+        }`}
+      >
+        {t('creator.mode.api')}
+      </button>
+    </div>
+  )
+}
+
 export function AchievementCreator({
   achievementId = null,
   templateAchievement = null,
@@ -370,76 +974,16 @@ export function AchievementCreator({
     }
   }
 
-  const imageContent = imagePreviewUrl ? (
-    <img
-      src={imagePreviewUrl}
-      alt="Selected achievement preview"
-      className="h-full w-full object-cover"
-    />
-  ) : formValues.image && isRenderableImageSource(formValues.image.trim()) ? (
-    <img
-      src={formValues.image.trim()}
-      alt="Current achievement"
-      className="h-full w-full object-cover"
-      onError={e => {
-        e.currentTarget.style.display = 'none'
-      }}
-    />
-  ) : formValues.image ? (
-    <div className="flex h-full w-full items-center justify-center text-center px-3 text-xs text-gray-300 dark:text-gray-600 break-all">
-      <span>{formValues.image}</span>
-    </div>
-  ) : (
-    <Upload className="w-8 h-8 text-gray-500" />
-  )
+  const imageContent = renderImageContent(formValues, imagePreviewUrl)
 
-  const imageInfoText = selectedImageUpload ? (
-    <span className="break-all">
-      {t('creator.image.selected')}{' '}
-      <span className="text-white dark:text-gray-900">
-        {selectedImageUpload.fileName}
-      </span>
-    </span>
-  ) : (
-    <span>{t('creator.image.empty')}</span>
-  )
+  const imageInfoText = getImageInfoText(selectedImageUpload, t)
 
-  const submitLabel = isSubmitting
-    ? achievementId
-      ? t('creator.action.saving')
-      : t('creator.action.publishing')
-    : achievementId
-      ? t('creator.action.update')
-      : t('creator.action.publish')
+  const submitLabel = getSubmitLabel(isSubmitting, achievementId, t)
 
   return (
     <div className="flex flex-col">
       <div className="flex-1 overflow-auto bg-[#0e0e10] dark:bg-gray-50">
-        <div className="bg-[#18181b] dark:bg-white border-b border-[#2d2d31] dark:border-gray-200 px-4 sm:px-8 py-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-1 min-w-0">
-              <button
-                onClick={onOpenSidebar}
-                data-testid="mobile-menu-btn"
-                className="lg:hidden text-white dark:text-gray-900 flex-shrink-0"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-              <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl text-white dark:text-gray-900 mb-2">
-                  {achievementId ? t('creator.title.edit') : t('creator.title.create')}
-                </h1>
-                <p className="text-gray-400 dark:text-gray-600 text-sm sm:text-base">
-                  {achievementId ? t('creator.subtitle.edit') : t('creator.subtitle.create')}
-                </p>
-              </div>
-            </div>
-
-            <div className="relative hidden sm:block flex-shrink-0">
-              <ChannelSelector />
-            </div>
-          </div>
-        </div>
+        <CreatorHeader achievementId={achievementId} onOpenSidebar={onOpenSidebar} t={t} />
 
         {isModeratorChannel && (
           <div className="mx-4 sm:mx-8 mt-4 flex items-center gap-3 rounded-xl border border-[#ffd700]/40 bg-[#ffd700]/10 px-4 py-3 text-sm text-[#ffd700] dark:text-[#a16200]">
@@ -532,155 +1076,27 @@ export function AchievementCreator({
             </div>
 
             <div className="p-4 sm:p-8">
-              {isLoadingAchievement && (
-                <div className="mb-6 rounded-xl border border-[#2d2d31] bg-[#2d2d31] p-4 text-sm text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600">
-                  {t('creator.loading')}
-                </div>
-              )}
+              <CreatorFeedback
+                imageUploadError={imageUploadError}
+                imageUploadSuccess={imageUploadSuccess}
+                isLoadingAchievement={isLoadingAchievement}
+                loadError={loadError}
+                templateMessage={templateMessage}
+                t={t}
+              />
 
-              {loadError && (
-                <div className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]">
-                  {loadError}
-                </div>
-              )}
-
-              {templateMessage && (
-                <div
-                  className="mb-6 rounded-xl border border-[#9146FF]/40 bg-[#9146FF]/10 p-4 text-sm text-[#c6a8ff] dark:text-[#6f42c1]"
-                  style={{
-                    backgroundColor: 'rgba(145, 70, 255, 0.12)',
-                    border: '1px solid rgba(145, 70, 255, 0.35)',
-                    color: '#d9c3ff',
-                  }}
-                >
-                  {templateMessage}
-                </div>
-              )}
-
-              {imageUploadError && (
-                <div
-                  className="mb-6 rounded-xl border border-[#ff4444]/40 bg-[#ff4444]/10 p-4 text-sm text-[#ff8080] dark:text-[#b42318]"
-                  style={{
-                    backgroundColor: 'rgba(255, 68, 68, 0.1)',
-                    border: '1px solid rgba(255, 68, 68, 0.4)',
-                    color: '#ff9a9a',
-                  }}
-                >
-                  {imageUploadError}
-                </div>
-              )}
-
-              {imageUploadSuccess && (
-                <div
-                  className="mb-6 rounded-xl border border-[#00f593]/40 bg-[#00f593]/10 p-4 text-sm text-[#00f593] dark:text-[#027a48]"
-                  style={{
-                    backgroundColor: 'rgba(0, 245, 147, 0.1)',
-                    border: '1px solid rgba(0, 245, 147, 0.35)',
-                    color: '#00f593',
-                  }}
-                >
-                  {imageUploadSuccess}
-                </div>
-              )}
-
-              <div className="mb-8">
-                <div className="block text-white dark:text-gray-900 mb-3 font-medium">
-                  {t('creator.image.label')}
-                </div>
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <button
-                    type="button"
-                    onClick={handleOpenImagePicker}
-                    disabled={isPreparingImageUpload}
-                    aria-label={`${t('creator.image.upload')} ${t('creator.image.preview')}`}
-                    className={`w-32 h-32 bg-[#2d2d31] dark:bg-gray-100 rounded-xl border-2 border-dashed border-[#4d4d51] dark:border-gray-300 flex items-center justify-center hover:border-[#9146FF] transition-colors flex-shrink-0 overflow-hidden ${
-                      isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
-                    }`}
-                  >
-                    {imageContent}
-                  </button>
-                  <div className="flex-1 w-full text-center sm:text-left">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={handleOpenImagePicker}
-                        disabled={isPreparingImageUpload}
-                        className={`px-4 py-2 bg-[#2d2d31] dark:bg-gray-100 hover:bg-[#3d3d41] dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                          isPreparingImageUpload ? 'opacity-60 cursor-not-allowed' : ''
-                        }`}
-                        style={{
-                          alignItems: 'center',
-                          backgroundColor: '#2d2d31',
-                          borderRadius: '10px',
-                          color: '#ffffff',
-                          display: 'flex',
-                          gap: '0.5rem',
-                          justifyContent: 'center',
-                          padding: '0.625rem 1rem',
-                        }}
-                      >
-                        <Upload className="w-4 h-4" />
-                        {isPreparingImageUpload
-                          ? t('creator.image.preparing')
-                          : t('creator.image.upload')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleImageClear}
-                        disabled={!formValues.image && !selectedImageUpload}
-                        className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                          !formValues.image && !selectedImageUpload
-                            ? 'bg-[#2d2d31] dark:bg-gray-100 text-gray-500 cursor-not-allowed'
-                            : 'bg-[#ff4444]/15 text-[#ff8080] hover:bg-[#ff4444]/25'
-                        }`}
-                        style={{
-                          alignItems: 'center',
-                          backgroundColor:
-                            !formValues.image && !selectedImageUpload
-                              ? '#2d2d31'
-                              : 'rgba(255, 68, 68, 0.14)',
-                          borderRadius: '10px',
-                          color:
-                            !formValues.image && !selectedImageUpload ? '#7b7b86' : '#ff8a8a',
-                          display: 'flex',
-                          gap: '0.5rem',
-                          justifyContent: 'center',
-                          padding: '0.625rem 1rem',
-                        }}
-                      >
-                        <X className="w-4 h-4" />
-                        {t('creator.image.clear')}
-                      </button>
-                    </div>
-                    <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">
-                      {t('creator.image.hint')}
-                    </p>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
-                      {t('creator.image.note')}
-                    </p>
-                    <input
-                      ref={imageFileInputRef}
-                      data-testid="achievement-image-input"
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    {!formValues.image && (
-                      <div
-                        className="mt-3 rounded-lg border border-dashed border-[#4d4d51] dark:border-gray-300 p-3 text-left text-xs text-gray-400 dark:text-gray-600"
-                        style={{
-                          border: '1px dashed #4d4d51',
-                          borderRadius: '10px',
-                          color: '#a1a1aa',
-                        }}
-                      >
-                        {imageInfoText}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <AchievementImagePicker
+                formValues={formValues}
+                handleImageChange={handleImageChange}
+                handleImageClear={handleImageClear}
+                handleOpenImagePicker={handleOpenImagePicker}
+                imageContent={imageContent}
+                imageFileInputRef={imageFileInputRef}
+                imageInfoText={imageInfoText}
+                isPreparingImageUpload={isPreparingImageUpload}
+                selectedImageUpload={selectedImageUpload}
+                t={t}
+              />
 
               <div className="mb-6">
                 <label
@@ -733,224 +1149,28 @@ export function AchievementCreator({
               </div>
 
               <div className="mb-8 space-y-4">
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => updateField('public', !formValues.public)}
-                    className={`rounded-lg border px-4 py-4 text-left transition-colors ${
-                      formValues.public
-                        ? 'border-[#9146FF] bg-[#9146FF]/15 text-white dark:text-gray-900'
-                        : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
-                    }`}
-                  >
-                    <div className="font-medium">{t('creator.toggle.public.title')}</div>
-                    <div className="mt-1 text-sm">{t('creator.toggle.public.description')}</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateField('active', !formValues.active)}
-                    className={`rounded-lg border px-4 py-4 text-left transition-colors ${
-                      formValues.active
-                        ? 'border-[#9146FF] bg-[#9146FF]/15 text-white dark:text-gray-900'
-                        : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
-                    }`}
-                  >
-                    <div className="font-medium">{t('creator.toggle.active.title')}</div>
-                    <div className="mt-1 text-sm">{t('creator.toggle.active.description')}</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateField('secret', !formValues.secret)}
-                    className={`rounded-lg border px-4 py-4 text-left transition-colors ${
-                      formValues.secret
-                        ? 'border-[#9146FF] bg-[#9146FF]/15 text-white dark:text-gray-900'
-                        : 'border-[#2d2d31] bg-[#2d2d31] text-gray-400 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-600'
-                    }`}
-                  >
-                    <div className="font-medium">{t('creator.toggle.secret.title')}</div>
-                    <div className="mt-1 text-sm">{t('creator.toggle.secret.description')}</div>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => {
-                      setMode('simple')
-                      if (formValues.type.label === 'apicaller') {
-                        setFormValues(current => ({
-                          ...current,
-                          type: { label: 'countMessage', data: null },
-                        }))
-                      }
-                    }}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
-                      mode === 'simple'
-                        ? 'bg-[#9146FF] text-white'
-                        : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                    }`}
-                  >
-                    {t('creator.mode.simple')}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMode('api')
-                      setFormValues(current => ({
-                        ...current,
-                        goal: 1,
-                        type: { label: 'apicaller', data: null },
-                      }))
-                    }}
-                    className={`flex-1 px-4 py-3 rounded-lg transition-colors ${
-                      mode === 'api'
-                        ? 'bg-[#9146FF] text-white'
-                        : 'bg-[#2d2d31] dark:bg-gray-100 text-gray-400 dark:text-gray-600 hover:bg-[#3d3d41] dark:hover:bg-gray-200'
-                    }`}
-                  >
-                    {t('creator.mode.api')}
-                  </button>
-                </div>
+                <VisibilityOptions formValues={formValues} updateField={updateField} t={t} />
+                <ModeSwitch
+                  formValues={formValues}
+                  mode={mode}
+                  setFormValues={setFormValues}
+                  setMode={setMode}
+                  t={t}
+                />
               </div>
 
-              {mode === 'simple' &&
-                (() => {
-                  const triggerConfig = getTriggerFieldConfig(formValues.type.label, t)
-                  return (
-                    <div className="mb-8">
-                      <div className="mb-4">
-                        <label
-                          htmlFor="achievement-trigger-label"
-                          className="block text-white dark:text-gray-900 mb-3 font-medium"
-                        >
-                          {t('achievement.trigger.label')}
-                        </label>
-                        <select
-                          id="achievement-trigger-label"
-                          value={formValues.type.label}
-                          onChange={event =>
-                            setFormValues(current => ({
-                              ...current,
-                              type: {
-                                label: event.target.value as (typeof current.type)['label'],
-                                data: null,
-                              },
-                            }))
-                          }
-                          className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
-                        >
-                          {achievementTriggerOptions.map(trigger => (
-                            <option key={trigger.value} value={trigger.value}>
-                              {trigger.title}
-                            </option>
-                          ))}
-                        </select>
-                        <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">
-                          {t('achievement.trigger.helper')}
-                        </p>
-                        <p className="mt-2 text-xs text-gray-500 dark:text-gray-600">
-                          {achievementTriggerOptions.find(
-                            trigger => trigger.value === formValues.type.label
-                          )?.description ?? ''}
-                        </p>
-                      </div>
-                      <div
-                        className={`grid gap-6 ${triggerConfig.showDetail ? 'sm:grid-cols-2' : ''}`}
-                      >
-                        {triggerConfig.showDetail && (
-                          <div>
-                            <label
-                              htmlFor="achievement-trigger-data"
-                              className="block text-white dark:text-gray-900 mb-3 font-medium"
-                            >
-                              {triggerConfig.detailLabel}
-                            </label>
-                            {formValues.type.label === 'countRedeemChannelPoint' ? (
-                              <>
-                                {isLoadingRewards && (
-                                  <p className="text-sm text-gray-400 dark:text-gray-600 mb-2">
-                                    {t('achievement.trigger.rewards.loading')}
-                                  </p>
-                                )}
-                                {!isLoadingRewards && rewardsError && (
-                                  <p className="text-sm text-red-400 dark:text-red-600 mb-2">
-                                    {t('achievement.trigger.rewards.error')}
-                                  </p>
-                                )}
-                                {!isLoadingRewards && !rewardsError && rewards.length === 0 && (
-                                  <p className="text-sm text-gray-400 dark:text-gray-600 mb-2">
-                                    {t('achievement.trigger.rewards.empty')}
-                                  </p>
-                                )}
-                                <select
-                                  id="achievement-trigger-data"
-                                  value={toStringValue(formValues.type.data)}
-                                  onChange={event =>
-                                    setFormValues(current => ({
-                                      ...current,
-                                      type: {
-                                        ...current.type,
-                                        data: event.target.value || null,
-                                      },
-                                    }))
-                                  }
-                                  className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none"
-                                >
-                                  <option value="">...</option>
-                                  {rewards.map(reward => (
-                                    <option key={reward.id} value={reward.id}>
-                                      {reward.title} — {reward.cost} pts
-                                    </option>
-                                  ))}
-                                  {formValues.type.data !== null &&
-                                    !rewards.some(
-                                      r => r.id === toStringValue(formValues.type.data)
-                                    ) && (
-                                      <option value={toStringValue(formValues.type.data)} disabled>
-                                        {t('achievement.trigger.rewards.unknown', {
-                                          id: toStringValue(formValues.type.data),
-                                        })}
-                                      </option>
-                                    )}
-                                </select>
-                              </>
-                            ) : (
-                              <input
-                                id="achievement-trigger-data"
-                                type="text"
-                                value={toStringValue(formValues.type.data)}
-                                onChange={event =>
-                                  setFormValues(current => ({
-                                    ...current,
-                                    type: {
-                                      ...current.type,
-                                      data: event.target.value.trim() ? event.target.value : null,
-                                    },
-                                  }))
-                                }
-                                placeholder="..."
-                                className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none placeholder:text-gray-500"
-                              />
-                            )}
-                          </div>
-                        )}
-                        <div>
-                          <label
-                            htmlFor="achievement-goal"
-                            className="block text-white dark:text-gray-900 mb-3 font-medium"
-                          >
-                            {triggerConfig.goalLabel}
-                          </label>
-                          <input
-                            id="achievement-goal"
-                            type="number"
-                            value={formValues.goal}
-                            onChange={event => updateField('goal', Number(event.target.value) || 0)}
-                            className="w-full px-4 py-3 bg-[#2d2d31] dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg border border-transparent focus:border-[#9146FF] focus:outline-none transition-colors"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })()}
+              {mode === 'simple' && (
+                <SimpleTriggerFields
+                  achievementTriggerOptions={achievementTriggerOptions}
+                  formValues={formValues}
+                  isLoadingRewards={isLoadingRewards}
+                  rewards={rewards}
+                  rewardsError={rewardsError}
+                  setFormValues={setFormValues}
+                  t={t}
+                  updateField={updateField}
+                />
+              )}
 
               <div className="mb-8 p-4 bg-[#2d2d31] dark:bg-gray-100 rounded-lg border-l-4 border-[#00f593]">
                 <div className="flex items-center gap-2 text-[#00f593] mb-1">

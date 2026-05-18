@@ -36,10 +36,11 @@ export function TwitchOverlay({ onOpenSidebar }: Readonly<TwitchOverlayProps>) {
   const leaderboard = buildLeaderboardEntries(achievements, t)
   const panelAchievements = buildPanelAchievementEntries(achievements, t)
   const panelUrl =
-    selectedChannel && typeof globalThis.window !== 'undefined'
+    selectedChannel && globalThis.window !== undefined
       ? buildPublicPanelUrl(selectedChannel.id, globalThis.location.origin)
       : ''
-  const extensionUrl = typeof globalThis.window === 'undefined' ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
+  const extensionUrl =
+    globalThis.window === undefined ? '' : buildTwitchExtensionPanelUrl(FRONT_URL)
 
   const handleCopyLink = async () => {
     if (!panelUrl || !navigator.clipboard?.writeText) {
