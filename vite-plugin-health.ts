@@ -16,6 +16,10 @@ export function healthCheckPlugin(): Plugin {
         res.statusCode = 200
         res.end(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }))
       })
+      server.middlewares.use('/env-config.js', (_req, res, next) => {
+        res.setHeader('Cache-Control', 'no-store')
+        next()
+      })
     },
   }
 }
