@@ -38,6 +38,7 @@ jobs:
     needs: prepare
     uses: projet-ccm2/shared-workflows/.github/workflows/nodejs-cd.yml@main
     with:
+      required_env_vars: GCP_SA_KEY,GCP_PROJECT_ID,TWITCH_CLIENT_ID,AUTH_SERVICE_URL,ACHIEVEMENT_MANAGEMENT_SERVICE_URL,API_SERVICE_URL,FRONT_URL
       docker-image-name: front-dev
       docker-tag: ${{ needs.prepare.outputs.docker-tag }}
       artifact-registry-repository: 'front-docker-dev'
