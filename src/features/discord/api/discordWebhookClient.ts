@@ -1,4 +1,5 @@
 import { AUTH_SERVICE_URL as USER_MANAGEMENT_URL } from '../../../config/environment'
+import { fetchGcpIdentityToken } from '../../../utils/gcpAuth'
 
 export class DiscordWebhookError extends Error {
   readonly status: number
@@ -10,20 +11,6 @@ export class DiscordWebhookError extends Error {
     this.status = status
     this.details = details
   }
-}
-
-async function fetchGcpIdentityToken(audience: string): Promise<string> {
-  const metadataUrl = `http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=${encodeURIComponent(audience)}`
-  const response = await fetch(metadataUrl, {
-    headers: { 'Metadata-Flavor': 'Google' },
-  })
-  if (!response.ok) {
-    throw new DiscordWebhookError(
-      `Failed to fetch GCP identity token: ${response.status}`,
-      response.status
-    )
-  }
-  return response.text()
 }
 
 export const discordWebhookClient = {

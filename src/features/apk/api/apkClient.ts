@@ -1,4 +1,5 @@
 import { AUTH_SERVICE_URL as USER_MANAGEMENT_URL } from '../../../config/environment'
+import { fetchGcpIdentityToken } from '../../../utils/gcpAuth'
 
 export class ApkError extends Error {
   readonly status: number
@@ -13,10 +14,11 @@ export class ApkError extends Error {
 }
 
 export const apkClient = {
-  async getDownloadUrl(accessToken: string): Promise<string> {
+  async getDownloadUrl(): Promise<string> {
+    const identityToken = await fetchGcpIdentityToken(USER_MANAGEMENT_URL)
     const response = await fetch(`${USER_MANAGEMENT_URL}/apk/download`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${identityToken}`,
       },
     })
 

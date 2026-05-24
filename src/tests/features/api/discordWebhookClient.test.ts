@@ -57,7 +57,7 @@ describe('discordWebhookClient', () => {
     expect(String(metadataCall[0])).toContain('metadata.google.internal')
   })
 
-  it('should throw DiscordWebhookError when metadata fetch fails', async () => {
+  it('should throw when metadata fetch fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       status: 503,
@@ -65,7 +65,7 @@ describe('discordWebhookClient', () => {
 
     await expect(
       discordWebhookClient.register('channel-1', 'https://discord.com/api/webhooks/test')
-    ).rejects.toThrow(DiscordWebhookError)
+    ).rejects.toThrow()
   })
 
   it('should throw DiscordWebhookError with json details on non-ok API response', async () => {
