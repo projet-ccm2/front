@@ -31,7 +31,6 @@ const authUser = {
 describe('useDiscordWebhook', () => {
   beforeEach(() => {
     localStorage.setItem('twitch_user', JSON.stringify(authUser))
-    localStorage.setItem('twitch_tokens', JSON.stringify({ accessToken: 'valid-token' }))
     vi.clearAllMocks()
   })
 
@@ -139,17 +138,4 @@ describe('useDiscordWebhook', () => {
     expect(result.current.successKey).toBeNull()
   })
 
-  it('should return early when no access token is stored', async () => {
-    localStorage.removeItem('twitch_tokens')
-
-    const { result } = renderHook(() => useDiscordWebhook())
-
-    await act(async () => {
-      await result.current.register('https://discord.com/api/webhooks/test')
-    })
-
-    expect(discordWebhookClient.register).not.toHaveBeenCalled()
-    expect(result.current.successKey).toBeNull()
-    expect(result.current.errorKey).toBeNull()
-  })
 })

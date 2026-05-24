@@ -1,4 +1,5 @@
 import { AUTH_SERVICE_URL as USER_MANAGEMENT_URL } from '../../../config/environment'
+import { fetchGcpIdentityToken } from '../../../utils/gcpAuth'
 
 export class DiscordWebhookError extends Error {
   readonly status: number
@@ -13,11 +14,12 @@ export class DiscordWebhookError extends Error {
 }
 
 export const discordWebhookClient = {
-  async register(accessToken: string, channelId: string, webhookUrl: string | null): Promise<void> {
+  async register(channelId: string, webhookUrl: string | null): Promise<void> {
+    const identityToken = await fetchGcpIdentityToken(USER_MANAGEMENT_URL)
     const response = await fetch(`${USER_MANAGEMENT_URL}/channels/me/discord-webhook`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${identityToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ channelId, discordWebhookUrl: webhookUrl }),
