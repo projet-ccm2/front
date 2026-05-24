@@ -1,26 +1,26 @@
 import { useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { discordWebhookClient, DiscordWebhookError } from '../api/discordWebhookClient'
 import { useChannel } from '../../../context/ChannelContext'
-
-function getIdToken(): string | null {
-  try {
-    const raw = localStorage.getItem('twitch_tokens')
-    if (!raw) return null
-    return (JSON.parse(raw) as { idToken: string }).idToken ?? null
-  } catch {
-    return null
-  }
-}
+import { useAuth } from '../../../context/AuthContext'
+import { getStoredIdToken, isIdTokenExpired } from '../../../utils/auth'
 
 export function useDiscordWebhook() {
   const { selectedChannel } = useChannel()
+  const { login } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
   const [successKey, setSuccessKey] = useState<string | null>(null)
   const [errorKey, setErrorKey] = useState<string | null>(null)
 
   const register = async (webhookUrl: string | null) => {
-    const idToken = getIdToken()
+    const idToken = getStoredIdToken()
     if (!idToken || !selectedChannel) return
+    if (isIdTokenExpired(idToken)) {
+      const storage = Capacitor.isNativePlatform() ? localStorage : sessionStorage
+      storage.setItem('return_to_screen', 'discord')
+      await login()
+      return
+    }
     setIsSaving(true)
     setSuccessKey(null)
     setErrorKey(null)
