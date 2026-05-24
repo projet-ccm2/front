@@ -200,6 +200,7 @@ jobs:
       - name: Upload Debug APK to GCS
         id: upload-debug
         run: |
+          ENV="${{ steps.env.outputs.environment }}"
           BUCKET_NAME="${{ steps.gcs.outputs.BUCKET_NAME }}"
           if [ -z "${BUCKET_NAME}" ]; then
             echo "Error: GCS bucket secret is not set for this environment"
@@ -210,8 +211,8 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
           APK_NAME="front-debug-${SHA_SHORT}-${TIMESTAMP}.apk"
-          GCS_PATH="gs://${BUCKET_NAME}/${APK_NAME}"
-          LATEST_PATH="gs://${BUCKET_NAME}/latest.apk"
+          GCS_PATH="gs://${BUCKET_NAME}/${ENV}/${APK_NAME}"
+          LATEST_PATH="gs://${BUCKET_NAME}/${ENV}/latest.apk"
 
           if [ ! -f "${APK_PATH}" ]; then
             echo "Error: APK file not found at ${APK_PATH}"
@@ -233,14 +234,15 @@ jobs:
         if: steps.env.outputs.environment == 'production'
         id: upload-release
         run: |
+          ENV="${{ steps.env.outputs.environment }}"
           BUCKET_NAME="${{ steps.gcs.outputs.BUCKET_NAME }}"
           APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
           SHA_SHORT="${GITHUB_SHA:0:7}"
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
           APK_NAME="front-release-${SHA_SHORT}-${TIMESTAMP}.apk"
-          GCS_PATH="gs://${BUCKET_NAME}/${APK_NAME}"
-          LATEST_RELEASE_PATH="gs://${BUCKET_NAME}/latest-release.apk"
+          GCS_PATH="gs://${BUCKET_NAME}/${ENV}/${APK_NAME}"
+          LATEST_RELEASE_PATH="gs://${BUCKET_NAME}/${ENV}/latest-release.apk"
 
           if [ ! -f "${APK_PATH}" ]; then
             echo "Error: Release APK file not found at ${APK_PATH}"
