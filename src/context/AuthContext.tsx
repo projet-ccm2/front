@@ -45,6 +45,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     const redirectUri = Capacitor.isNativePlatform()
       ? MOBILE_REDIRECT_URI
       : globalThis.location?.origin || FRONT_URL
+    console.warn('[AUTH DEBUG] redirectUri:', redirectUri, '| FRONT_URL:', FRONT_URL, '| location.origin:', globalThis.location?.origin)
     const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&state=${state}`
     await openExternalUrl(twitchUrl)
   }, [])
