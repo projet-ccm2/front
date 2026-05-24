@@ -153,4 +153,18 @@ describe('useDiscordWebhook', () => {
     expect(result.current.errorKey).toBeNull()
   })
 
+  it('should return early when twitch_tokens is invalid JSON', async () => {
+    localStorage.setItem('twitch_tokens', 'not-valid-json')
+
+    const { result } = renderHook(() => useDiscordWebhook())
+
+    await act(async () => {
+      await result.current.register('https://discord.com/api/webhooks/test')
+    })
+
+    expect(discordWebhookClient.register).not.toHaveBeenCalled()
+    expect(result.current.successKey).toBeNull()
+    expect(result.current.errorKey).toBeNull()
+  })
+
 })
