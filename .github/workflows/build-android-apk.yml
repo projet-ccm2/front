@@ -183,13 +183,13 @@ jobs:
         run: |
           ENV="${{ steps.env.outputs.environment }}"
           if [ "$ENV" == "production" ]; then
-            echo "BUCKET_NAME=${{ secrets.PROD_GCS_BUCKET_NAME }}" >> $GITHUB_OUTPUT
+            echo "BUCKET_NAME=${{ secrets.PROD_GCP_BUCKET_NAME }}" >> $GITHUB_OUTPUT
             echo "PROJECT_ID=${{ secrets.PROD_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
           elif [ "$ENV" == "integration" ]; then
-            echo "BUCKET_NAME=${{ secrets.INT_GCS_BUCKET_NAME }}" >> $GITHUB_OUTPUT
+            echo "BUCKET_NAME=${{ secrets.INT_GCP_BUCKET_NAME }}" >> $GITHUB_OUTPUT
             echo "PROJECT_ID=${{ secrets.INT_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
           else
-            echo "BUCKET_NAME=${{ secrets.DEV_GCS_BUCKET_NAME }}" >> $GITHUB_OUTPUT
+            echo "BUCKET_NAME=${{ secrets.DEV_GCP_BUCKET_NAME }}" >> $GITHUB_OUTPUT
             echo "PROJECT_ID=${{ secrets.DEV_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
           fi
 
