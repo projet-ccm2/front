@@ -12,8 +12,6 @@ import {
 import { Capacitor } from '@capacitor/core'
 import { openExternalUrl } from '../utils/browserRuntime'
 
-const REDIRECT_URI = FRONT_URL
-
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
@@ -44,7 +42,9 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     } else {
       sessionStorage.setItem('twitch_auth_state', state)
     }
-    const redirectUri = Capacitor.isNativePlatform() ? MOBILE_REDIRECT_URI : REDIRECT_URI
+    const redirectUri = Capacitor.isNativePlatform()
+      ? MOBILE_REDIRECT_URI
+      : globalThis.location?.origin || FRONT_URL
     const twitchUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&state=${state}`
     await openExternalUrl(twitchUrl)
   }, [])
