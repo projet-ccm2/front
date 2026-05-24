@@ -2,16 +2,6 @@ import { useState } from 'react'
 import { discordWebhookClient, DiscordWebhookError } from '../api/discordWebhookClient'
 import { useChannel } from '../../../context/ChannelContext'
 
-function getAccessToken(): string | null {
-  try {
-    const raw = localStorage.getItem('twitch_tokens')
-    if (!raw) return null
-    return (JSON.parse(raw) as { accessToken: string }).accessToken ?? null
-  } catch {
-    return null
-  }
-}
-
 export function useDiscordWebhook() {
   const { selectedChannel } = useChannel()
   const [isSaving, setIsSaving] = useState(false)
@@ -19,13 +9,12 @@ export function useDiscordWebhook() {
   const [errorKey, setErrorKey] = useState<string | null>(null)
 
   const register = async (webhookUrl: string | null) => {
-    const token = getAccessToken()
-    if (!token || !selectedChannel) return
+    if (!selectedChannel) return
     setIsSaving(true)
     setSuccessKey(null)
     setErrorKey(null)
     try {
-      await discordWebhookClient.register(token, selectedChannel.id, webhookUrl)
+      await discordWebhookClient.register(selectedChannel.id, webhookUrl)
       setSuccessKey(webhookUrl === null ? 'discord.webhook.removed' : 'discord.webhook.saved')
     } catch (err) {
       if (err instanceof DiscordWebhookError) {
