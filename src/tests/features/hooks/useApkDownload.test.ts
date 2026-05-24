@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '../../utils/test-utils'
 import { useApkDownload } from '../../../features/apk/hooks/useApkDownload'
 
+vi.mock('../../../utils/browserRuntime', () => ({
+  openExternalUrl: vi.fn(),
+  closeExternalUrl: vi.fn(),
+  getLaunchUrl: vi.fn().mockResolvedValue({ url: null }),
+  addUrlOpenListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
+}))
+
 vi.mock('../../../features/apk/api/apkClient', async importOriginal => {
   const actual = await importOriginal<typeof import('../../../features/apk/api/apkClient')>()
   return {
@@ -94,5 +101,24 @@ describe('useApkDownload', () => {
 
     expect(toast.error).toHaveBeenCalledWith(errorMessages.service)
     expect(apkClient.getDownloadUrl).not.toHaveBeenCalled()
+  })
+
+  it('should trigger login and set return_to_screen when idToken is expired', async () => {
+    const expiredPayload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 1 }))
+      .replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
+    localStorage.setItem('twitch_tokens', JSON.stringify({ idToken: `h.${expiredPayload}.s` }))
+
+    const { openExternalUrl } = await import('../../../utils/browserRuntime')
+
+    const { result } = renderHook(() => useApkDownload())
+
+    await act(async () => {
+      await result.current.triggerDownload(errorMessages)
+    })
+
+    expect(apkClient.getDownloadUrl).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
+    expect(sessionStorage.getItem('return_to_screen')).toBe('dashboard')
+    expect(openExternalUrl).toHaveBeenCalled()
   })
 })

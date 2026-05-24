@@ -1,24 +1,24 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Capacitor } from '@capacitor/core'
 import { apkClient } from '../api/apkClient'
-
-function getIdToken(): string | null {
-  try {
-    const raw = localStorage.getItem('twitch_tokens')
-    if (!raw) return null
-    return (JSON.parse(raw) as { idToken: string }).idToken ?? null
-  } catch {
-    return null
-  }
-}
+import { useAuth } from '../../../context/AuthContext'
+import { getStoredIdToken, isIdTokenExpired } from '../../../utils/auth'
 
 export function useApkDownload() {
+  const { login } = useAuth()
   const [isDownloading, setIsDownloading] = useState(false)
 
   const triggerDownload = async (errorMessages: { service: string }) => {
-    const idToken = getIdToken()
+    const idToken = getStoredIdToken()
     if (!idToken) {
       toast.error(errorMessages.service)
+      return
+    }
+    if (isIdTokenExpired(idToken)) {
+      const storage = Capacitor.isNativePlatform() ? localStorage : sessionStorage
+      storage.setItem('return_to_screen', 'dashboard')
+      await login()
       return
     }
     setIsDownloading(true)
