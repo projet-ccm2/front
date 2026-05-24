@@ -57,6 +57,7 @@ const EN_TRANSLATIONS: TranslationMap = {
   'apk.download.downloading': 'Preparing download…',
   'apk.download.error.auth': 'Authentication failed. Please sign out and sign back in.',
   'apk.download.error.service': 'Download service unavailable. Please try again later.',
+  'auth.session.expired': 'Session expired — redirecting to Twitch login…',
   'nav.discord': 'Discord Notifications',
   'discord.webhook.title': 'Discord Notifications',
   'discord.webhook.description': 'Send achievement notifications to your Discord server.',
@@ -550,6 +551,7 @@ const FR_TRANSLATION_OVERRIDES: Partial<TranslationMap> = {
   'apk.download.error.auth': 'Authentification échouée. Veuillez vous reconnecter.',
   'apk.download.error.service':
     'Service de téléchargement indisponible. Veuillez réessayer plus tard.',
+  'auth.session.expired': 'Session expirée — redirection vers Twitch…',
   'nav.discord': 'Notifications Discord',
   'discord.webhook.title': 'Notifications Discord',
   'discord.webhook.description': 'Envoyez des notifications de succès sur votre serveur Discord.',

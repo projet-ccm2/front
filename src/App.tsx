@@ -27,6 +27,7 @@ import { isTwitchExtensionPanelPath } from './features/overlay/utils/twitchExten
 import type { Achievement } from './features/achievements/api/achievementManagement.types'
 import { Toaster } from './components/ui/sonner'
 import { addUrlOpenListener, closeExternalUrl, getLaunchUrl } from './utils/browserRuntime'
+import { useTokenExpiryGuard } from './hooks/useTokenExpiryGuard'
 
 type Screen =
   | 'landing'
@@ -46,6 +47,7 @@ export function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>(() =>
     isAuthenticated ? 'dashboard' : 'landing'
   )
+  useTokenExpiryGuard(currentScreen)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editingAchievementId, setEditingAchievementId] = useState<Achievement['id'] | null>(null)
   const [templateAchievement, setTemplateAchievement] = useState<Achievement | null>(null)
