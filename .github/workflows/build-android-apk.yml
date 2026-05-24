@@ -157,23 +157,45 @@ jobs:
           ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS || '' }}
           ANDROID_KEYSTORE_ALIAS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_ALIAS_PASSWORD || '' }}
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (dev)
+        if: steps.env.outputs.environment == 'development'
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.DEV_GCP_SA_KEY }}
 
+      - name: Authenticate to Google Cloud (int)
+        if: steps.env.outputs.environment == 'integration'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.INT_GCP_SA_KEY }}
+
+      - name: Authenticate to Google Cloud (prod)
+        if: steps.env.outputs.environment == 'production'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.PROD_GCP_SA_KEY }}
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-
-      - name: Set GCP Project
-        run: |
-          gcloud config set project "${{ secrets.DEV_GCP_PROJECT_ID }}"
 
       - name: Setup GCS variables
         id: gcs
         run: |
-          echo "BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}" >> $GITHUB_OUTPUT
-          echo "PROJECT_ID=${{ secrets.DEV_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
+          ENV="${{ steps.env.outputs.environment }}"
+          if [ "$ENV" == "production" ]; then
+            echo "BUCKET_NAME=${{ secrets.PROD_GCP_BUCKET_NAME }}" >> $GITHUB_OUTPUT
+            echo "PROJECT_ID=${{ secrets.PROD_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
+          elif [ "$ENV" == "integration" ]; then
+            echo "BUCKET_NAME=${{ secrets.INT_GCP_BUCKET_NAME }}" >> $GITHUB_OUTPUT
+            echo "PROJECT_ID=${{ secrets.INT_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
+          else
+            echo "BUCKET_NAME=${{ secrets.DEV_GCP_BUCKET_NAME }}" >> $GITHUB_OUTPUT
+            echo "PROJECT_ID=${{ secrets.DEV_GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set GCP Project
+        run: |
+          gcloud config set project "${{ steps.gcs.outputs.PROJECT_ID }}"
 
       - name: Upload Debug APK to GCS
         id: upload-debug
@@ -181,28 +203,25 @@ jobs:
           ENV="${{ steps.env.outputs.environment }}"
           BUCKET_NAME="${{ steps.gcs.outputs.BUCKET_NAME }}"
           if [ -z "${BUCKET_NAME}" ]; then
-            echo "Error: GCS_BUCKET_NAME secret is not set"
+            echo "Error: GCS bucket secret is not set for this environment"
             exit 1
           fi
           APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
           SHA_SHORT="${GITHUB_SHA:0:7}"
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
-          APK_NAME="front-${ENV}-debug-${SHA_SHORT}-${TIMESTAMP}.apk"
-          GCS_DIR="gs://${BUCKET_NAME}/${ENV}"
-          GCS_PATH="${GCS_DIR}/${APK_NAME}"
-          LATEST_PATH="${GCS_DIR}/latest.apk"
+          APK_NAME="front-debug-${SHA_SHORT}-${TIMESTAMP}.apk"
+          GCS_PATH="gs://${BUCKET_NAME}/${ENV}/${APK_NAME}"
+          LATEST_PATH="gs://${BUCKET_NAME}/${ENV}/latest.apk"
 
           if [ ! -f "${APK_PATH}" ]; then
             echo "Error: APK file not found at ${APK_PATH}"
             exit 1
           fi
 
-          # Upload APK with timestamp
           gsutil cp "${APK_PATH}" "${GCS_PATH}"
           echo "APK uploaded to: ${GCS_PATH}"
 
-          # Copy to latest.apk (always points to the latest version)
           gsutil cp "${APK_PATH}" "${LATEST_PATH}"
           echo "Latest APK available at: ${LATEST_PATH}"
 
@@ -221,21 +240,18 @@ jobs:
           SHA_SHORT="${GITHUB_SHA:0:7}"
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
-          APK_NAME="front-${ENV}-release-${SHA_SHORT}-${TIMESTAMP}.apk"
-          GCS_DIR="gs://${BUCKET_NAME}/${ENV}"
-          GCS_PATH="${GCS_DIR}/${APK_NAME}"
-          LATEST_RELEASE_PATH="${GCS_DIR}/latest-release.apk"
+          APK_NAME="front-release-${SHA_SHORT}-${TIMESTAMP}.apk"
+          GCS_PATH="gs://${BUCKET_NAME}/${ENV}/${APK_NAME}"
+          LATEST_RELEASE_PATH="gs://${BUCKET_NAME}/${ENV}/latest-release.apk"
 
           if [ ! -f "${APK_PATH}" ]; then
             echo "Error: Release APK file not found at ${APK_PATH}"
             exit 1
           fi
 
-          # Upload APK with timestamp
           gsutil cp "${APK_PATH}" "${GCS_PATH}"
           echo "Release APK uploaded to: ${GCS_PATH}"
 
-          # Copy to latest-release.apk
           gsutil cp "${APK_PATH}" "${LATEST_RELEASE_PATH}"
           echo "Latest Release APK available at: ${LATEST_RELEASE_PATH}"
 
